@@ -110,3 +110,6 @@ fi
 if [ -f /etc/bash_completion ] && ! shopt -oq posix; then
     . /etc/bash_completion
 fi
+
+# Make the shell case insensitive
+shopt -s nocaseglob
