@@ -1,0 +1,10 @@
+#!/bin/sh
+
+BASE="$1"
+LOCAL="$2"
+REMOTE="$3"
+MERGED="$4"
+
+# Open up Meld with three tabs to more easily see what they (the *other* branch)
+# did, what we (the local/current branch), and Git's merged version.
+meld $LOCAL $MERGED $REMOTE --diff $BASE $LOCAL --diff $BASE $REMOTE
