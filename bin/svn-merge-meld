@@ -1,0 +1,34 @@
+#!/usr/bin/env python
+# svn merge-tool python wrapper for meld
+import sys
+import subprocess
+
+# path to meld ($ which meld)
+meld = "/usr/bin/meld"
+log = False
+f = open('/tmp/svn-merge-meld.log', 'a')
+print 
+
+def main():
+    if log:
+        f.write("call %r\n" % sys.argv)
+
+    cmd = sys.argv
+    try:
+        cmd.remove("-u")
+    except Exception:
+        pass
+
+    cmd.pop(0)  # Remove this program argument
+    cmd.insert(0, 'meld')   # Replace with call through to meld
+    
+    # Call meld, making sure it exits correctly
+    subprocess.check_call(cmd)
+
+try:
+    main()
+except Exception as e:
+    print "Oh noes, an error: %r" % e
+    if log:
+        f.write("Error: %r\n" % e)
+    sys.exit(-1)

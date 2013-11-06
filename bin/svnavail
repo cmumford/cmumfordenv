@@ -1,0 +1,98 @@
+#!/usr/bin/ruby
+
+require 'optparse'
+
+class Arguments
+	attr_accessor :verbose, :srcUrl, :targetUrl, :collection
+	def initialize(args)
+		super()
+		self.collection = nil
+		self.verbose = false
+		self.srcUrl = nil
+		self.targetUrl = nil
+
+		opts = OptionParser.new do |opts|
+			opts.banner = "List all merged revisions\n"
+			opts.banner += "\nUsage: #$0 [options] <avail|merged> SOURCE[@REV] [TARGET[@REV]]"
+			opts.on('-v', '--verbose', "Write verbose output") do
+				self.verbose = true
+			end
+			opts.on_tail('-h', '--help', 'display this help and exit.') do
+				puts opts
+				exit
+			end
+		end
+
+		opts.parse!(args)
+
+        if args.length < 2 or args.length > 3 then
+            STDERR.puts "Incorrect params."
+            exit 1
+        end
+        self.collection = args[0]
+        self.collection = 'eligible' if self.collection == 'avail'
+        if self.collection != 'eligible' and self.collection != 'merged' then
+            STDERR.puts "Incorrect params."
+            exit 1
+        end
+
+        self.srcUrl = args[1]
+        
+        if args.length == 3 then
+            self.targetUrl = args[2]
+        end
+	end
+end
+
+$opts = Arguments.new(ARGV)
+
+##
+# url The source URL
+# collection 'merged' or 'eligible'
+#
+def mergeinfo(srcUrl, targetUrl, collection)
+    cmd = "svn mergeinfo --show-revs #{collection} #{srcUrl}"
+    if targetUrl != nil then
+        cmd = cmd + " #{targetUrl}"
+    end
+
+    puts cmd
+    revs = Array.new
+
+    IO.popen(cmd) do |f|
+		while (line=f.gets) != nil do
+            line.chomp!
+            if line =~ /^r(\d+)$/ then
+                revs.push $1
+            end
+		end
+	end
+
+    return revs
+end
+
+##
+# Get a log of the given Subversion URL repository for the specified
+# revisions.
+#
+def svnlog(url, revisions)
+
+    if $opts.verbose then
+        revisions.each do |rev|
+            puts `svn log -v -c #{rev} #{url}`
+            puts "If you want to see it then: svndiff -c #{rev} #{url}"
+            puts "If you want it then: svn merge -c #{rev} #{url}"
+        end
+    else
+        revisions.each do |rev|
+            puts "#{rev}"
+        end
+    end
+end
+
+revs = mergeinfo($opts.srcUrl, $opts.targetUrl, $opts.collection)
+if revs.empty? then
+    puts "No outstanding revisions in collection: #{$opts.collection}"
+else
+    svnlog($opts.srcUrl, revs)
+end

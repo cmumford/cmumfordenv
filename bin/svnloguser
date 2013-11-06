@@ -1,0 +1,69 @@
+#!/usr/bin/ruby
+require 'rubygems'
+require 'hpricot'
+require 'optparse'
+
+# I snagged this from http://www.dracoware.com/blog/2008/05/19/pulling-subversion-logs-for-a-single-user/
+# and used it as a starting point.
+  
+class Arguments
+	attr_accessor :limit, :username, :svnurl
+	def initialize(args)
+		super()
+		self.limit = 9999999999
+		self.username = nil
+		self.svnurl = ''
+
+		opts = OptionParser.new do |opts|
+			opts.banner = "List all submissions for the specified user.\n\n"
+			opts.banner += "Usage: #$0 [options] <username>"
+			opts.on('-l', '--limit [LIMIT]', 'The max number of items to report.') do |limit|
+				self.limit = limit
+			end
+			opts.on('-u', '--url [URL]', 'The URL to log.') do |url|
+				self.svnurl = url
+			end
+			opts.on_tail('-h', '--help', 'display this help and exit.') do
+				puts opts
+				puts "Results are in svn revision (i.e. chronological) order"
+				exit
+			end
+		end
+		
+		opts.parse!(args)
+
+		if args.length == 1 then
+			self.username = args[0]
+		else
+			raise "Incorrect args"
+		end
+	end
+end
+
+$opts = Arguments.new(ARGV)
+
+puts "Requesting SVN log, this may take a bit..."
+
+doc = IO.popen("svn log --stop-on-copy --xml #{$opts.svnurl}") do |f|
+	Hpricot.XML(f)
+end
+
+entries = doc.search("logentry").find_all do |entry|
+	(entry/"author").innerHTML == $opts.username
+end
+
+count = 0
+entries.each do |entry|
+	revision = entry.attributes["revision"]
+	author = (entry/"author").innerHTML
+	date = (entry/"date").innerHTML
+	msg = (entry/"msg").innerHTML
+
+	puts "r#{revision} - #{author}"
+	puts "#{date}"
+	puts "#{msg}"
+	puts "-"*80
+
+	count = count + 1
+	break if count >= $opts.limit
+end

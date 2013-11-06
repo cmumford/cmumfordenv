@@ -1,0 +1,17 @@
+#!/usr/bin/ruby
+
+require 'fileutils.rb'
+
+IO.popen("svn stat") { |f|
+    while (line=f.gets) != nil do
+        if line =~ /^\?\s+(.+)$/ then
+            entry = $1
+            puts entry
+            if File.directory?(entry) then
+                FileUtils.rm_rf entry
+            else
+                File.delete entry
+            end
+        end
+    end
+}

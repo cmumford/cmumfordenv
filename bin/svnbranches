@@ -1,0 +1,81 @@
+#!/usr/bin/ruby
+
+
+require 'optparse'
+require 'rexml/document'
+
+include REXML
+
+class Arguments
+	attr_accessor :verbose
+	def initialize(args)
+		super()
+		self.verbose = false
+
+		opts = OptionParser.new do |opts|
+			opts.banner = "Usage: #$0 [options]"
+			opts.on('-v', '--verbose', 'Display output in verbose format.') do
+				self.verbose = true
+			end
+			opts.on_tail('-h', '--help', 'display this help and exit.') do
+				puts opts
+				exit
+			end
+		end
+
+		opts.parse!(args)
+	end
+end
+
+$opts = Arguments.new(ARGV)
+
+def getSvnUrl(dir)
+	doc = Document.new(`svn info --xml #{dir}`)
+	return doc.root.elements["entry/url"].text
+end
+
+def getBaseUrl (url)
+	if url == nil then
+		# If not given a URL then try to determine one from the current directory.
+		url = getSvnUrl(".")
+	end
+	if (url =~ /^(.*)\/trunk\/?/ or
+		url =~ /^(.*)\/submissions\/\d+\/?/ or
+		url =~ /^(.*)\/branches\/.+\/?/
+	   ) then
+		return $1
+	else
+		return nil
+	end
+end
+
+def isDirInSvn(dir)
+	return File.exists?("#{dir}/.svn");
+end
+
+def isDirInGit(dir)
+	return File.exists?("#{dir}/.git");
+end
+
+def listSvnBranches(dir)
+	baseurl = getBaseUrl(getSvnUrl(dir))
+	if baseurl == nil then
+		STDERR.puts "Cannot get base URL of current directory."
+		raise Exception.new
+	end
+
+	puts `svn ls #{$opts.verbose ? "-v" : ""} #{baseurl}/branches`
+end
+
+def listGitBranches(dir)
+	puts `git --git-dir="#{dir}/.git" tag -l`
+end
+
+cwd = "."
+if isDirInSvn(cwd) then
+	listSvnBranches(cwd)
+elsif isDirInGit(cwd) then
+	listGitBranches(cwd)
+else
+	raise Exception.new("Dir doesn't appear to be under revision control: #{cwd}")
+end

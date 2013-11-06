@@ -1,0 +1,133 @@
+#!/usr/bin/perl -w
+
+# Determine the SVN URL for the current (or specified) directory and copy it
+# to the clipboard.
+
+use strict;
+use Cwd;
+
+my $getbase = 0;
+my $dir = '.';
+
+foreach (@ARGV) {
+	if ($_ eq '-b') {
+		$getbase = 1;
+	}
+	else {
+		$dir = $_;
+		die "$dir is not a valid directory\n" if not -d $dir;
+	}
+}
+
+sub getSvnUrl
+{
+	my $pdir = shift;
+	my @lines = `svn info $pdir`;
+	foreach (@lines) {
+		chomp;
+		if (m/^URL:\s+(.+)\s*$/) {
+			if ($getbase) {
+				return baseurl($1);
+			}
+			else {
+				return $1;
+			}
+		}
+	}
+	return undef;
+}
+
+sub getGitUrl
+{
+	my $pdir = shift;
+    my $prevDir = getcwd;
+    chdir $pdir;
+	my @lines = `git remote -v`;
+    chdir $prevDir;
+	foreach (@lines) {
+		chomp;
+		if (m/^origin\s+(\S+)\s/) {
+			if ($getbase) {
+				return baseurl($1);
+			}
+			else {
+				return $1;
+			}
+		}
+	}
+	return undef;
+}
+
+if (isUnderSvnControl($dir)) {
+	my $url = getSvnUrl($dir);
+	print "$url\n";
+	`echo -n "$url" | xsel --clipboard --input`;
+}
+elsif (isUnderGitControl($dir)) {
+	my $url = getGitUrl($dir);
+	print "$url\n";
+	`echo -n "$url" | xsel --clipboard --input`;
+}
+else {
+	my %urls;
+	opendir DIR, $dir or die "Can't open dir $dir\n";
+	my @files = readdir(DIR);
+	closedir DIR;
+	foreach my $item (@files) {
+        next if ($item eq '.' || $item eq '..');
+		my $fullpath = "$dir/$item";
+        next if -l $fullpath;
+		if (isUnderSvnControl($fullpath)) {
+			my $url = getSvnUrl($fullpath);
+			if (defined($url)) {
+				$urls{$item} = $url;
+			}
+		}
+        elsif (isUnderGitControl($fullpath)) {
+			my $url = getGitUrl($fullpath);
+			if (defined($url)) {
+				$urls{$item} = $url;
+			}
+		}
+	}
+	
+	my $maxLen = 0;
+	foreach my $key (keys %urls) {
+		my $len = length($key);
+		if ($len > $maxLen) {
+			$maxLen = $len;
+		}
+	}
+	foreach my $key (sort keys %urls) {
+		my $len = length($key);
+		printf "%s %s %s\n", $key, '.' x (1 + $maxLen - $len), $urls{$key};
+	}
+}
+
+sub baseurl
+{
+	my $url = shift;
+
+	if ($url =~ /^(.+)\/trunk$/ ||
+		$url =~ /^(.+)\/branches/ ||
+		$url =~ /^(.+)\/submissions/) {
+		return $1;
+	}
+	else {
+		return $url;
+	}
+}
+
+sub isUnderSvnControl
+{
+	my $dir = shift;
+
+	return -d "$dir/.svn";
+}
+
+sub isUnderGitControl
+{
+	my $dir = shift;
+
+	return -d "$dir/.git";
+}

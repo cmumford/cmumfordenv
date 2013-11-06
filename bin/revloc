@@ -1,0 +1,75 @@
+#!/usr/bin/ruby
+
+# Given a revisision determine the component path.
+
+require 'rexml/document'
+require 'optparse'
+
+include REXML
+
+class Arguments
+	attr_accessor :xml, :revision
+	def initialize(args)
+		super()
+		self.xml = false
+		self.revision = nil
+
+		opts = OptionParser.new do |opts|
+			opts.banner = "Usage: #$0 [options]"
+			opts.on('-x', '--xml', 'Output is in XML format.') do
+				self.xml = true
+			end
+			opts.on('-r', '--revision [REVISION]', 'The revision to find the location of.') do |rev|
+				if rev =~ /^r?(\d+)$/ then
+					self.revision = Integer($1)
+				end
+			end
+			opts.on_tail('-h', '--help', 'display this help and exit.') do
+				puts opts
+				exit
+			end
+		end
+
+		opts.parse!(args)
+
+		if self.revision == nil then
+			STDERR.puts "missing a revision."
+			puts opts
+			exit 1
+		end
+	end
+end
+
+$opts = Arguments.new(ARGV)
+
+
+
+def getLocation(revision)
+
+    url = 'http://src.chromium.org/svn'
+	cmd = "svn log -v -r #{revision} #{url} --xml"
+	svn_output = `#{cmd}`
+	doc = Document.new(svn_output)
+	doc.elements.each("log/logentry/paths/path") { |path| 
+		loc = path.text
+		if loc =~ /^(.+\/trunk)/ ||
+			loc =~ /^(.+\/branches\/[^\/]+)\/.+/ then
+			return "#{url}#{$1}"
+		end
+	}
+
+	STDERR.puts "Couldn't find location for revision #{revision}."
+
+	return ''
+end
+
+path = getLocation($opts.revision)
+
+if $opts.xml then
+	puts '<?xml version="1.0"?>'
+	puts '<change>'
+	puts "<revision>#{$opts.revision}</revision><path>#{path}</path>"
+	puts '</change>'
+else
+	puts "#{$opts.revision} -> #{path}"
+end
