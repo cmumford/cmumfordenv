@@ -1,0 +1,7 @@
+#!/bin/sh
+
+find . -name '*.BACKUP.*' -print -exec rm {} \;
+find . -name '*.LOCAL.*' -print -exec rm {} \;
+find . -name '*.REMOTE.*' -print -exec rm {} \;
+find . -name '*.BASE.*' -print -exec rm {} \;
+find . -name '*.orig' -print -exec rm {} \;
