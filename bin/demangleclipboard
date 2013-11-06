@@ -1,0 +1,3 @@
+#!/bin/sh
+
+clip2out | c++filt | out2clip
