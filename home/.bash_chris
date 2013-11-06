@@ -84,3 +84,9 @@ function cssgrep()
 {
 	grep -n --color=always --recursive --include="*.css" $@ .
 }
+
+function g
+{
+	GDPATH="$(~/bin/go.py $*)"
+	cd "$GDPATH"
+}
