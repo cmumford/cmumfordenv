@@ -1,0 +1,13 @@
+#!/usr/bin/ruby
+
+ARGF.each do |line|
+    line.chomp!
+    if not line.empty? then
+        begin
+            puts line
+        rescue Errno::EPIPE
+            # Probably piped program quit and therefore stdin was closed
+            break
+        end
+    end
+end
