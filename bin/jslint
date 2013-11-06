@@ -1,0 +1,253 @@
+#!/usr/bin/ruby
+
+require 'rubygems'
+require 'optparse'
+require 'find'
+
+$jslint = "#{File.dirname(__FILE__)}/jslint.js"
+
+#
+# Note 1: JSlint has a bug where it fails to take string quotes into consideration 
+#         when calculating the character position. So a missing semicolon error on
+#         a line like this:
+#
+#var foo='hello'
+#
+# Will report an a missing semicolon at character 14 instead of 16
+#
+
+class Arguments
+	attr_accessor :autofix, :colorize
+	def initialize(args)
+		super()
+		self.autofix = false
+		self.colorize = false
+
+		opts = OptionParser.new do |opts|
+			opts.banner = "List all submissions for the current working directories component.\n\n"
+			opts.banner += "Usage: #$0 [options]"
+			opts.on('-f', '--autofix', 'Automatically fix some errors.') do
+				self.autofix = true
+			end
+			opts.on('-c', '--colorize', 'Colorize output.') do
+				self.colorize = true
+			end
+			opts.on_tail('-h', '--help', 'display this help and exit.') do
+				puts opts
+				exit
+			end
+		end
+
+		opts.parse!(args)
+	end
+end
+
+$opts = Arguments.new(ARGV)
+$totalFixCount = 0
+$totalErrorCount = 0
+
+class Error
+	attr_accessor :line, :char, :message
+
+	def initialize(line, char, message)
+		self.line = line
+		self.char = char
+		self.message = message
+	end
+
+	def to_s
+		return "Line #{self.line}, char:#{self.char}, msg: #{self.message}"
+	end
+end
+
+def putFixedMessage(message)
+	if $opts.colorize then
+		puts "\e[0;36m#{message}\e[0m"	# cyan/black
+	else
+		puts message
+	end
+end
+
+def putNotFixedMessage(message)
+	if $opts.colorize then
+		puts "\e[0;31m#{message}\e[0m\n";	# red/black
+	else
+		puts message
+	end
+end
+
+def createWordMatchRe(str)
+	str.gsub!('+', '\\+')
+	str.gsub!(')', '\\)')
+	str.gsub!('.', '\\.')
+	puts str
+	return Regexp.new "\\b#{str}\\b"
+end
+
+def ignoreError(err)
+	ignoreUndef = {
+		'Mojo' => true,
+		'People' => true,
+		'Class' => true,
+		'Ajax' => true,
+		'DOMParser' => true,
+		'console' => true,
+		'$L' => true
+	}
+	if err.message =~ /'([^']+)' is not defined/ then
+		return ignoreUndef[$1]
+	else
+		return err.message.index("indentation") ||
+			err.message.index("Mixed spaces and tabs") ||
+			err.message.index("Missing space after") ||
+			err.message.index("Too many var statements") ||
+			err.message.index("Unexpected space after")
+	end
+end
+
+def charIsQuote(str, idx)
+	idx >= str.length ? false : str[idx] == 34 or str[idx] == 39
+end
+
+def parseFile(file)
+	errors = Array.new
+	cmd = "java -jar /usr/share/java/js.jar #{$jslint} #{file}"
+
+	if $opts.colorize then
+		puts "\e[0;34mProcessing #{file}\e[0m"	# blue/black
+	else
+		puts "Processing #{file}"
+	end
+
+	IO.popen(cmd) do |f|
+		while (line=f.gets) != nil do
+			if line =~ /Lint at line (\d+) character (\d+): (.*).$/ then
+				errors.push Error.new(Integer($1), Integer($2), $3)
+			end
+		end
+	end
+
+	if errors.length > 0 then
+		if $opts.autofix then
+
+			autoFixCount = 0
+			jscode = Array.new
+			f = File.open(file)
+			while (line=f.gets) != nil do
+				jscode.push line.chomp
+			end
+			f.close
+
+			errors.sort! { |x,y| x.line == y.line ?  x.char <=> y.char : x.line <=> y.line }
+			errors.reverse!
+
+			errors.each do |err|
+				idx = err.line - 1
+				if ignoreError(err) then
+				elsif err.message == 'Missing semicolon' then
+					putFixedMessage "  #{err}"
+					fidx = err.char-1
+					if charIsQuote(jscode[idx], fidx) then
+						fidx += 1
+					elsif charIsQuote(jscode[idx], fidx+1) then
+						fidx += 2
+					end
+
+					if err.char < jscode[idx].length then
+						jscode[idx].insert(fidx, ';')
+					else
+						jscode[idx] << ';'
+					end
+					autoFixCount += 1
+				elsif false and err.message =~ /^Missing space after '([^']+)'/ then
+					putFixedMessage "  #{err}"
+					text = $1
+					re = createWordMatchRe(text)
+					fidx = jscode[idx].rindex(re, err.char)
+					if fidx != nil then
+						lastidx = fidx + text.length
+						if charIsQuote(jscode[idx], lastidx) then
+							lastidx += 1
+						end
+						jscode[idx].insert(lastidx, ' ')
+					else
+						STDERR.puts "  Oops, Can't find #{$1}. Program error!"
+					end
+					autoFixCount += 1
+				elsif err.message =~ /^Use '!==' to compare/  or 
+					err.message == "Expected '!==' and instead saw '!='" then
+					line = jscode[idx]
+					fidx = line.rindex(/!=[^=]/, err.char)
+					if fidx != nil then
+						putFixedMessage "  #{err}"
+						jscode[idx] = line.insert(fidx+1, '=')
+						autoFixCount += 1
+					else
+						STDERR.puts "  Oops, Can't find !=. Program error!"
+					end
+				elsif err.message =~ /^Use '===' to compare/ or 
+					err.message == "Expected '===' and instead saw '=='" then
+					line = jscode[idx]
+					fidx = line.rindex(/==[^=]/, err.char)
+					if fidx != nil then
+						putFixedMessage "  #{err}"
+						jscode[idx] = line.insert(fidx+1, '=')
+						autoFixCount += 1
+					else
+						STDERR.puts "  Oops, Can't find ==. Program error!"
+					end
+				elsif err.message =~ /\[['"]([^']+)['"]\] is better written in dot notation/
+					re = Regexp.new "\\[\\s*['\"]#{$1}['\"]\\s*\\]"
+					jscode[idx].sub!(re, '.' + $1)
+					autoFixCount += 1
+				else
+					putNotFixedMessage "  Can't fix #{err}"
+				end
+			end
+
+			if autoFixCount > 0 then
+				f = File.open(file, 'w+')
+				jscode.each do |line|
+					f.puts line
+				end
+				f.close
+			end
+
+			$totalFixCount += autoFixCount
+
+			puts "  Auto-fixed #{autoFixCount} out of #{errors.length} errors (#{autoFixCount * 100 / errors.length}%)."
+		else
+			errors.each do |err|
+				putNotFixedMessage("  #{err}") if not ignoreError(err)
+			end
+			puts  "  Had #{errors.length} errors"
+		end
+	else
+	end
+
+	$totalErrorCount += errors.length
+end
+
+def parseFilesInDir(dir)
+	excludes = [".svn"]
+	Find.find(dir) do |path|
+		if FileTest.directory?(path)
+			if excludes.include?(File.basename(path)) then
+				Find.prune       # Don't look any further into this directory.
+			else
+				next
+			end
+		else
+			if path =~ /.*\/([^\/]+)\.js$/ then
+				parseFile(path)
+			end
+		end
+	end
+end
+
+#parseFile('app/assistants/celebsView-assistant.js')
+#exit
+parseFilesInDir('.')
+
+putFixedMessage "Total number of errors: #{$totalErrorCount}"
+puts "Automatically fixed: #{$totalFixCount} (#{$totalFixCount * 100 / $totalErrorCount}%)"
