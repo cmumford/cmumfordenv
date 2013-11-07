@@ -22,6 +22,7 @@
 [core]
 	autocrlf = false
 	filemode = false
+	deltaBaseCacheLimit = 1G
 [rerere]
 	enabled = 1
 [mergetool "mymeld"]
