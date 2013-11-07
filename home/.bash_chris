@@ -1,3 +1,5 @@
+# ~/.bashrc
+
 if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
     export NUMCPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 else
