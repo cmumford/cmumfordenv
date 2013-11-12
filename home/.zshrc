@@ -183,8 +183,10 @@ zstyle '*' single-ignored show
 bindkey -M emacs '^[[1;5C' forward-word
 bindkey -M emacs '^[[1;5D' backward-word
 
+if [ -f $HOME/.shell_common ]; then
+    . $HOME/.shell_common
+fi
 
-source $HOME/.bash_chris
 # The following lines were added by compinstall
 
 zstyle ':completion:*' completer _complete _ignored
