@@ -187,6 +187,10 @@ if [ -f $HOME/.shell_common ]; then
     . $HOME/.shell_common
 fi
 
+if [ -f $HOME/.shell_work ]; then
+    . $HOME/.shell_work
+fi
+
 # The following lines were added by compinstall
 
 zstyle ':completion:*' completer _complete _ignored
