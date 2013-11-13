@@ -75,6 +75,14 @@ map <silent> <F5> :exec ":e ".(expand("%") =~ ".h$"
 
 
 set nocp
+" https://github.com/gmarik/vundle#readme
+filetype off  " Required!
+set rtp+=~/.vim/bundle/vundle
+call vundle#rc()
+" Self-manage Vundle
+Bundle 'gmarik/vundle'
+Bundle 'scrooloose/syntastic'
+
 filetype plugin indent on
 
 " Required by Project plugin
@@ -195,3 +203,5 @@ au InsertLeave * match ExtraWhitespace /\s\+$/
 " A vertical line at 80 columns
 au FileType python,c,cpp set colorcolumn=80
 au BufWinLeave * set colorcolumn=0
+
+source ~/.vimrc_work
