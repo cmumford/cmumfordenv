@@ -27,8 +27,8 @@ set autowrite
 
 " Default window width and height
 if has("gui_running")
-	" Text width
-	set tw=132
+    " Text width
+    set tw=132
     set columns=120
     set lines=56
 endif
@@ -39,7 +39,7 @@ set number
 set nowrap
 
 if has("gui_running")
-	colorscheme wombat
+    colorscheme wombat
 "    set noantialias
 endif
 
@@ -82,8 +82,8 @@ set nocompatible
 
 let g:load_doxygen_syntax=1
 
-set exrc			" enable per-directory .vimrc files
-set secure			" disable unsafe commands in local .vimrc files
+set exrc    " enable per-directory .vimrc files
+set secure  " disable unsafe commands in local .vimrc files
 
 " Omnicomplete
 autocmd FileType python set omnifunc=pythoncomplete#Complete
