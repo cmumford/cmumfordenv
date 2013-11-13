@@ -49,7 +49,7 @@ set smartindent
 " Search for tags file recursively in parent directories
 set tags+=tags;/
 
-set tags+=$HOME/.vim/tags/python.ctags
+set tags+=~/.vim/tags/python.ctags
 
 
 " See http://www.8t8.us/vim/vim.html
