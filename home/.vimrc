@@ -140,7 +140,7 @@ au BufNewFile,BufRead Makefile.v8.inc set filetype=make
   execute "cd " . expand(dir)
   pwd
 :endfunction
-:command -nargs=1 Go call g:gotoDir("<args>")
+:command -nargs=1 G call g:gotoDir("<args>")
 
 " For tab completion at bottom of screen (like for tabs)
 set wildmenu
