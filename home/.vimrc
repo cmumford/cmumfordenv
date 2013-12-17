@@ -136,7 +136,7 @@ au BufNewFile,BufRead Makefile.v8.inc set filetype=make
 
 " custom commands to easily navigate around the source code
 :function g:gotoDir(shortcut)
-  let dir = system("perl ${HOME}/bin/go.pl " . a:shortcut)
+  let dir = system("perl ${HOME}/bin/go.py " . a:shortcut)
   execute "cd " . expand(dir)
   pwd
 :endfunction
