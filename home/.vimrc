@@ -204,4 +204,6 @@ au InsertLeave * match ExtraWhitespace /\s\+$/
 au FileType python,c,cpp set colorcolumn=80
 au BufWinLeave * set colorcolumn=0
 
+set bg=dark
+
 source ~/.vimrc_work
