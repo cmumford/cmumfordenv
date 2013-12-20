@@ -3,5 +3,7 @@
 set -u  # Exit if undefined variable used
 set -e  # Exit if child process returns error
 
-ctags-exuberant --extra=+f --languages="+C++,+C,+Java,+JavaScript,+HTML,+Perl,+Python,+Ruby" --recurse=yes
-
+ctags-exuberant --extra=+f \
+  --languages="+C++,+C,+Java,-JavaScript,+Perl,+Python,+Ruby" \
+  --recurse=yes \
+  --links=no
