@@ -113,3 +113,11 @@ fi
 
 # Make the shell case insensitive
 shopt -s nocaseglob
+
+if [ -f $HOME/.shell_common ]; then
+    . $HOME/.shell_common
+fi
+
+if [ -f $HOME/.shell_work ]; then
+    . $HOME/.shell_work
+fi
