@@ -49,7 +49,11 @@ set smartindent
 " Search for tags file recursively in parent directories
 set tags+=tags;/
 
+if has("win32") || has("win16")
+set tags+=~/vimfiles/tags/python.ctags
+else
 set tags+=~/.vim/tags/python.ctags
+endif
 
 
 " See http://www.8t8.us/vim/vim.html
@@ -76,8 +80,14 @@ map <silent> <F5> :exec ":e ".(expand("%") =~ ".h$"
 
 set nocp
 " https://github.com/gmarik/vundle#readme
+" git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+" For Windows see https://github.com/gmarik/vundle/wiki/Vundle-for-Windows
 filetype off  " Required!
-set rtp+=~/.vim/bundle/vundle
+if has("win32") || has("win16")
+    set rtp+=~/vimfiles/bundle/vundle
+else
+    set rtp+=~/.vim/bundle/vundle
+endif
 call vundle#rc()
 " Self-manage Vundle
 Bundle 'gmarik/vundle'
@@ -193,6 +203,10 @@ if has("gui_macvim")
   if &background == "dark"
     set transparency=8
   endif
+endif
+
+if has("gui_win32") || has("gui_win16")
+  set guifont=Consolas:h11
 endif
 
 " Match whitespace except when typing at end of line
