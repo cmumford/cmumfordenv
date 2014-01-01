@@ -82,6 +82,7 @@ call vundle#rc()
 " Self-manage Vundle
 Bundle 'gmarik/vundle'
 Bundle 'scrooloose/syntastic'
+Bundle 'tpope/vim-fugitive'
 
 filetype plugin indent on
 
@@ -205,5 +206,11 @@ au FileType python,c,cpp set colorcolumn=80
 au BufWinLeave * set colorcolumn=0
 
 set bg=dark
+
+" fugitive-vim stuff
+" Auto-clean fugitive buffers
+autocmd BufReadPost fugitive://* set bufhidden=delete
+" Show current branch in the status line
+set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 source ~/.vimrc_work
