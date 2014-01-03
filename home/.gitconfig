@@ -15,6 +15,9 @@
 	renameLimit = 999999
 [alias]
 	co = checkout
+    l = log --graph --decorate --pretty=oneline --abbrev-commit
+    ll = log --graph --decorate --pretty=medium --abbrev-commit
+    dd = diff --no-ext-diff --word-diff
 [branch]
 	autosetuprebase = always
 [push]
