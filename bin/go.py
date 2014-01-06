@@ -13,8 +13,9 @@ class Go:
           self.shortcuts[items[0].strip()] = items[1].strip()
 
   def do_print(self):
+    # TODO: Don't hard-code the string length
     for key in sorted(self.shortcuts):
-      print "%s -> %s" % (key, self.shortcuts[key])
+      print >> sys.stderr, "%8s -> %s" % (key, self.shortcuts[key])
 
   def getval(self, val):
     if val in self.shortcuts:
@@ -30,6 +31,7 @@ def main(argv):
     print "%s" % g.getval(argv[1])
   else:
     g.do_print()
+    print '.'
 
 if __name__ == '__main__':
   main(sys.argv)
