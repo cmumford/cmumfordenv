@@ -92,6 +92,7 @@ call vundle#rc()
 " Self-manage Vundle
 Bundle 'gmarik/vundle'
 Bundle 'scrooloose/syntastic'
+Bundle 'tpope/vim-unimpaired'
 Bundle 'tpope/vim-fugitive'
 
 filetype plugin indent on
