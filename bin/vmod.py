@@ -105,7 +105,7 @@ class App:
   def Run(self):
     if self.options.commit:
       files = App.FilterExisting(Git.GetModifiedFilesInCommit(self.options.commit,
-	                                                      self.options.print_cmds))
+                                                       self.options.print_cmds))
     else:
       files = App.FilterExisting(Git.GetModifiedFiles(self.options.print_cmds))
     if len(files) == 0:
