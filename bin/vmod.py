@@ -2,6 +2,7 @@
 
 import argparse
 import os
+import platform
 import re
 import subprocess
 
@@ -55,13 +56,19 @@ class Options(object):
 
 class Git:
   @staticmethod
+  def UseShell():
+    # TODO: Figure out why Windows will only with with shell=True, and Linux
+    # will only work with shell=False.
+    return platform.system() == 'Windows'
+
+  @staticmethod
   def GetModifiedFiles(print_cmds):
     cmd = ['git', '--no-pager', 'status', '--porcelain']
     files = []
     p = re.compile(r'^\s*M\s+(.*)$')
     if print_cmds:
       print ' '.join(cmd)
-    for line in subprocess.check_output(cmd, shell=True).splitlines():
+    for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       m = p.match(line)
       if m:
         files.append(m.group(1))
@@ -75,7 +82,7 @@ class Git:
     line_no = 0
     if print_cmds:
       print ' '.join(cmd)
-    for line in subprocess.check_output(cmd, shell=True).splitlines():
+    for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       line_no += 1
       if line_no == 1:
         continue
