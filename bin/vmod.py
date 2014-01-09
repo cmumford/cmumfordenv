@@ -14,6 +14,7 @@ class Options(object):
     self.max_files_to_edit = 30
     self.commit = None
     self.gui_editor = False
+    self.branch = False
 
   def parse(self):
     desc = """
@@ -24,6 +25,8 @@ class Options(object):
                         help='Be verbose, can be used multiple times')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-b', '--branch', action='store_true',
+                        help="Open files modified by any commit in this branch")
     parser.add_argument('-g', '--gui', action='store_true',
                         default=self.gui_editor,
                         help="Use GUI editor. default:%s" % self.gui_editor)
@@ -40,6 +43,8 @@ class Options(object):
       self.print_cmds = True
     if args.gui:
       self.gui_editor = args.gui
+    if args.branch:
+      self.branch = args.branch
 
   def GetEditorPath(self):
     # This assumes that VIM's executables are in the path.
@@ -54,6 +59,12 @@ class Options(object):
     options.parse()
     return options
 
+class BranchInfo(object):
+  def __init__(self, name, parent, isCurrent):
+    self.name = name
+    self.parent = parent
+    self.isCurrent = isCurrent
+
 class Git:
   @staticmethod
   def UseShell():
@@ -62,10 +73,33 @@ class Git:
     return platform.system() == 'Windows'
 
   @staticmethod
+  def GetBranches():
+    branches = {}
+    cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
+    for line in subprocess.check_output(cmd).splitlines():
+      isCurrent = line.startswith('*')
+      if isCurrent:
+        line = line.lstrip('*')
+      line = line.strip()
+      m = re.search(r'^(\S+)\s+(\S+)\s+\[([^\]]+)\].*$', line)
+      if m:
+        branchName = m.group(1)
+        items = m.group(3).split(':')
+        parentBranchName = items[0]
+        if parentBranchName not in branches:
+          branches[parentBranchName] = BranchInfo(parentBranchName, None, isCurrent)
+        if branchName in branches:
+          info = branches[branchName]
+          info.parent = parentBranchName
+        else:
+          branches[branchName] = BranchInfo(branchName, parentBranchName, isCurrent)
+    return branches
+
+  @staticmethod
   def GetModifiedFiles(print_cmds):
     cmd = ['git', '--no-pager', 'status', '--porcelain']
     files = []
-    p = re.compile(r'^\s*M\s+(.*)$')
+    p = re.compile(r'^[\sA]M\s+(.*)$')
     if print_cmds:
       print ' '.join(cmd)
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
@@ -90,6 +124,38 @@ class Git:
       files.append(line)
     return files
 
+  @staticmethod
+  def GetModifiedFilesInBranch(branchName, parentBranchName, print_cmds):
+    assert(parentBranchName)
+    cmd = ['git', '--no-pager', 'log', '--name-only', '--pretty=oneline',
+           branchName, '--not', parentBranchName]
+    files = set()
+    if print_cmds:
+      print ' '.join(cmd)
+    maxCommits = 30
+    commitCount = 0
+    commit_re = re.compile(r'^[0-9a-f]{40}\s.*$')
+    for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
+      line.strip()
+      if commit_re.match(line):
+        commitCount += 1
+        if commitCount >= maxCommits:
+          break
+      else:
+        files.add(line)
+    return files
+
+  @staticmethod
+  def GetModifiedFilesInCurrentBranch(print_cmds):
+    branches = Git.GetBranches()
+    for branchName in branches:
+      branch = branches[branchName]
+      if branch.isCurrent:
+        return Git.GetModifiedFilesInBranch(branch.name,
+                                            branch.parent,
+                                            print_cmds)
+    return set()
+
 class App:
   def __init__(self, options):
     self.options = options
@@ -104,19 +170,25 @@ class App:
 
   def Run(self):
     if self.options.commit:
-      files = App.FilterExisting(Git.GetModifiedFilesInCommit(self.options.commit,
-                                                       self.options.print_cmds))
+      files = Git.GetModifiedFilesInCommit(self.options.commit,
+                                           self.options.print_cmds)
+    elif self.options.branch:
+      files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds)
     else:
-      files = App.FilterExisting(Git.GetModifiedFiles(self.options.print_cmds))
+      files = Git.GetModifiedFiles(self.options.print_cmds)
+      if len(files) == 0:
+        files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds)
+
+    files = App.FilterExisting(files)
     if len(files) == 0:
       print "No modified files to open"
       return
     if len(files) > self.options.max_files_to_edit:
       print "You have %d files, but will only edit %d of them" % \
           (len(files), self.options.max_files_to_edit)
-      files=files[:self.options.max_files_to_edit]
+      files = files[:self.options.max_files_to_edit]
     cmd = [self.options.GetEditorPath()]
-    cmd.extend(files)
+    cmd.extend(sorted(files))
     if self.options.print_cmds:
       print ' '.join(cmd)
     if not self.options.noop:
