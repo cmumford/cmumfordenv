@@ -1,0 +1,167 @@
+{
+  "targets": [
+    {
+      "name": "chrome",
+      "title": "The Chromium web browser"
+    },
+    {
+      "name": "all",
+      "title": "All build targets"
+    },
+    {
+      "name": "all_webkit",
+      "title": "All Blink targets"
+    }
+  ],
+  "executables": [
+    {
+      "name": "devchrome",
+      "title": "Chromium with user-data-dir",
+      "target": "chrome",
+      "command": [
+        "out/${Build_type}/chrome",
+        "--user-data-dir=${HOME}/.chrome_dev"
+      ]
+    },
+    {
+      "name": "smoothness",
+      "title": "Smoothness test app",
+      "target": "chrome",
+      "command": [
+        "tools/perf/run_measurement",
+        "--browser=${build_type}",
+        "smoothness"
+      ]
+    },
+    {
+      "name": "indexeddb_perf",
+      "title": "IndexedDB Telemetry based performance tests",
+      "target": "chrome",
+      "command": [
+        "tools/perf/run_measurement",
+        "--browser=${build_type}",
+        "indexeddb_perf",
+        "indexed_db"
+      ]
+    },
+    {
+      "names": ["env_chromium_unittests", "performance_ui_tests",
+              "webkit_unit_tests", "content_unittests", "unit_tests",
+              "content_browsertests", "browser_tests"],
+      "type": "gtest",
+      "command": [
+        "python",
+        "testing/xvfb.py",
+        "out/${Build_type}",
+        "out/${Build_type}/${executable_name}"
+      ]
+    },
+    {
+      "name": "webkit-layout",
+      "title": "The Blink layout tests",
+      "target": "all_webkit",
+      "command": [
+        "third_party/WebKit/Tools/Scripts/run-webkit-tests",
+        "--no-show-results",
+        "--${build_type}",
+        "--nocheck-sys-deps",
+        "--clobber-old-results",
+        "--no-retry-failures",
+        "--no-new-test-results",
+        "--fully-parallel"
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "name": "smooth25",
+      "title": "Page smoothness tests on the top 25 sites",
+      "executable": "smoothness",
+      "args": [
+        "tools/perf/page_sets/top_25.json"
+      ]
+    },
+    {
+      "name": "idb_performance_ui_tests",
+      "title": "The IndexedDB tests from performance_ui_tests",
+      "executable": "performance_ui_tests",
+      "args": [
+        "--gtest_filter='IndexedDBTest.Perf'"
+      ]
+    },
+    {
+      "name": "env_chromium_unittests",
+      "title": "ChromiumEnv unit tests"
+    },
+    {
+      "name": "idb_webkit_unit_tests",
+      "title": "The IndexedDB tests from webkit_unit_tests",
+      "executable": "webkit_unit_tests",
+      "args": [
+        "--gtest_filter=':*IDB*:'"
+      ]
+    },
+    {
+      "name": "idb_content_unittests",
+      "title": "The IndexedDB tests from content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:*LevelDB*:*IDB*:'"
+      ]
+    },
+    {
+      "name": "idb_unit_tests",
+      "title": "The IndexedDB tests from unit_tests",
+      "executable": "unit_tests",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:ExtensionServiceTest.Clear*Data:'"
+      ]
+    },
+    {
+      "name": "idb_content_browsertests",
+      "title": "The IndexedDB tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:'"
+      ]
+    },
+    {
+      "name": "idb_browser_tests",
+      "title": "The IndexedDB tests from browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:BrowserActionApiTest.IncognitoBasic:BrowsingDataIndexedDBHelperTest:'"
+      ]
+    },
+    {
+      "name": "idb_layout_tests",
+      "title": "The IndexedDB Blink layout tests",
+      "executable": "webkit-layout",
+      "args": [
+        "storage/indexeddb"
+      ]
+    }
+  ],
+  "collections": [
+    {
+      "name": "unit-idb",
+      "title": "Run all IndexedDB unit tests",
+      "runs": ["env_chromium_unittests", "idb_webkit_unit_tests",
+               "idb_content_unittests", "idb_unit_tests",
+               "idb_content_browsertests", "idb_browser_tests"]
+    },
+    {
+      "name": "unit-all",
+      "title": "Run *all* unit tests",
+      "executables": ["env_chromium_unittests", "webkit_unit_tests",
+               "content_unittests", "unit_tests",
+               "content_browsertests", "browser_tests"]
+    },
+    {
+      "name": "perf-idb",
+      "title": "Run all IdexedDB performance tests",
+      "executables": ["performance_ui_tests"]
+    }
+  ],
+  "default": "chrome"
+}
