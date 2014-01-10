@@ -3,4 +3,4 @@ setlocal
 :: This is required with cygwin only.
 PATH=%~dp0;%PATH%
 set PYTHONDONTWRITEBYTECODE=1
-call python "%~dp0rebaseall.py" %*
+call python "%~dp0git-rebaseall.py" %*
