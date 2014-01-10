@@ -146,6 +146,11 @@ class Collections(object):
   def MarkTargetBuilt(self, target_name, build_type):
     self.target_names[target_name].MarkDoneFor(build_type)
 
+  def CreateTarget(self, target_name):
+    target = BuildTarget(target_name)
+    self.target_names[target_name] = target
+    return target
+
   def ParseExecutable(self, exe_obj, exe_name):
     if 'target' in exe_obj:
       target_name = exe_obj['target']
@@ -154,8 +159,7 @@ class Collections(object):
     if target_name in self.target_names:
       target = self.target_names[target_name]
     else:
-      target = BuildTarget(target_name)
-      self.target_names[target_name] = target
+      target = self.CreateTarget(target_name)
     command = Collections.ParseExeOptions(exe_obj, exe_name)
     executable = Executable(exe_name, target, command, self.options)
     if 'type' in exe_obj:
@@ -232,7 +236,7 @@ class Collections(object):
     with open(file_path) as f:
       data = json.load(f)
       for target_obj in data['targets']:
-        target = BuildTarget(target_obj['name'])
+        target = self.CreateTarget(target_obj['name'])
         if 'title' in target_obj:
           target.title = target_obj['title']
         self.target_names[target_obj['name']] = target
@@ -318,9 +322,7 @@ class Options(object):
     return list(targets)
 
   def Parse(self):
-    desc = """
-    A script to compile/test Chromium.
-    """
+    desc = "A script to compile/test Chromium."
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=RawTextHelpFormatter,
                                      epilog='\n'.join(self.collections.GetItemNames()))
@@ -336,9 +338,6 @@ class Options(object):
                         help='Delete out dir before building')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
-    parser.add_argument('-i', '--item', action='append',
-                        help="The item(s) to build/run (default: %s)" %
-                        self.collections.default)
     parser.add_argument('-a', '--item-arg', action='append',
                         help="Extra args to pass when running item")
     group = parser.add_mutually_exclusive_group()
@@ -346,6 +345,12 @@ class Options(object):
                         help="Use the clang compiler (default %s)" % self.use_clang)
     group.add_argument('--no-use-clang', action='store_true',
                         help="Use the clang compiler (default %s)" % (not self.use_clang))
+    parser.add_argument('targets', metavar='TARGET', type=str, nargs='*',
+                        help="""Target(s) to build/run. The target name can be one of the
+predefined target/executable/run/collection items defined in
+collections.json (see below). If not then it is assumed to be
+a target defined in the gyp files.""")
+
     args = parser.parse_args()
     self.debug = args.debug
     self.release = args.release
@@ -361,15 +366,12 @@ class Options(object):
     if args.noop:
       self.noop = True
       self.print_cmds = True
-    if args.item:
-      for item_name in args.item:
-        if self.collections.GetItemName(item_name) == None:
-          print >> sys.stderr, 'Unknown item name: "%s"' % item_name
-          print ''
-          for line in self.collections.GetItemNames():
-            print line
-          sys.exit(1)
-        self.active_items.append(item_name)
+    for target_name in args.targets:
+      if self.collections.GetItemName(target_name) == None:
+        # Not one of our predefined meta-targets (AKA items), so assume this is
+        # a real build target and create a definition for one in our system.
+        self.collections.CreateTarget(target_name)
+      self.active_items.append(target_name)
     if len(self.active_items) == 0:
       self.active_items.append(self.collections.default)
     if args.use_clang:
