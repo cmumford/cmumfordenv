@@ -454,6 +454,9 @@ class Builder:
       print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
       print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
       print "PATH: %s" % os.environ['PATH']
+      print "Using %s %s goma" %  ('clang' if self.options.use_clang else 'gcc',
+                                   'with' if self.options.use_goma else
+                                   'without')
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
