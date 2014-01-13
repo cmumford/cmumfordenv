@@ -18,10 +18,7 @@ if [ "$TERM" != "dumb" ]; then
 fi
 
 alias svndiff='svn diff --diff-cmd=$HOME/bin/svn-merge-meld'
-alias gitl='git log --graph --decorate --pretty=oneline --abbrev-commit'
-alias gitlog='git log --graph --decorate --pretty=medium --abbrev-commit'
 alias gitdiff='git diff --no-ext-diff'
-alias gitcommit='git diff --check && git commit'
 alias wgethtml='wget -E -H -k -K -p -nd -o logwget.txt'
 alias dos2unix="tr -d '\r'"
 alias mac2unix="tr '\r' '\n'"
