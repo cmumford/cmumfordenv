@@ -38,13 +38,18 @@ class BuildTarget(BuildTypeItem):
   def GetTargets(self):
     return [self]
 
+class Commands(object):
+  def __init__(self, args):
+    self.args = args
+    self.name = ''
+
 class Executable(BuildTypeItem):
-  def __init__(self, name, build_target, command, options):
+  def __init__(self, name, build_target, commands, options):
     super(Executable, self).__init__()
     self.name = name
     self.title = ''
     self.build_target = build_target
-    self.command = command
+    self.commands = commands
     self.options = options
     self.type = 'normal'
 
@@ -52,9 +57,21 @@ class Executable(BuildTypeItem):
     if self.options.print_cmds:
       print "$ %s" % ' '.join(cmd)
 
+  def GetCommandToRun(self):
+    if self.options.valgrind:
+      for cmd in self.commands:
+        if cmd.name == 'valgrind':
+          return cmd
+      print >> sys.stderr, "No Valgrind configuration for %s" % self.name
+      sys.exit(5)
+    elif len(self.commands) == 1:
+      return self.commands[0]
+    return self.commands[0]
+
   def Run(self, build_type, extra_args = None):
     bt_lowercase = build_type.lower()
-    cmd = copy.copy(self.command)
+    command = self.GetCommandToRun()
+    cmd = copy.copy(command.args)
     if extra_args:
       cmd.extend(extra_args)
     for idx in range(len(cmd)):
@@ -131,11 +148,21 @@ class Collections(object):
     return os.path.join(os.path.dirname(__file__), 'collections.json')
 
   @staticmethod
-  def ParseExeOptions(exe_obj, exe_name):
-    command = copy.copy(exe_obj['command'])
-    for idx in range(len(command)):
-      command[idx] = command[idx].replace('${executable_name}', exe_name)
-    return command
+  def ParseCommands(exe_obj, exe_name):
+    if 'commands' in exe_obj:
+      cmds = []
+      args = copy.copy(exe_obj['commands'])
+      for cmd in args:
+        new_cmd = Collections.ParseCommands(cmd, exe_name)
+        if 'name' in cmd:
+          new_cmd[0].name = cmd['name']
+        cmds.extend(new_cmd)
+      return cmds
+    else:
+      command = copy.copy(exe_obj['command'])
+      for idx in range(len(command)):
+        command[idx] = command[idx].replace('${executable_name}', exe_name)
+      return [Commands(command)]
 
   def GetTargets(self):
     targets = []
@@ -160,8 +187,8 @@ class Collections(object):
       target = self.target_names[target_name]
     else:
       target = self.CreateTarget(target_name)
-    command = Collections.ParseExeOptions(exe_obj, exe_name)
-    executable = Executable(exe_name, target, command, self.options)
+    commands = Collections.ParseCommands(exe_obj, exe_name)
+    executable = Executable(exe_name, target, commands, self.options)
     if 'type' in exe_obj:
       executable.type = exe_obj['type']
     if 'title' in exe_obj:
@@ -309,6 +336,7 @@ class Options(object):
       self.use_clang = False
     self.clobber = False
     self.active_items = []
+    self.valgrind = False
 
   def GetActiveTargets(self):
     targets = set()
@@ -338,8 +366,10 @@ class Options(object):
                         help='Delete out dir before building')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
-    parser.add_argument('-a', '--item-arg', action='append',
-                        help="Extra args to pass when running item")
+    parser.add_argument('-a', '--run-arg', action='append',
+                        help="Extra args to pass when *running* an executable.")
+    parser.add_argument('-V', '--valgrind', action='store_true',
+                        help="Build for Valgrind (memcheck) (default: %s)" % self.valgrind)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--use-clang', action='store_true',
                         help="Use the clang compiler (default %s)" % self.use_clang)
@@ -381,8 +411,10 @@ a target defined in the gyp files.""")
     if self.use_clang and not os.path.exists(self.llvm_path):
       print >> sys.stderr, "Can't use clang (llvm path !exists)"
       self.use_clang = False
+    if args.valgrind:
+      self.valgrind = True
 
-    self.run_args = args.item_arg
+    self.run_args = args.run_arg
 
 class Builder:
   def __init__(self, options):
@@ -408,6 +440,8 @@ class Builder:
       assert os.path.exists(self.options.llvm_path)
       Builder.PrependToPath(self.options.llvm_path)
       gyp_defines.add('clang=1')
+    if self.options.valgrind:
+      gyp_defines.add('build_for_tool=memcheck')
     # Must be prepended to PATH last
     if self.options.use_goma:
       Builder.PrependToPath(self.options.goma_path)

@@ -49,11 +49,25 @@
               "webkit_unit_tests", "content_unittests", "unit_tests",
               "content_browsertests", "browser_tests"],
       "type": "gtest",
-      "command": [
-        "python",
-        "testing/xvfb.py",
-        "out/${Build_type}",
-        "out/${Build_type}/${executable_name}"
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "testing/xvfb.py",
+            "out/${Build_type}",
+            "out/${Build_type}/${executable_name}"
+          ]
+        },
+        {
+          "name": "valgrind",
+          "command": [
+            "tools/valgrind/chrome_tests.sh",
+            "--build-dir=out/${Build_type}",
+            "-t",
+            "${executable_name}"
+          ]
+        }
       ]
     },
     {
