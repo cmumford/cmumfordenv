@@ -5,6 +5,7 @@ import os
 import platform
 import re
 import subprocess
+import time
 
 class Options(object):
   def __init__(self):
@@ -161,10 +162,13 @@ class App:
   @staticmethod
   def FilterExisting(files):
     existing_files = []
+    filtered_files = []
     for f in files:
       if os.path.exists(f):
         existing_files.append(f)
-    return existing_files
+      else:
+        filtered_files.append(f)
+    return (existing_files, filtered_files)
 
   def Run(self):
     if self.options.commit:
@@ -177,10 +181,14 @@ class App:
       if len(files) == 0:
         files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds)
 
-    files = App.FilterExisting(files)
+    (files, filtered) = App.FilterExisting(files)
     if len(files) == 0:
       print "No modified files to open"
       return
+    if len(filtered):
+      for f in filtered:
+        print "Doesn't exist: %s" % f
+      time.sleep(2);  # Give user a chance to read message.
     if len(files) > self.options.max_files_to_edit:
       print "You have %d files, but will only edit %d of them" % \
           (len(files), self.options.max_files_to_edit)
