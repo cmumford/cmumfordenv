@@ -125,10 +125,10 @@ class Git:
     return files
 
   @staticmethod
-  def GetModifiedFilesInBranch(branchName, parentBranchName, print_cmds):
-    assert(parentBranchName)
+  def GetModifiedFilesInBranch(branch, print_cmds):
+    assert(branch.parent)
     cmd = ['git', '--no-pager', 'log', '--name-only', '--pretty=oneline',
-           branchName, '--not', parentBranchName]
+           branch.name, '--not', branch.parent]
     files = set()
     if print_cmds:
       print ' '.join(cmd)
@@ -151,9 +151,7 @@ class Git:
     for branchName in branches:
       branch = branches[branchName]
       if branch.isCurrent:
-        return Git.GetModifiedFilesInBranch(branch.name,
-                                            branch.parent,
-                                            print_cmds)
+        return Git.GetModifiedFilesInBranch(branch, print_cmds)
     return set()
 
 class App:
