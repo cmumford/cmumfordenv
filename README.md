@@ -5,7 +5,7 @@ This repository contains the standard parts of my home user environment. I go ba
 
 Configuration Files
 -------------------------
-These are my configuration files (.zsh, .bashrc, .vimrc, etc.)
+These are my configuration files (.zshrc, .bashrc, .vimrc, etc.)
 
 I've tried to keep the shell configurations such that I could use either [Bash](http://www.gnu.org/software/bash/bash.html) or [Zsh](http://www.zsh.org/) interchangeably.
 I'm not a super shell stud so don't trust my configuration too much, but it seems to work for me.
