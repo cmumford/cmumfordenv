@@ -3,6 +3,10 @@ cmumfordenv
 
 This repository contains the standard parts of my home user environment. I go back and forth between many computers, at home and work, and use Linux/Mac/Windows. This project helps me keep all of my machines in sync, and to have tools that (hopefully) work on all platforms for my common tasks.
 
+I've tried to keep the shell configurations such that I could use either bash or Zsh interchangeably.
+I'm not a super shell stud so don't trust my configuration too much, but it seems to work for me.
+I'm mostly a Zsh guy so the Bash configuration may have bit rotted somewhat.
+
 My main utilities are
 -------------------------
 <dl>
@@ -13,5 +17,7 @@ My main utilities are
   <dt>git-rebaseall</dt>
   <dd>Rebase all Git branches onto their parent.</dd>
 </dl>
+
+There are other small utilities there, but nothing of significance.
 
 That's about it. Nothing super cool.
