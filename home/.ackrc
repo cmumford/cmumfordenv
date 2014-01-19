@@ -1,0 +1,2 @@
+--type-set=qtproj=.pri,.pro
+--type-set=gyp=.gypi,.gyp
