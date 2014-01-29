@@ -88,10 +88,11 @@ class Git:
         items = m.group(3).split(':')
         parentBranchName = items[0]
         if parentBranchName not in branches:
-          branches[parentBranchName] = BranchInfo(parentBranchName, None, isCurrent)
+          branches[parentBranchName] = BranchInfo(parentBranchName, None, False)
         if branchName in branches:
           info = branches[branchName]
           info.parent = parentBranchName
+          info.isCurrent = isCurrent
         else:
           branches[branchName] = BranchInfo(branchName, parentBranchName, isCurrent)
     return branches
