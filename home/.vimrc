@@ -72,11 +72,7 @@ let Tlist_Enable_Fold_Column = 0  " no fold column (only showing one file)
 let tlist_sql_settings = 'sql;P:package;t:table'
 let tlist_ant_settings = 'ant;p:Project;r:Property;t:Target'
 
-map <silent> <F5> :exec ":e ".(expand("%") =~ ".h$"
-        \       ? glob(substitute(expand("%"), ".h$", ".cc", ""))
-        \       : substitute(expand("%"), "\\.cc$", ".h", ""))<CR>
-
-
+nmap <silent> <F5> :FSHere<cr>
 
 set nocp
 " https://github.com/gmarik/vundle#readme
@@ -94,6 +90,7 @@ Bundle 'gmarik/vundle'
 Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-unimpaired'
 Bundle 'tpope/vim-fugitive'
+Bundle 'FSwitch'
 
 filetype plugin indent on
 
@@ -236,5 +233,11 @@ set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
   exec ":e ".expand(path)
 :endfunction
 :command -nargs=1 NN call g:editChromeFile("<args>")
+
+" Used by FSwitch - probably a better way to do this.
+au! BufEnter *.cpp let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
+au! BufEnter *.c let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
+au! BufEnter *.cc let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
+au! BufEnter *.h let b:fswitchdst = 'cc,cpp,c' | let b:fswitchlocs = '.'
 
 source ~/.vimrc_work
