@@ -74,9 +74,11 @@ class Git:
     return platform.system() == 'Windows'
 
   @staticmethod
-  def GetBranches():
+  def GetBranches(print_cmds):
     branches = {}
     cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
+    if print_cmds:
+      print ' '.join(cmd)
     for line in subprocess.check_output(cmd).splitlines():
       isCurrent = line.startswith('*')
       if isCurrent:
@@ -149,7 +151,7 @@ class Git:
 
   @staticmethod
   def GetModifiedFilesInCurrentBranch(print_cmds):
-    branches = Git.GetBranches()
+    branches = Git.GetBranches(print_cmds)
     for branchName in branches:
       branch = branches[branchName]
       if branch.isCurrent:
