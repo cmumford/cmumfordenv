@@ -8,6 +8,7 @@ import platform
 import shutil
 import subprocess
 import sys
+import time
 from argparse import RawTextHelpFormatter
 
 class bcolors:
@@ -543,15 +544,30 @@ class Builder:
           errors.extend(item.Run(build_type))
     return errors
 
+def FormatDur(seconds):
+  if seconds < 60:
+    return "%d sec" % seconds
+  if seconds < 3600:
+    minutes = seconds / 60
+    seconds -= minutes * 60
+    return "%02d:%02d" % (minutes, seconds)
+  hours = seconds / 3600
+  seconds -= hours * 3600
+  minutes = seconds / 60
+  seconds -= minutes * 60
+  return "%02d:%02d:%02d" % (hours, minutes, seconds)
+
 if __name__ == '__main__':
+  start = time.time()
   options = Options()
   options.Parse()
   builder = Builder(options)
   errors = builder.DoBuild()
+  runtime = time.time() - start
   if len(errors) == 0:
-    print "All tasks completed successfully"
+    print "All tasks completed successfully: %s" % FormatDur(runtime)
   else:
     for e in errors:
-      print >> sys.stderr, "%sFailed:%s %s" % \
-          (bcolors.FAIL, bcolors.ENDC, ' '.join(e.cmd))
+      print >> sys.stderr, "%sFailed:%s %s, %s" % \
+          (bcolors.FAIL, bcolors.ENDC, ' '.join(e.cmd), FormatDur(runtime))
     sys.exit(errors[0].returncode)
