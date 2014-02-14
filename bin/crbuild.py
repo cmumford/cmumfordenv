@@ -59,14 +59,23 @@ class Executable(BuildTypeItem):
       print "$ %s" % ' '.join(cmd)
 
   def GetCommandToRun(self):
+    config_name = None
     if self.options.valgrind:
-      for cmd in self.commands:
-        if cmd.name == 'valgrind':
+      config_name = 'valgrind'
+    elif self.options.debugger:
+      config_name = 'debug'
+
+    for cmd in self.commands:
+      if config_name:
+        if config_name == cmd.name:
           return cmd
-      print >> sys.stderr, "No Valgrind configuration for %s" % self.name
+      elif cmd.name == 'normal':
+        return cmd
+
+    if config_name:
+      print >> sys.stderr, "Couldn't find config %s for %s" % (config_name,
+                                                               self.name)
       sys.exit(5)
-    elif len(self.commands) == 1:
-      return self.commands[0]
     return self.commands[0]
 
   def Run(self, build_type, extra_args = None):
@@ -338,6 +347,7 @@ class Options(object):
     self.clobber = False
     self.active_items = []
     self.valgrind = False
+    self.debugger = False
 
   def GetActiveTargets(self):
     targets = set()
@@ -371,6 +381,8 @@ class Options(object):
                         help="Extra args to pass when *running* an executable.")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.valgrind)
+    parser.add_argument('-D', '--debugger', action='store_true',
+                        help="Run the debug executable profile (default: %s)" % self.debugger)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--use-clang', action='store_true',
                         help="Use the clang compiler (default %s)" % self.use_clang)
@@ -414,6 +426,8 @@ a target defined in the gyp files.""")
       self.use_clang = False
     if args.valgrind:
       self.valgrind = True
+    if args.debugger:
+      self.debugger = True
 
     self.run_args = args.run_arg
 

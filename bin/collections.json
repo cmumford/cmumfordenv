@@ -18,9 +18,24 @@
       "name": "devchrome",
       "title": "Chromium with user-data-dir",
       "target": "chrome",
-      "command": [
-        "out/${Build_type}/chrome",
-        "--user-data-dir=${HOME}/.chrome_dev"
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "out/${Build_type}/chrome",
+            "--user-data-dir=${HOME}/.chrome_dev"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
+            "out/${Build_type}/chrome",
+            "--no-sandbox",
+            "--user-data-dir=${HOME}/.chrome_dev"
+          ]
+        }
       ]
     },
     {
@@ -56,6 +71,14 @@
             "python",
             "testing/xvfb.py",
             "out/${Build_type}",
+            "out/${Build_type}/${executable_name}"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
             "out/${Build_type}/${executable_name}"
           ]
         },
