@@ -14,8 +14,12 @@ class Options(object):
     self.print_cmds = False
     self.max_files_to_edit = 30
     self.commit = None
-    self.gui_editor = False
+    self.gui_editor = Options.CanDoGUI()
     self.branch = False
+
+  @staticmethod
+  def CanDoGUI():
+    return 'DISPLAY' in os.environ
 
   def parse(self):
     desc = """
