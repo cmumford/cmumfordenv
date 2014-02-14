@@ -199,7 +199,7 @@ class App:
     cmd = [self.options.GetEditorPath()]
     cmd.extend(sorted(files))
     if self.options.print_cmds:
-      print ' '.join(cmd)
+      print '\n   '.join(cmd)
     if not self.options.noop:
       if self.options.gui_editor:
         subprocess.Popen(cmd)
