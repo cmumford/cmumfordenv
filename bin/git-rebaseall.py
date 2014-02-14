@@ -41,6 +41,7 @@ class Options(object):
 
 class BranchInfo(object):
   def __init__(self, name, parent):
+    assert name != parent
     self.name = name
     self.parent = parent
     self.rebased = False
@@ -69,14 +70,20 @@ class Git(object):
       line = line.strip()
       m = re.search(r'^(\S+)\s+(\S+)\s+\[([^\]]+)\].*$', line)
       if m:
+        print line
         branchName = m.group(1)
         items = m.group(3).split(':')
         parentBranchName = items[0]
+        if parentBranchName == branchName:
+          print >> sys.stderr, "Branch is recursive: %s" % branchName
+          branches[branchName] = BranchInfo(branchName, None)
+          continue
         if parentBranchName not in branches:
           branches[parentBranchName] = BranchInfo(parentBranchName,None)
         if branchName in branches:
           info = branches[branchName]
           info.parent = parentBranchName
+          assert parentBranchName != branchName
         else:
           branches[branchName] = BranchInfo(branchName, parentBranchName)
     return branches
