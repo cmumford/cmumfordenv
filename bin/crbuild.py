@@ -339,6 +339,7 @@ class Options(object):
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
     if not os.path.exists(self.goma_path):
       self.use_goma = False
+    self.root_dir = os.path.abspath('.')
     self.llvm_path = os.path.abspath(os.path.join('third_party', 'llvm-build',
                                                   'Release+Asserts', 'bin'))
     self.use_clang = True
@@ -348,6 +349,10 @@ class Options(object):
     self.active_items = []
     self.valgrind = False
     self.debugger = False
+    self.target_os = self.GetPlatform()
+    if self.target_os == 'android':
+      self.use_goma = False
+      self.use_clang = False
 
   def GetActiveTargets(self):
     targets = set()
@@ -359,6 +364,25 @@ class Options(object):
       for target in item.GetTargets():
         targets.add(target.name)
     return list(targets)
+
+  def GetGClientPath(self):
+    return os.path.abspath(os.path.join(self.root_dir, '..', '.gclient'))
+
+  def ReadGClient(self):
+    result = {}
+    print 'Reading from "%s"' % self.GetGClientPath()
+    with open(self.GetGClientPath(), 'r') as f:
+      exec(f.read(), {}, result)
+    return result
+
+  def GetPlatform(self):
+    config = self.ReadGClient()
+    if 'target_os' in config:
+      if len(config['target_os']) > 1:
+        print "Multiple target OS's: using the first"
+      return config['target_os'][0]
+    else:
+      return None
 
   def Parse(self):
     desc = "A script to compile/test Chromium."
