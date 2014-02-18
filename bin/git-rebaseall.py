@@ -11,6 +11,7 @@ class Options(object):
     self.verbosity = 0
     self.skip_branches = set()
     self.print_cmds = False
+    self.force = False
 
   def parse(self):
     desc = """
@@ -21,6 +22,8 @@ class Options(object):
                         help='Be verbose, can be used multiple times')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-f', '--force', action='store_true',
+                        help="Rebase anyway - even if not behind")
     parser.add_argument('-s', '--skip', action='append',
                         help="Branch name to skip")
     args = parser.parse_args()
@@ -29,6 +32,8 @@ class Options(object):
       self.print_cmds = True
     if args.noop:
       self.noop = True
+    if args.force:
+      self.force = True
     if args.skip:
       for branch_name in args.skip:
         self.skip_branches.add(branch_name)
@@ -45,6 +50,8 @@ class BranchInfo(object):
     self.name = name
     self.parent = parent
     self.rebased = False
+    self.ahead = None
+    self.behind = None
 
   def isLocalBranch(self):
     # TODO: Get origin names
@@ -61,6 +68,16 @@ class Git(object):
         return True
     return False
 
+  @staticmethod
+  def parseAheadBehind(info, items):
+    for item in items.split(','):
+      vals = item.strip().split()
+      if len(vals) == 2:
+        if vals[0] == 'ahead':
+          info.ahead = int(vals[1])
+        elif vals[0] == 'behind':
+          info.behind = int(vals[1])
+
   def getBranches(self):
     branches = {}
     cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
@@ -70,7 +87,6 @@ class Git(object):
       line = line.strip()
       m = re.search(r'^(\S+)\s+(\S+)\s+\[([^\]]+)\].*$', line)
       if m:
-        print line
         branchName = m.group(1)
         items = m.group(3).split(':')
         parentBranchName = items[0]
@@ -79,19 +95,35 @@ class Git(object):
           branches[branchName] = BranchInfo(branchName, None)
           continue
         if parentBranchName not in branches:
-          branches[parentBranchName] = BranchInfo(parentBranchName,None)
+          branches[parentBranchName] = BranchInfo(parentBranchName, None)
         if branchName in branches:
           info = branches[branchName]
           info.parent = parentBranchName
           assert parentBranchName != branchName
+          if len(items) > 1:
+            Git.parseAheadBehind(info, items[1])
         else:
-          branches[branchName] = BranchInfo(branchName, parentBranchName)
+          info = BranchInfo(branchName, parentBranchName)
+          if len(items) > 1:
+            Git.parseAheadBehind(info, items[1])
+          branches[branchName] = info
     return branches
 
 class Rebaser(object):
   def __init__(self, opts):
     self.options = opts
     self.git = Git()
+
+  @staticmethod
+  def isBranchOrParentBehind(branches, branch):
+    while branch:
+      if branch.behind:
+        return True
+      if branch.parent in branches:
+        branch = branches[branch.parent]
+      else:
+        break
+    return False
 
   def rebase(self, branches, branch):
     #print "%s < %s" % (branch.name, branch.parent)
@@ -106,6 +138,9 @@ class Rebaser(object):
       return
     if branch.name in self.options.skip_branches:
       print 'Skipping branch "%s"' % branch.name
+      return
+    if not self.options.force and not Rebaser.isBranchOrParentBehind(branches, branch):
+      print "Skipping rebase: %s is not behind %s" % (branch.name, branch.parent)
       return
     cmd = ['git', '--no-pager', 'checkout', branch.name]
     if self.options.print_cmds:
