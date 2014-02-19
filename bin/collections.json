@@ -33,6 +33,7 @@
             "--args",
             "out/${Build_type}/chrome",
             "--no-sandbox",
+            "--disable-hang-monitor",
             "--user-data-dir=${HOME}/.chrome_dev"
           ]
         }
