@@ -351,7 +351,12 @@ class Options(object):
     self.active_items = []
     self.valgrind = False
     self.debugger = False
-    self.target_os = self.GetPlatform()
+    try:
+      self.target_os = self.GetPlatform()
+    except IOError as e:
+      print >> sys.stderr, "ERROR: %s" % e.filename
+      print >> sys.stderr, "Are you running from the chrome/src dir?"
+      sys.exit(8)
     if self.target_os == 'android':
       self.use_goma = False
       self.use_clang = False
@@ -373,7 +378,6 @@ class Options(object):
 
   def ReadGClient(self):
     result = {}
-    print 'Reading from "%s"' % self.GetGClientPath()
     with open(self.GetGClientPath(), 'r') as f:
       exec(f.read(), {}, result)
     return result
