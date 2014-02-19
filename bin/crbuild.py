@@ -3,6 +3,7 @@
 import argparse
 import copy
 import json
+import multiprocessing
 import os
 import platform
 import shutil
@@ -87,6 +88,7 @@ class Executable(BuildTypeItem):
     for idx in range(len(cmd)):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
+      cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if options.run_args:
       cmd.extend(options.run_args)
@@ -353,6 +355,7 @@ class Options(object):
     if self.target_os == 'android':
       self.use_goma = False
       self.use_clang = False
+    self.jobs = multiprocessing.cpu_count()
 
   def GetActiveTargets(self):
     targets = set()

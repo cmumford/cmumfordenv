@@ -60,9 +60,7 @@
       ]
     },
     {
-      "names": ["env_chromium_unittests", "performance_ui_tests",
-              "webkit_unit_tests", "content_unittests", "unit_tests",
-              "content_browsertests", "browser_tests"],
+      "names": ["content_browsertests", "browser_tests"],
       "type": "gtest",
       "commands": [
         {
@@ -71,7 +69,76 @@
             "python",
             "testing/xvfb.py",
             "out/${Build_type}",
+            "out/${Build_type}/${executable_name}",
+            " --test-launcher-jobs=${jobs}"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
             "out/${Build_type}/${executable_name}"
+          ]
+        },
+        {
+          "name": "valgrind",
+          "command": [
+            "tools/valgrind/chrome_tests.sh",
+            "--build-dir=out/${Build_type}",
+            "-t",
+            "${executable_name}"
+          ]
+        }
+      ]
+    },
+    {
+      "names": ["base_unittests", "net_unittests", "unit_tests", "content_unittests"],
+      "type": "gtest",
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "testing/xvfb.py",
+            "out/${Build_type}",
+            "out/${Build_type}/${executable_name}",
+            "--brave-new-test-launcher",
+            "--test-launcher-jobs=${jobs}"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
+            "out/${Build_type}/${executable_name}"
+          ]
+        },
+        {
+          "name": "valgrind",
+          "command": [
+            "tools/valgrind/chrome_tests.sh",
+            "--build-dir=out/${Build_type}",
+            "-t",
+            "${executable_name}"
+          ]
+        }
+      ]
+    },
+    {
+      "names": ["env_chromium_unittests", "performance_ui_tests",
+              "webkit_unit_tests", "content_endurancetests"],
+      "type": "gtest",
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "testing/xvfb.py",
+            "out/${Build_type}",
+            "out/${Build_type}/${executable_name}",
+            " --test-launcher-jobs=${jobs}"
           ]
         },
         {
