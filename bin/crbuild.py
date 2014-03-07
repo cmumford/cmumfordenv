@@ -362,6 +362,13 @@ class Options(object):
       self.use_clang = False
     self.jobs = multiprocessing.cpu_count()
 
+  @staticmethod
+  def OutputColor():
+    if platform.system() == 'Windows':
+      return False
+    else:
+      return sys.stdout.isatty()
+
   def GetActiveTargets(self):
     targets = set()
     for item_name in self.active_items:
@@ -626,6 +633,12 @@ if __name__ == '__main__':
     print "All tasks completed successfully: %s" % FormatDur(runtime)
   else:
     for e in errors:
+      if Options.OutputColor():
+        beginError = bcolors.FAIL
+        endError = bcolors.ENDC
+      else:
+        beginError = ''
+        endError = ''
       print >> sys.stderr, "%sFailed:%s %s, %s" % \
-          (bcolors.FAIL, bcolors.ENDC, ' '.join(e.cmd), FormatDur(runtime))
+        (beginError, endError, ' '.join(e.cmd), FormatDur(runtime))
     sys.exit(errors[0].returncode)
