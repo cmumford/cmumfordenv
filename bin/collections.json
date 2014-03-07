@@ -44,6 +44,7 @@
       "title": "Smoothness test app",
       "target": "chrome",
       "command": [
+        "python",
         "tools/perf/run_measurement",
         "--browser=${build_type}",
         "smoothness"
@@ -54,6 +55,7 @@
       "title": "IndexedDB Telemetry based performance tests",
       "target": "chrome",
       "command": [
+        "python",
         "tools/perf/run_measurement",
         "--browser=${build_type}",
         "indexeddb_perf",
