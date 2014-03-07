@@ -408,6 +408,8 @@ class Options(object):
                         help='Delete out dir before building')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-A', '--asan', action='store_true',
+                        help="Do a SyzyASan build")
     parser.add_argument('-a', '--run-arg', action='append',
                         help="Extra args to pass when *running* an executable.")
     parser.add_argument('-V', '--valgrind', action='store_true',
@@ -459,6 +461,17 @@ a target defined in the gyp files.""")
       self.valgrind = True
     if args.debugger:
       self.debugger = True
+    if args.asan:
+      self.gyp_defines.add('chrome_multiple_dll=0')
+      self.gyp_defines.add('syzyasan=1')
+      if self.debug:
+        print >> sys.stderr, "Debug ASAN builds not supported"
+        sys.exit(1)
+      if platform.system() == 'Windows':
+        self.gyp_generators = 'ninja'
+        # According to docs SyzyASAN not yet compatible shared library.
+        self.gyp_defines.remove('component=shared_library')
+        self.gyp_defines.remove('disable_nacl=1')
 
     self.run_args = args.run_arg
 
