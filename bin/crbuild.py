@@ -61,7 +61,7 @@ class Executable(BuildTypeItem):
 
   def GetCommandToRun(self):
     config_name = None
-    if self.options.valgrind:
+    if self.options.gyp.valgrind:
       config_name = 'valgrind'
     elif self.options.debugger:
       config_name = 'debug'
@@ -337,37 +337,45 @@ class Collections(object):
           print 'Unknown default item "%s"' % self.default
           sys.exit(1)
 
+##
+# Values in this class affect how build_gyp generates makefiles.
+class GypValues(object):
+  def __init__(self):
+    self.gyp_generator_flags = set()
+    self.gyp_defines = set()
+    if platform.system() == 'Windows':
+      self.gyp_generators = 'ninja,msvs'
+    else:
+      self.gyp_generators = 'ninja'
+    self.use_clang = True
+    self.use_goma = True
+    self.valgrind = False
+
 class Options(object):
   def __init__(self):
     self.collections = Collections(self)
     self.collections.LoadDataFile()
+    self.gyp = GypValues()
     self.debug = False
     self.release = False
-    self.gyp_generator_flags = set()
-    self.gyp_defines = set(['disable_nacl=1'])
+    self.gyp.gyp_defines.add('disable_nacl=1')
     if platform.system() == 'Windows':
-      self.gyp_generators = 'ninja,msvs'
       # Should read in chromium.gyp_env and append to those values
-      self.gyp_defines.add('component=shared_library')
-    else:
-      self.gyp_generators = 'ninja'
+      self.gyp.gyp_defines.add('component=shared_library')
     self.verbosity = 0
     self.print_cmds = False
     self.noop = False
-    self.gyp = False
-    self.use_goma = True
+    self.regyp = False
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
     if not os.path.exists(self.goma_path):
-      self.use_goma = False
+      self.gyp.use_goma = False
     self.root_dir = os.path.abspath('.')
     self.llvm_path = os.path.abspath(os.path.join('third_party', 'llvm-build',
                                                   'Release+Asserts', 'bin'))
-    self.use_clang = True
     if not os.path.exists(self.llvm_path):
-      self.use_clang = False
+      self.gyp.use_clang = False
     self.clobber = False
     self.active_items = []
-    self.valgrind = False
     self.debugger = False
     self.out_dir = 'out'
     try:
@@ -377,8 +385,8 @@ class Options(object):
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
     if self.target_os == 'android':
-      self.use_goma = False
-      self.use_clang = False
+      self.gyp.use_goma = False
+      self.gyp.use_clang = False
     self.jobs = multiprocessing.cpu_count()
 
   @staticmethod
@@ -439,14 +447,14 @@ class Options(object):
     parser.add_argument('-a', '--run-arg', action='append',
                         help="Extra args to pass when *running* an executable.")
     parser.add_argument('-V', '--valgrind', action='store_true',
-                        help="Build for Valgrind (memcheck) (default: %s)" % self.valgrind)
+                        help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
                         help="Run the debug executable profile (default: %s)" % self.debugger)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--use-clang', action='store_true',
-                        help="Use the clang compiler (default %s)" % self.use_clang)
+                        help="Use the clang compiler (default %s)" % self.gyp.use_clang)
     group.add_argument('--no-use-clang', action='store_true',
-                        help="Use the clang compiler (default %s)" % (not self.use_clang))
+                        help="Use the clang compiler (default %s)" % (not self.gyp.use_clang))
     parser.add_argument('targets', metavar='TARGET', type=str, nargs='*',
                         help="""Target(s) to build/run. The target name can be one of the
 predefined target/executable/run/collection items defined in
@@ -458,10 +466,10 @@ a target defined in the gyp files.""")
     self.release = args.release
     if not self.debug and not self.release:
       self.debug = True
-    self.gyp = args.gyp
+    self.regyp = args.gyp
     self.clobber = args.clobber
     if self.clobber:
-      self.gyp = True
+      self.regyp = True
     self.verbosity = args.verbose
     if self.verbosity > 0:
       self.print_cmds = True
@@ -477,14 +485,14 @@ a target defined in the gyp files.""")
     if len(self.active_items) == 0:
       self.active_items.append(self.collections.default)
     if args.use_clang:
-      self.use_clang = True
+      self.gyp.use_clang = True
     elif args.no_use_clang:
-      self.use_clang = False
-    if self.use_clang and not os.path.exists(self.llvm_path):
+      self.gyp.use_clang = False
+    if self.gyp.use_clang and not os.path.exists(self.llvm_path):
       print >> sys.stderr, "Can't use clang (llvm path !exists)"
-      self.use_clang = False
+      self.gyp.use_clang = False
     if args.valgrind:
-      self.valgrind = True
+      self.gyp.valgrind = True
     if args.debugger:
       self.debugger = True
     if args.asan:
@@ -492,19 +500,19 @@ a target defined in the gyp files.""")
         if args.no_use_clang:
           print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
         self.out_dir = 'out_asan'
-        self.gyp_defines.add('asan=1')
-        self.gyp_defines.add('clang=1')
-        self.gyp_defines.add('linux_use_tcmalloc=0')
-        self.gyp_defines.add('enable_ipc_fuzzer=1')
-        self.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
-        self.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
+        self.gyp.gyp_defines.add('asan=1')
+        self.gyp.gyp_defines.add('clang=1')
+        self.gyp.gyp_defines.add('linux_use_tcmalloc=0')
+        self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
+        self.gyp.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
+        self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
       elif platform.system() == 'Windows':
-        self.gyp_defines.add('syzyasan=1')
-        self.gyp_defines.add('chrome_multiple_dll=0')
-        self.gyp_generators = 'ninja'
+        self.gyp.gyp_defines.add('syzyasan=1')
+        self.gyp.gyp_defines.add('chrome_multiple_dll=0')
+        self.gyp.gyp_generators = 'ninja'
         # According to docs SyzyASAN not yet compatible shared library.
-        self.gyp_defines.remove('component=shared_library')
-        self.gyp_defines.remove('disable_nacl=1')
+        self.gyp.gyp_defines.remove('component=shared_library')
+        self.gyp.gyp_defines.remove('disable_nacl=1')
 
     self.run_args = args.run_arg
 
@@ -528,19 +536,19 @@ class Builder:
 
   def SetEnvVars(self):
     # Copy so as to not modify options
-    gyp_defines = copy.copy(self.options.gyp_defines)
-    os.environ['GYP_GENERATORS'] = self.options.gyp_generators
-    if self.options.use_clang:
+    gyp_defines = copy.copy(self.options.gyp.gyp_defines)
+    os.environ['GYP_GENERATORS'] = self.options.gyp.gyp_generators
+    if self.options.gyp.use_clang:
       os.environ['CC'] = 'clang'
       os.environ['CXX'] = 'clang++'
       os.environ['builddir_name'] = 'llvm'
       assert os.path.exists(self.options.llvm_path)
       Builder.PrependToPath(self.options.llvm_path)
       gyp_defines.add('clang=1')
-    if self.options.valgrind:
+    if self.options.gyp.valgrind:
       gyp_defines.add('build_for_tool=memcheck')
     # Must be prepended to PATH last
-    if self.options.use_goma:
+    if self.options.gyp.use_goma:
       Builder.PrependToPath(self.options.goma_path)
     if 'GYP_DEFINES' in os.environ:
       for prev_val in os.environ['GYP_DEFINES'].split():
@@ -554,11 +562,11 @@ class Builder:
         print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
         print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
         print "PATH: %s" % os.environ['PATH']
-      print "Using %s %s goma" %  ('clang' if self.options.use_clang else 'gcc',
-                                   'with' if self.options.use_goma else
+      print "Using %s %s goma" %  ('clang' if self.options.gyp.use_clang else 'gcc',
+                                   'with' if self.options.gyp.use_goma else
                                    'without')
-    if len(self.options.gyp_generator_flags):
-      os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.gyp_generator_flags)
+    if len(self.options.gyp.gyp_generator_flags):
+      os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.gyp.gyp_generator_flags)
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
@@ -593,7 +601,7 @@ class Builder:
       cmd.insert(1, '-n')
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
-    if self.options.use_goma:
+    if self.options.gyp.use_goma:
       cmd[1:1] = ['-j', '1000']
     cmd.extend(target_names)
     self.PrintStep(cmd)
@@ -618,7 +626,7 @@ class Builder:
       for build_type in build_types:
         self.Clobber(build_type)
 
-    if self.options.gyp:
+    if self.options.regyp:
       self.Gyp()
 
     # Do all builds in one invocation for best performance
