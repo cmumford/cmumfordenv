@@ -207,6 +207,16 @@
       ]
     },
     {
+      "name": "clusterfuzz",
+      "title": "Runs an ASAN-ified build",
+      "targets": ["chrome", "ipc_fuzzer_replay"],
+      "args": [
+        "tools/ipc_fuzzer/play_testcase.py",
+        "--build-type=${Build_type}",
+        "--out-dir=${out_dir}"
+      ]
+    },
+    {
       "name": "idb_performance_ui_tests",
       "title": "The IndexedDB tests from performance_ui_tests",
       "executable": "performance_ui_tests",

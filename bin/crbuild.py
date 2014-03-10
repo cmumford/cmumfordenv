@@ -343,6 +343,7 @@ class Options(object):
     self.collections.LoadDataFile()
     self.debug = False
     self.release = False
+    self.gyp_generator_flags = set()
     self.gyp_defines = set(['disable_nacl=1'])
     if platform.system() == 'Windows':
       self.gyp_generators = 'ninja,msvs'
@@ -487,12 +488,19 @@ a target defined in the gyp files.""")
     if args.debugger:
       self.debugger = True
     if args.asan:
-      self.gyp_defines.add('chrome_multiple_dll=0')
-      self.gyp_defines.add('syzyasan=1')
-      if self.debug:
-        print >> sys.stderr, "Debug ASAN builds not supported"
-        sys.exit(1)
-      if platform.system() == 'Windows':
+      if 'linux' in platform.system().lower():
+        if args.no_use_clang:
+          print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
+        self.out_dir = 'out_asan'
+        self.gyp_defines.add('asan=1')
+        self.gyp_defines.add('clang=1')
+        self.gyp_defines.add('linux_use_tcmalloc=0')
+        self.gyp_defines.add('enable_ipc_fuzzer=1')
+        self.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
+        self.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
+      elif platform.system() == 'Windows':
+        self.gyp_defines.add('syzyasan=1')
+        self.gyp_defines.add('chrome_multiple_dll=0')
         self.gyp_generators = 'ninja'
         # According to docs SyzyASAN not yet compatible shared library.
         self.gyp_defines.remove('component=shared_library')
@@ -549,6 +557,8 @@ class Builder:
       print "Using %s %s goma" %  ('clang' if self.options.use_clang else 'gcc',
                                    'with' if self.options.use_goma else
                                    'without')
+    if len(self.options.gyp_generator_flags):
+      os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.gyp_generator_flags)
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
