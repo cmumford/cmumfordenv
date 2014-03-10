@@ -497,6 +497,11 @@ class Builder:
       path_delim = ':'
     os.environ['PATH'] = "%s%s%s" % (path, path_delim, os.environ['PATH'])
 
+  @staticmethod
+  def PrintAllEnvVars():
+    for key in sorted(os.environ):
+      print "%s=%s" % (key, os.environ[key])
+
   def SetEnvVars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.gyp_defines)
@@ -519,9 +524,12 @@ class Builder:
     os.environ['GYP_DEFINES'] = ' '.join(gyp_defines)
 
     if self.options.verbosity > 0:
-      print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
-      print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
-      print "PATH: %s" % os.environ['PATH']
+      if self.options.verbosity > 2:
+        Builder.PrintAllEnvVars()
+      else:
+        print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
+        print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
+        print "PATH: %s" % os.environ['PATH']
       print "Using %s %s goma" %  ('clang' if self.options.use_clang else 'gcc',
                                    'with' if self.options.use_goma else
                                    'without')
