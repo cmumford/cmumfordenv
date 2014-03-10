@@ -108,11 +108,12 @@ class Executable(BuildTypeItem):
     return self.build_target.GetTargets()
 
 class Run(BuildTypeItem):
-  def __init__(self, name, executable, args):
+  def __init__(self, name, executable, targets, args):
     super(Run, self).__init__()
     self.name = name
     self.title = ''
     self.executable = executable
+    self.targets = targets
     self.args = args
 
   def Run(self, build_type):
@@ -120,7 +121,10 @@ class Run(BuildTypeItem):
     return self.executable.Run(build_type, self.args)
 
   def GetTargets(self):
-    return self.executable.GetTargets()
+    if len(self.targets):
+      return self.targets
+    else:
+      return self.executable.GetTargets()
 
 class Collection(BuildTypeItem):
   def __init__(self, name, items):
@@ -288,14 +292,26 @@ class Collections(object):
             self.ParseExecutable(exe_obj, name)
       for run_obj in data['runs']:
         run_name = run_obj['name']
-        if 'executable' in run_obj:
-          executable = self.exe_names[run_obj['executable']]
-        else:
-          executable = self.exe_names[run_name]
+        targets = []
+        executable = None
         run_args = []
         if 'args' in run_obj:
           run_args = run_obj['args']
-        run = Run(run_name, executable, run_args)
+        if 'executable' in run_obj:
+          executable = self.exe_names[run_obj['executable']]
+        elif 'targets' in run_obj:
+          for target_name in run_obj['targets']:
+            if target_name in self.target_names:
+              targets.append(self.target_names[target_name])
+            else:
+              target = self.CreateTarget(target_name)
+              self.target_names[target_name] = target
+              targets.append(target)
+          executable = Executable('no_name', 'build_target',
+                                  [Commands(run_args)], self.options)
+        else:
+          executable = self.exe_names[run_name]
+        run = Run(run_name, executable, targets, run_args)
         if 'title' in run_obj:
           run.title = run_obj['title']
         self.run_names[run_name] = run
