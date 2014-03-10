@@ -89,6 +89,7 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
       cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
+      cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if options.run_args:
       cmd.extend(options.run_args)
@@ -351,6 +352,7 @@ class Options(object):
     self.active_items = []
     self.valgrind = False
     self.debugger = False
+    self.out_dir = 'out'
     try:
       self.target_os = self.GetPlatform()
     except IOError as e:
@@ -544,14 +546,14 @@ class Builder:
 
   def Clobber(self, build_type):
     print "Deleting intermediate files..."
-    self.DeleteDir(os.path.join('out', 'gypfiles'))
-    self.DeleteDir(os.path.join('out', build_type))
-    self.DeleteDir(os.path.join('out', '%s_x64' % build_type))
+    self.DeleteDir(os.path.join(self.options.out_dir, 'gypfiles'))
+    self.DeleteDir(os.path.join(self.options.out_dir, build_type))
+    self.DeleteDir(os.path.join(self.options.out_dir, '%s_x64' % build_type))
 
   def Build(self, build_type, target_names):
     print "Building %s..." % build_type
     assert build_type in ['Debug', 'Release']
-    build_dir = os.path.join('out', build_type)
+    build_dir = os.path.join(self.options.out_dir, build_type)
     cmd = ['ninja', '-C', build_dir]
     if self.options.noop:
       cmd.insert(1, '-n')
