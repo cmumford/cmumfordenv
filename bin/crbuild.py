@@ -5,6 +5,7 @@ import copy
 import json
 import multiprocessing
 import os
+import pickle
 import platform
 import shutil
 import subprocess
@@ -351,6 +352,30 @@ class GypValues(object):
     self.use_goma = True
     self.valgrind = False
 
+  def WriteToFile(self, fname):
+    with open(fname, 'w') as f:
+      pickle.dump(self, f)
+
+  @staticmethod
+  def ReadFromFile(fname):
+    with open(fname, 'r') as f:
+      return pickle.load(f)
+
+  def __ne__(self, other):
+    if self.gyp_generator_flags != other.gyp_generator_flags:
+      return True
+    if self.gyp_defines != other.gyp_defines:
+      return True
+    if self.gyp_generators != other.gyp_generators:
+      return True
+    if self.use_clang != other.use_clang:
+      return True
+    if self.valgrind != other.valgrind:
+      return True
+    if self.valgrind != other.valgrind:
+      return True
+    return False
+
 class Options(object):
   def __init__(self):
     self.collections = Collections(self)
@@ -378,6 +403,7 @@ class Options(object):
     self.active_items = []
     self.debugger = False
     self.out_dir = 'out'
+    self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, self.out_dir, '.GYP_STATE'))
     try:
       self.target_os = self.GetPlatform()
     except IOError as e:
@@ -577,7 +603,12 @@ class Builder:
     cmd = ['python', os.path.join('build', 'gyp_chromium')]
     self.PrintStep(cmd)
     if not self.options.noop:
+      if os.path.exists(self.options.gyp_state_path):
+        os.remove(self.options.gyp_state_path)
       subprocess.check_call(cmd)
+    if self.options.verbosity > 1:
+      print "Writing GYP state to %s" % self.options.gyp_state_path
+    self.options.gyp.WriteToFile(self.options.gyp_state_path)
 
   def DeleteDir(self, dir_path):
     if os.path.exists(dir_path):
@@ -588,6 +619,8 @@ class Builder:
 
   def Clobber(self, build_type):
     print "Deleting intermediate files..."
+    if os.path.exists(self.options.gyp_state_path):
+      os.remove(self.options.gyp_state_path)
     self.DeleteDir(os.path.join(self.options.out_dir, 'gypfiles'))
     self.DeleteDir(os.path.join(self.options.out_dir, build_type))
     self.DeleteDir(os.path.join(self.options.out_dir, '%s_x64' % build_type))
@@ -619,6 +652,23 @@ class Builder:
       build_types.append('Release')
     return build_types
 
+  def NeedToReGyp(self):
+    if self.options.regyp:
+      print "Must regyp"
+      return True
+    try:
+      current_gyp = GypValues.ReadFromFile(self.options.gyp_state_path)
+      if current_gyp != self.options.gyp:
+        if self.options.print_cmds:
+          print "Gyp related values have changed, need to regyp"
+        return True
+      else:
+        return False
+    except IOError as e:
+      if self.options.print_cmds:
+        print "Can't get current state, need to regyp"
+      return True
+
   def DoBuild(self):
     build_types = self.GetBuildTypes()
 
@@ -626,7 +676,7 @@ class Builder:
       for build_type in build_types:
         self.Clobber(build_type)
 
-    if self.options.regyp:
+    if self.NeedToReGyp():
       self.Gyp()
 
     # Do all builds in one invocation for best performance
