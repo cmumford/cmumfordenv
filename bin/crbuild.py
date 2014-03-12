@@ -403,6 +403,7 @@ class Options(object):
     self.active_items = []
     self.debugger = False
     self.out_dir = 'out'
+    self.run_args = None
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, self.out_dir, '.GYP_STATE'))
     try:
       self.target_os = self.GetPlatform()
