@@ -269,7 +269,7 @@
       ]
     },
     {
-      "name": "idb_layout_tests",
+      "name": "idb-layout-tests",
       "title": "The IndexedDB Blink layout tests",
       "executable": "webkit-layout",
       "args": [
