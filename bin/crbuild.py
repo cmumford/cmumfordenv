@@ -47,11 +47,11 @@ class Commands(object):
     self.name = ''
 
 class Executable(BuildTypeItem):
-  def __init__(self, name, build_target, commands, options):
+  def __init__(self, name, build_targets, commands, options):
     super(Executable, self).__init__()
     self.name = name
     self.title = ''
-    self.build_target = build_target
+    self.build_targets = build_targets
     self.commands = commands
     self.options = options
     self.type = 'normal'
@@ -106,7 +106,10 @@ class Executable(BuildTypeItem):
     return errors
 
   def GetTargets(self):
-    return self.build_target.GetTargets()
+    targets = []
+    for target in self.build_targets:
+      targets.extend(target.GetTargets())
+    return targets
 
 class Run(BuildTypeItem):
   def __init__(self, name, executable, targets, args):
@@ -197,16 +200,20 @@ class Collections(object):
     return target
 
   def ParseExecutable(self, exe_obj, exe_name):
-    if 'target' in exe_obj:
-      target_name = exe_obj['target']
+    target_names = []
+    if 'targets' in exe_obj:
+      for target_name in exe_obj['targets']:
+        target_names.append(target_name)
     else:
-      target_name = exe_name
-    if target_name in self.target_names:
-      target = self.target_names[target_name]
-    else:
-      target = self.CreateTarget(target_name)
+      target_names.append(exe_name)
+    targets = []
+    for target_name in target_names:
+      if target_name in self.target_names:
+        targets.append(self.target_names[target_name])
+      else:
+        targets.append(self.CreateTarget(target_name))
     commands = Collections.ParseCommands(exe_obj, exe_name)
-    executable = Executable(exe_name, target, commands, self.options)
+    executable = Executable(exe_name, targets, commands, self.options)
     if 'type' in exe_obj:
       executable.type = exe_obj['type']
     if 'title' in exe_obj:

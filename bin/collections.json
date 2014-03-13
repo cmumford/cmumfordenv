@@ -17,7 +17,7 @@
     {
       "name": "devchrome",
       "title": "Chromium with user-data-dir",
-      "target": "chrome",
+      "targets": ["chrome"],
       "commands": [
         {
           "name": "normal",
@@ -42,7 +42,7 @@
     {
       "name": "smoothness",
       "title": "Smoothness test app",
-      "target": "chrome",
+      "targets": ["chrome"],
       "command": [
         "python",
         "tools/perf/run_measurement",
@@ -53,7 +53,7 @@
     {
       "name": "indexeddb_perf",
       "title": "IndexedDB Telemetry based performance tests",
-      "target": "chrome",
+      "targets": ["chrome"],
       "command": [
         "python",
         "tools/perf/run_measurement",
@@ -63,7 +63,8 @@
       ]
     },
     {
-      "names": ["content_browsertests_apk"],
+      "name": "content_browsertests_apk",
+      "targets": ["content_browsertests_apk", "forwarder2"],
       "commands": [
         {
           "name": "normal",
@@ -184,7 +185,7 @@
     {
       "name": "webkit-layout",
       "title": "The Blink layout tests",
-      "target": "all_webkit",
+      "targets": ["all_webkit"],
       "command": [
         "third_party/WebKit/Tools/Scripts/run-webkit-tests",
         "--no-show-results",
