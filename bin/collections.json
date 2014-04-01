@@ -117,6 +117,7 @@
     {
       "names": ["base_unittests", "net_unittests", "unit_tests", "content_unittests"],
       "type": "gtest",
+      "targets": ["xdisplaycheck", "${executable_name}"],
       "commands": [
         {
           "name": "normal",

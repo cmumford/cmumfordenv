@@ -203,7 +203,10 @@ class Collections(object):
     target_names = []
     if 'targets' in exe_obj:
       for target_name in exe_obj['targets']:
-        target_names.append(target_name)
+        if target_name == '${executable_name}':
+          target_names.append(exe_name)
+        else:
+          target_names.append(target_name)
     else:
       target_names.append(exe_name)
     targets = []
