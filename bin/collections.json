@@ -121,6 +121,25 @@
       ]
     },
     {
+      "name": "env_chromium_unittests_apk",
+      "targets": ["env_chromium_unittests_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/test_runner.py",
+            "gtest",
+            "-s",
+            "env_chromium_unittests",
+            "--verbose",
+            "--${build_type}",
+            "--num_retries=1"
+          ]
+        }
+      ]
+    },
+    {
       "names": ["content_browsertests", "browser_tests"],
       "type": "gtest",
       "commands": [
