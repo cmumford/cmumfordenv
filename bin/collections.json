@@ -34,7 +34,34 @@
             "${out_dir}/${Build_type}/chrome",
             "--no-sandbox",
             "--disable-hang-monitor",
+            "--single-process",
             "--user-data-dir=${HOME}/.chrome_dev"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "content_shell",
+      "title": "The Chromium Content Shell (test app)",
+      "targets": ["content_shell"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "${out_dir}/${Build_type}/content_shell",
+            "--crash-dumps-dir=${out_dir}/${Build_type}/content_shell_crashes",
+            "--data-path=${HOME}/.content_shell_dev"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
+            "${out_dir}/${Build_type}/content_shell",
+            "--no-sandbox",
+            "--disable-hang-monitor",
+            "--data-path=${HOME}/.content_shell_dev"
           ]
         }
       ]
