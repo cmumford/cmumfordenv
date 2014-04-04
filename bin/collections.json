@@ -27,6 +27,18 @@
           ]
         },
         {
+          "name": "clusterfuzz",
+          "command": [
+            "${out_dir}/${Build_type}/chrome",
+            "--user-data-dir=${HOME}/.chrome_dev",
+            "--allow-file-access-from-files",
+            "--disable-popup-blocking",
+            "--js-flags=\"--expose_gc\"",
+            "--user-data-dir=/usr/local/google/home/cmumford/work/ssd/chrome/src/bisect_data_dir",
+            "/usr/local/google/home/cmumford/bugs/scriptValueToIDBKey/fuzz-crossfuzz-1377525766.html"
+          ]
+        },
+        {
           "name": "debug",
           "command": [
             "cgdb",
