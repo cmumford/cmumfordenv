@@ -80,12 +80,15 @@ class Executable(BuildTypeItem):
       sys.exit(5)
     return self.commands[0]
 
-  def Run(self, build_type, extra_args = None):
+  def Run(self, build_type, extra_args = None, no_run_commands = None):
     bt_lowercase = build_type.lower()
     command = self.GetCommandToRun()
     cmd = copy.copy(command.args)
     if extra_args:
       cmd.extend(extra_args)
+    if no_run_commands:
+      for arg in no_run_commands:
+        cmd.remove(arg)
     for idx in range(len(cmd)):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
@@ -112,17 +115,18 @@ class Executable(BuildTypeItem):
     return targets
 
 class Run(BuildTypeItem):
-  def __init__(self, name, executable, targets, args):
+  def __init__(self, name, executable, targets, args, no_run_commands):
     super(Run, self).__init__()
     self.name = name
     self.title = ''
     self.executable = executable
     self.targets = targets
     self.args = args
+    self.no_run_commands = no_run_commands
 
   def Run(self, build_type):
     self.MarkDoneFor(build_type)
-    return self.executable.Run(build_type, self.args)
+    return self.executable.Run(build_type, self.args, self.no_run_commands)
 
   def GetTargets(self):
     if len(self.targets):
@@ -306,8 +310,11 @@ class Collections(object):
         targets = []
         executable = None
         run_args = []
+        no_commands = []
         if 'args' in run_obj:
           run_args = run_obj['args']
+        if '-commands' in run_obj:
+          no_commands = run_obj['-commands']
         if 'executable' in run_obj:
           executable = self.exe_names[run_obj['executable']]
         elif 'targets' in run_obj:
@@ -322,7 +329,7 @@ class Collections(object):
                                   [Commands(run_args)], self.options)
         else:
           executable = self.exe_names[run_name]
-        run = Run(run_name, executable, targets, run_args)
+        run = Run(run_name, executable, targets, run_args, no_commands)
         if 'title' in run_obj:
           run.title = run_obj['title']
         self.run_names[run_name] = run
