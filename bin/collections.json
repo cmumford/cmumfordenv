@@ -22,7 +22,7 @@
         {
           "name": "normal",
           "command": [
-            "out/${Build_type}/chrome",
+            "${out_dir}/${Build_type}/chrome",
             "--user-data-dir=${HOME}/.chrome_dev"
           ]
         },
@@ -31,7 +31,7 @@
           "command": [
             "cgdb",
             "--args",
-            "out/${Build_type}/chrome",
+            "${out_dir}/${Build_type}/chrome",
             "--no-sandbox",
             "--disable-hang-monitor",
             "--user-data-dir=${HOME}/.chrome_dev"
@@ -90,8 +90,8 @@
           "command": [
             "python",
             "testing/xvfb.py",
-            "out/${Build_type}",
-            "out/${Build_type}/${executable_name}",
+            "${out_dir}/${Build_type}",
+            "${out_dir}/${Build_type}/${executable_name}",
             " --test-launcher-jobs=${jobs}"
           ]
         },
@@ -100,14 +100,14 @@
           "command": [
             "cgdb",
             "--args",
-            "out/${Build_type}/${executable_name}"
+            "${out_dir}/${Build_type}/${executable_name}"
           ]
         },
         {
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=out/${Build_type}",
+            "--build-dir=${out_dir}/${Build_type}",
             "-t",
             "${executable_name}"
           ]
@@ -124,8 +124,8 @@
           "command": [
             "python",
             "testing/xvfb.py",
-            "out/${Build_type}",
-            "out/${Build_type}/${executable_name}",
+            "${out_dir}/${Build_type}",
+            "${out_dir}/${Build_type}/${executable_name}",
             "--brave-new-test-launcher",
             "--test-launcher-jobs=${jobs}"
           ]
@@ -135,14 +135,15 @@
           "command": [
             "cgdb",
             "--args",
-            "out/${Build_type}/${executable_name}"
+            "${out_dir}/${Build_type}/${executable_name}",
+            "--single-process-tests"
           ]
         },
         {
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=out/${Build_type}",
+            "--build-dir=${out_dir}/${Build_type}",
             "-t",
             "${executable_name}"
           ]
@@ -159,8 +160,8 @@
           "command": [
             "python",
             "testing/xvfb.py",
-            "out/${Build_type}",
-            "out/${Build_type}/${executable_name}",
+            "${out_dir}/${Build_type}",
+            "${out_dir}/${Build_type}/${executable_name}",
             " --test-launcher-jobs=${jobs}"
           ]
         },
@@ -169,14 +170,14 @@
           "command": [
             "cgdb",
             "--args",
-            "out/${Build_type}/${executable_name}"
+            "${out_dir}/${Build_type}/${executable_name}"
           ]
         },
         {
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=out/${Build_type}",
+            "--build-dir=${out_dir}/${Build_type}",
             "-t",
             "${executable_name}"
           ]
