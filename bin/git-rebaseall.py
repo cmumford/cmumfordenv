@@ -113,6 +113,7 @@ class Rebaser(object):
   def __init__(self, opts):
     self.options = opts
     self.git = Git()
+    self.rebase_warned_branches = set()
 
   @staticmethod
   def isBranchOrParentBehind(branches, branch):
@@ -127,8 +128,14 @@ class Rebaser(object):
 
   def rebase(self, branches, branch):
     #print "%s < %s" % (branch.name, branch.parent)
+    if not branch.parent:
+      if branch.name not in self.rebase_warned_branches:
+        print >> sys.stderr, "%s has no parent to rebase to" % branch.name
+        self.rebase_warned_branches.add(branch.name)
+      return;
     if branch.parent not in branches:
       # No parent then nothing on which to rebase
+      print >> sys.stderr, "%s is not a known branch" % branch.parent
       return
     parent = branches[branch.parent]
     self.rebase(branches, parent)
