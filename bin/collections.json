@@ -322,6 +322,14 @@
       ]
     },
     {
+      "name": "idb-content-browsertests-android",
+      "title": "The IndexedDB tests from content_browsertests on Android",
+      "executable": "content_browsertests_apk",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:'"
+      ]
+    },
+    {
       "name": "idb_browser_tests",
       "title": "The IndexedDB tests from browser_tests",
       "executable": "browser_tests",
