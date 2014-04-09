@@ -212,6 +212,7 @@
       "names": ["env_chromium_unittests", "performance_ui_tests",
               "webkit_unit_tests", "content_endurancetests"],
       "type": "gtest",
+      "targets": ["xdisplaycheck", "${executable_name}"],
       "commands": [
         {
           "name": "normal",
