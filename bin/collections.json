@@ -9,8 +9,8 @@
       "title": "All build targets"
     },
     {
-      "name": "all_webkit",
-      "title": "All Blink targets"
+      "name": "blink_tests",
+      "title": "Top target for all Blink tests"
     }
   ],
   "executables": [
@@ -245,7 +245,7 @@
     {
       "name": "webkit-layout",
       "title": "The Blink layout tests",
-      "targets": ["all_webkit"],
+      "targets": ["blink_tests"],
       "command": [
         "third_party/WebKit/Tools/Scripts/run-webkit-tests",
         "--no-show-results",
