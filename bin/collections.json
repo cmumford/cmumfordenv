@@ -244,7 +244,7 @@
       ]
     },
     {
-      "name": "webkit-layout",
+      "name": "blink-layout",
       "title": "The Blink layout tests",
       "targets": ["blink_tests"],
       "command": [
@@ -339,9 +339,9 @@
       ]
     },
     {
-      "name": "idb-layout-tests",
-      "title": "The IndexedDB Blink layout tests",
-      "executable": "webkit-layout",
+      "name": "blink-layout-idb",
+      "title": "The IndexedDB subset of the Blink layout tests",
+      "executable": "blink-layout",
       "args": [
         "storage/indexeddb"
       ]
