@@ -88,7 +88,8 @@ class Executable(BuildTypeItem):
       cmd.extend(extra_args)
     if no_run_commands:
       for arg in no_run_commands:
-        cmd.remove(arg)
+        if arg in cmd:
+          cmd.remove(arg)
     for idx in range(len(cmd)):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
