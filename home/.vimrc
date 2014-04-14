@@ -226,13 +226,14 @@ autocmd BufReadPost fugitive://* set bufhidden=delete
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 " custom commands to easily navigate around the source code
-:function g:editChromeFile(file)
-  let @d = system("python ${HOME}/bin/go.py c")
+:function g:editProjectFile(file, projAlias)
+  let @d = system("python ${HOME}/bin/go.py " . a:projAlias)
   let dir = substitute(@d,"[\n\r]$","","g")
   let path = expand(dir) . "/" . a:file
   exec ":e ".expand(path)
 :endfunction
-:command -nargs=1 NN call g:editChromeFile("<args>")
+:command -nargs=1 NN call g:editProjectFile("<args>", "c")
+:command -nargs=1 BB call g:editProjectFile("<args>", "b")
 
 " Used by FSwitch - probably a better way to do this.
 au! BufEnter *.cpp let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
