@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
-base_dir=$(dirname "$0")
+this=$0
+# dirname needs UNIX EOL
+this=$(echo "$this" | sed -e 's|\\|/|g')
+base_dir=$(dirname "$this")
 
 PYTHONDONTWRITEBYTECODE=1 exec python "$base_dir/git-rebaseall.py" "$@"
