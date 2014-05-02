@@ -565,6 +565,18 @@ class Builder:
     self.options = options
     self.SetEnvVars()
 
+  # Linking on Windows can sometimes fail with this error:
+  # LNK1318: Unexpected PDB error; OK (0)
+  # This is caused by the Microsoft PDB Server running out of virtual address
+  # space. Killing this service fixes this problem.
+  def KillPdbServer(self):
+    assert platform.system() == 'Windows'
+    cmd = "taskkill /F /im mspdbsrv.exe"
+    if self.options.print_cmds:
+      print cmd
+    if not self.options.noop:
+      os.system(cmd)
+
   @staticmethod
   def PrependToPath(path):
     if platform.system() == 'Windows':
@@ -689,6 +701,9 @@ class Builder:
 
   def DoBuild(self):
     build_types = self.GetBuildTypes()
+
+    if platform.system() == 'Windows':
+      self.KillPdbServer()
 
     if self.options.clobber:
       for build_type in build_types:
