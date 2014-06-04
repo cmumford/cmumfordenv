@@ -147,12 +147,12 @@ au BufNewFile,BufRead Makefile.Ubuntu.Release set filetype=make
 au BufNewFile,BufRead Makefile.v8.inc set filetype=make
 
 " custom commands to easily navigate around the source code
-:function g:gotoDir(shortcut)
+:function g:GotoDir(shortcut)
   let dir = system("python ${HOME}/bin/go.py " . a:shortcut)
   execute "cd " . expand(dir)
   pwd
 :endfunction
-:command -nargs=1 G call g:gotoDir("<args>")
+:command -nargs=1 G call g:GotoDir("<args>")
 
 " For tab completion at bottom of screen (like for tabs)
 set wildmenu
@@ -229,14 +229,14 @@ autocmd BufReadPost fugitive://* set bufhidden=delete
 set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 
 " custom commands to easily navigate around the source code
-:function g:editProjectFile(file, projAlias)
+:function g:EditProjectFile(file, projAlias)
   let @d = system("python ${HOME}/bin/go.py " . a:projAlias)
   let dir = substitute(@d,"[\n\r]$","","g")
   let path = expand(dir) . "/" . a:file
   exec ":e ".expand(path)
 :endfunction
-:command -nargs=1 NN call g:editProjectFile("<args>", "c")
-:command -nargs=1 BB call g:editProjectFile("<args>", "b")
+:command -nargs=1 NN call g:EditProjectFile("<args>", "c")
+:command -nargs=1 BB call g:EditProjectFile("<args>", "b")
 
 " Used by FSwitch - probably a better way to do this.
 au! BufEnter *.cpp let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
