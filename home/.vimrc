@@ -91,6 +91,7 @@ Bundle 'scrooloose/syntastic'
 Bundle 'tpope/vim-unimpaired'
 Bundle 'tpope/vim-fugitive'
 Bundle 'FSwitch'
+Bundle 'mileszs/ack.vim'
 
 filetype plugin indent on
 
@@ -112,6 +113,8 @@ autocmd FileType php set omnifunc=phpcomplete#CompletePHP
 autocmd FileType c set omnifunc=ccomplete#Complete
 autocmd FileType make setlocal noexpandtab
 
+" ack.vim's defaults use '-s' which doesn't exist on ack-grep with Ubuntu 12.04
+let g:ack_default_options = " --sort-files --with-filename --nocolor --nogroup --column"
 
 "Show in a new window the Subversion blame annotation for the current file.
 " Problem: when there are local mods this doesn't align with the source file.
