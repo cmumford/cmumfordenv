@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import copy
 import multiprocessing
 import os
 import random
@@ -14,8 +15,9 @@ class Options(object):
     self.cmd = ['crbuild', '-v', 'cursor']
     self.cmd = ['crbuild', '-v', 'content-browsertests-idb-single', '--run-arg=--gtest_shuffle']
     self.cmd = ['crbuild', '-v', 'shutdown']
-    self.num_jobs = 1
-    self.num_runs_per_job = 80
+    self.cmd = ['/usr/local/google/home/cmumford/work/ssd/chrome/src/third_party/leveldatabase/endurance_wrapper']
+    self.num_jobs = 20
+    self.num_runs_per_job = 800
 
 keep_running = True
 
@@ -38,20 +40,23 @@ class RunnerThread(threading.Thread):
   def run(self):
     global keep_running
     try:
-      print 'Thread started: %s' % self.identifier
       # A delay ensures that the tests don't all run in lock-step starting at
       # the same time.
-      time.sleep(random.uniform(0.0, 2.0))
+      #time.sleep(random.uniform(0.0, 2.0))
       for run in range(self.options.num_runs_per_job):
         if not keep_running:
           print "Aborting thread %s" % self.identifier
           break
-        print "Thread %s, run %d" % (self.identifier, run)
-        subprocess.check_call(self.options.cmd)
+        cmd = copy.copy(self.options.cmd)
+        duration = random.uniform(0.1, 20.0)
+        cmd.extend(['-d',
+                    str(duration),
+                    '--ldbdir=/tmp/leveldb/leveldb_endurance_%s' % self.identifier])
+        print "Thread %s, run %d for %f sec" % (self.identifier, run, duration)
+        subprocess.check_call(cmd)
     except Exception as e:
       keep_running = False # Stop all threads
-      print >> sys.stderr, "EXCEPTION: %s" % e
-    print 'Thread finished: %s' % self.identifier
+      print >> sys.stderr, "EXCEPTION in thread %s: %s" % (self.identifier, str(e))
 
 if __name__ == '__main__':
   signal.signal(signal.SIGINT, handler)
