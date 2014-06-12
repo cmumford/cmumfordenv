@@ -482,7 +482,13 @@ class Options(object):
         print "Multiple target OS's: using the first"
       return config['target_os'][0]
     else:
-      return None
+      # Assume the target platform is the one on which the build is taking place
+      if platform.system() == 'Windows':
+        return 'windows'
+      elif platform.system() == 'Linux':
+        return 'linux'
+      print >> "Unknown platform: '%s'" % platform.system()
+      sys.exit(1)
 
   def Parse(self):
     desc = "A script to compile/test Chromium."
@@ -555,7 +561,7 @@ a target defined in the gyp files.""")
     if args.debugger:
       self.debugger = True
     if args.asan:
-      if 'linux' in platform.system().lower():
+      if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
         self.out_dir = 'out_asan'
@@ -565,13 +571,14 @@ a target defined in the gyp files.""")
         self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
         self.gyp.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
         self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
-      elif platform.system() == 'Windows':
+      elif self.target_os == 'windows':
         self.gyp.gyp_defines.add('syzyasan=1')
         self.gyp.gyp_defines.add('chrome_multiple_dll=0')
         self.gyp.gyp_generators = 'ninja'
         # According to docs SyzyASAN not yet compatible shared library.
         self.gyp.gyp_defines.remove('component=shared_library')
         self.gyp.gyp_defines.remove('disable_nacl=1')
+    self.gyp.gyp_defines.add('OS=%s' % self.target_os)
 
     self.run_args = args.run_arg
 
