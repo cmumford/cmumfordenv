@@ -105,6 +105,7 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
       cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
       cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
+      cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if options.run_args:
       cmd.extend(options.run_args)
@@ -462,8 +463,11 @@ class Options(object):
         targets.add(target.name)
     return list(targets)
 
+  def GetTopDir(self):
+    return os.path.abspath(os.path.join(self.root_dir, '..'))
+
   def GetGClientPath(self):
-    return os.path.abspath(os.path.join(self.root_dir, '..', '.gclient'))
+    return os.path.join(self.GetTopDir(), '.gclient')
 
   def ReadGClient(self):
     result = {}
