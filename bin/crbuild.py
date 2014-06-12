@@ -578,6 +578,9 @@ a target defined in the gyp files.""")
         # According to docs SyzyASAN not yet compatible shared library.
         self.gyp.gyp_defines.remove('component=shared_library')
         self.gyp.gyp_defines.remove('disable_nacl=1')
+      elif self.target_os == 'android':
+        self.gyp.gyp_defines.add('asan=1')
+        self.gyp.gyp_defines.add('component=shared_library')
     self.gyp.gyp_defines.add('OS=%s' % self.target_os)
 
     self.run_args = args.run_arg
