@@ -90,6 +90,16 @@ class Executable(BuildTypeItem):
       for arg in no_run_commands:
         if arg in cmd:
           cmd.remove(arg)
+
+    xvfb = ["python", "testing/xvfb.py", "${out_dir}/${Build_type}"]
+    new_cmd = []
+    for c in cmd:
+      if c == '${xvfb}':
+        new_cmd.extend(xvfb)
+      else:
+        new_cmd.append(c)
+    cmd = new_cmd
+
     for idx in range(len(cmd)):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
       cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
