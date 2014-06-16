@@ -107,7 +107,7 @@ class Git:
   def GetModifiedFiles(print_cmds):
     cmd = ['git', '--no-pager', 'status', '--porcelain']
     files = []
-    p = re.compile(r'^[\sA]M\s+(.*)$')
+    p = re.compile(r'^[\sAM]+\s+(.*)$')
     if print_cmds:
       print ' '.join(cmd)
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
