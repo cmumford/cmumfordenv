@@ -120,6 +120,38 @@
       ]
     },
     {
+      "name": "content_shell_apk",
+      "targets": ["content_shell_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/adb_install_apk.py",
+            "--apk",
+            "ContentShell.apk",
+            "--${build_type}"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "chrome_shell_apk",
+      "targets": ["chrome_shell_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/adb_install_apk.py",
+            "--apk",
+            "ChromeShell.apk",
+            "--${build_type}"
+          ]
+        }
+      ]
+    },
+    {
       "name": "env_chromium_unittests_apk",
       "targets": ["env_chromium_unittests_apk", "forwarder2"],
       "commands": [
