@@ -179,7 +179,7 @@
           "command": [
             "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
-            " --test-launcher-jobs=${jobs}"
+            "--test-launcher-jobs=${jobs}"
           ]
         },
         {
@@ -246,7 +246,7 @@
           "command": [
             "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
-            " --test-launcher-jobs=${jobs}"
+            "--test-launcher-jobs=${jobs}"
           ]
         },
         {
