@@ -204,7 +204,7 @@
       ]
     },
     {
-      "names": ["env_chromium_unittests", "performance_ui_tests",
+      "names": ["env_chromium_unittests", "performance_browser_tests",
               "webkit_unit_tests", "content_endurancetests"],
       "type": "gtest",
       "targets": ["xdisplaycheck", "${executable_name}"],
@@ -272,9 +272,9 @@
       ]
     },
     {
-      "name": "idb_performance_ui_tests",
-      "title": "The IndexedDB tests from performance_ui_tests",
-      "executable": "performance_ui_tests",
+      "name": "performance-browser-tests-idb",
+      "title": "The IndexedDB tests from performance_browser_tests",
+      "executable": "performance_browser_tests",
       "args": [
         "--gtest_filter='IndexedDBTest.Perf'"
       ]
@@ -358,7 +358,7 @@
     {
       "name": "perf-idb",
       "title": "Run all IdexedDB performance tests",
-      "executables": ["performance_ui_tests"]
+      "executables": ["performance_browser_tests"]
     }
   ],
   "default": "chrome"
