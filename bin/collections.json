@@ -340,7 +340,7 @@
       ]
     },
     {
-      "name": "idb_content_browsertests",
+      "name": "content-browsertests-idb",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -378,7 +378,7 @@
       "title": "Run all IndexedDB unit tests",
       "runs": ["env_chromium_unittests", "idb_webkit_unit_tests",
                "idb_content_unittests", "idb_unit_tests",
-               "idb_content_browsertests", "idb_browser_tests"]
+               "content-browsertests-idb", "idb_browser_tests"]
     },
     {
       "name": "unit-all",
