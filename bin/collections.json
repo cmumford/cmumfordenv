@@ -97,8 +97,7 @@
         "python",
         "tools/perf/run_measurement",
         "--browser=${build_type}",
-        "indexeddb_perf",
-        "indexed_db"
+        "indexeddb_perf"
       ]
     },
     {
