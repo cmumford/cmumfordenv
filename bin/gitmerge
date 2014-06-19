@@ -1,10 +1,25 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-BASE="$1"
-LOCAL="$2"
-REMOTE="$3"
-MERGED="$4"
+import os
+import subprocess
+import sys
+
+if len(sys.argv) != 5:
+  print >> sys.stderr, "Incorrect arguments"
+  sys.exit(1)
+
+base=sys.argv[1]
+local=sys.argv[2]
+remote=sys.argv[3]
+merged=sys.argv[4]
 
 # Open up Meld with three tabs to more easily see what they (the *other* branch)
 # did, what we (the local/current branch), and Git's merged version.
-meld $LOCAL $MERGED $REMOTE --diff $BASE $LOCAL --diff $BASE $REMOTE
+if sys.platform == 'win32':
+  meld_path = r"%s\Meld\meld\meld.exe" % os.environ['PROGRAMFILES(X86)']
+  cmd = [meld_path]
+else:
+  cmd = ['meld']
+
+cmd.extend([local, merged, remote, '--diff', base, local, '--diff', base, remote])
+subprocess.check_call(cmd)
