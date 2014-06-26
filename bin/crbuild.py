@@ -370,10 +370,11 @@ class Collections(object):
 ##
 # Values in this class affect how build_gyp generates makefiles.
 class GypValues(object):
-  def __init__(self):
+  def __init__(self, target_os):
     self.gyp_generator_flags = set()
     self.gyp_defines = set()
-    if platform.system() == 'Windows':
+    self.target_os = target_os
+    if self.target_os == 'win':
       self.gyp_generators = 'ninja,msvs'
     else:
       self.gyp_generators = 'ninja'
@@ -407,12 +408,19 @@ class GypValues(object):
 
 class Options(object):
   def __init__(self):
+    self.root_dir = os.path.abspath('.')
+    try:
+      self.target_os = self.GetPlatform()
+    except IOError as e:
+      print >> sys.stderr, "ERROR: %s" % e.filename
+      print >> sys.stderr, "Are you running from the chrome/src dir?"
+      sys.exit(8)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
-    self.gyp = GypValues()
+    self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
-    if platform.system() == 'Windows':
+    if self.target_os == 'win':
       # Should read in chromium.gyp_env and append to those values
       self.gyp.gyp_defines.add('component=shared_library')
     self.verbosity = 0
@@ -422,7 +430,6 @@ class Options(object):
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
     if not os.path.exists(self.goma_path):
       self.gyp.use_goma = False
-    self.root_dir = os.path.abspath('.')
     self.llvm_path = os.path.abspath(os.path.join('third_party', 'llvm-build',
                                                   'Release+Asserts', 'bin'))
     if not os.path.exists(self.llvm_path):
@@ -433,12 +440,6 @@ class Options(object):
     self.out_dir = 'out'
     self.run_args = None
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, self.out_dir, '.GYP_STATE'))
-    try:
-      self.target_os = self.GetPlatform()
-    except IOError as e:
-      print >> sys.stderr, "ERROR: %s" % e.filename
-      print >> sys.stderr, "Are you running from the chrome/src dir?"
-      sys.exit(8)
     if self.target_os == 'android':
       self.gyp.use_goma = False
       self.gyp.use_clang = False
@@ -446,7 +447,7 @@ class Options(object):
 
   @staticmethod
   def OutputColor():
-    if platform.system() == 'Windows':
+    if self.target_os == 'win':
       return False
     else:
       return sys.stdout.isatty()
@@ -483,7 +484,7 @@ class Options(object):
     else:
       # Assume the target platform is the one on which the build is taking place
       if platform.system() == 'Windows':
-        return 'windows'
+        return 'win'
       elif platform.system() == 'Linux':
         return 'linux'
       print >> "Unknown platform: '%s'" % platform.system()
@@ -570,7 +571,7 @@ a target defined in the gyp files.""")
         self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
         self.gyp.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
         self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
-      elif self.target_os == 'windows':
+      elif self.target_os == 'win':
         self.gyp.gyp_defines.add('syzyasan=1')
         self.gyp.gyp_defines.add('chrome_multiple_dll=0')
         self.gyp.gyp_generators = 'ninja'
@@ -594,7 +595,7 @@ class Builder:
   # This is caused by the Microsoft PDB Server running out of virtual address
   # space. Killing this service fixes this problem.
   def KillPdbServer(self):
-    assert platform.system() == 'Windows'
+    assert self.options.target_os == 'win'
     cmd = "taskkill /F /im mspdbsrv.exe"
     if self.options.print_cmds:
       print cmd
@@ -726,7 +727,7 @@ class Builder:
   def DoBuild(self):
     build_types = self.GetBuildTypes()
 
-    if platform.system() == 'Windows':
+    if self.options.target_os == 'win':
       self.KillPdbServer()
 
     if self.options.clobber:
