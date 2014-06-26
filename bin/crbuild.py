@@ -604,11 +604,7 @@ class Builder:
 
   @staticmethod
   def PrependToPath(path):
-    if platform.system() == 'Windows':
-      path_delim = ';'
-    else:
-      path_delim = ':'
-    os.environ['PATH'] = "%s%s%s" % (path, path_delim, os.environ['PATH'])
+    os.environ['PATH'] = "%s%s%s" % (path, os.pathsep, os.environ['PATH'])
 
   @staticmethod
   def PrintAllEnvVars():
