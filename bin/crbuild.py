@@ -487,7 +487,7 @@ class Options(object):
         return 'win'
       elif platform.system() == 'Linux':
         return 'linux'
-      print >> "Unknown platform: '%s'" % platform.system()
+      print >> sys.stderr, "Unknown platform: '%s'" % platform.system()
       sys.exit(1)
 
   def Parse(self):
