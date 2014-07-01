@@ -8,10 +8,12 @@ if len(sys.argv) != 5:
   print >> sys.stderr, "Incorrect arguments"
   sys.exit(1)
 
-base=sys.argv[1]
-local=sys.argv[2]
-remote=sys.argv[3]
-merged=sys.argv[4]
+class Params:
+  PROG = 0
+  BASE = 1
+  LOCAL = 2
+  REMOTE = 3
+  MERGED = 4
 
 # Open up Meld with three tabs to more easily see what they (the *other* branch)
 # did, what we (the local/current branch), and Git's merged version.
@@ -21,5 +23,10 @@ if sys.platform == 'win32':
 else:
   cmd = ['meld']
 
-cmd.extend([local, merged, remote, '--diff', base, local, '--diff', base, remote])
+# I want the 3-way tab to be the initial visible one. Seems random how Meld
+# decided which one to use.
+cmd.extend([sys.argv[Params.BASE], sys.argv[Params.LOCAL]])
+cmd.extend(['--diff', sys.argv[Params.LOCAL], sys.argv[Params.MERGED], sys.argv[Params.REMOTE]])
+cmd.extend(['--diff', sys.argv[Params.BASE], sys.argv[Params.REMOTE]])
+
 subprocess.check_call(cmd)
