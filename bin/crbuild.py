@@ -420,6 +420,7 @@ class Options(object):
       sys.exit(8)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
+    self.use_gn = False
     self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
@@ -655,6 +656,14 @@ class Builder:
     if self.options.print_cmds:
       print "$ %s" % ' '.join(cmd)
 
+  def GN(self, build_dir):
+    cmd = ['gn', 'gen', build_dir]
+    if self.options.print_cmds:
+      print ' '.join(cmd)
+    if self.options.noop:
+      return
+    subprocess.check_call(cmd)
+
   def Gyp(self):
     print "Gyp'ing..."
     cmd = ['python', os.path.join('build', 'gyp_chromium')]
@@ -716,6 +725,8 @@ class Builder:
     return build_types
 
   def NeedToReGyp(self):
+    if self.options.use_gn:
+      return False
     if self.options.regyp:
       print "Must regyp"
       return True
@@ -750,6 +761,8 @@ class Builder:
     active_target_names = self.options.GetActiveTargets()
     errors = []
     for build_type in build_types:
+      if self.options.use_gn:
+        self.GN(os.path.join(self.options.out_dir, build_type))
       errors.extend(self.Build(build_type, active_target_names))
       for target_name in active_target_names:
         collections.MarkTargetBuilt(target_name, build_type)
