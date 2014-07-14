@@ -27,7 +27,7 @@
           ]
         },
         {
-          "name": "clusterfuzz",
+          "name": "asan",
           "command": [
             "${out_dir}/${Build_type}/chrome",
             "--user-data-dir=${HOME}/.chrome_dev",

@@ -66,6 +66,8 @@ class Executable(BuildTypeItem):
       config_name = 'valgrind'
     elif self.options.debugger:
       config_name = 'debug'
+    elif self.options.asan:
+      config_name = 'asan'
 
     for cmd in self.commands:
       if config_name:
@@ -444,6 +446,7 @@ class Options(object):
       self.gyp.use_goma = False
       self.gyp.use_clang = False
     self.jobs = multiprocessing.cpu_count()
+    self.asan = False
 
   @staticmethod
   def OutputColor():
@@ -561,6 +564,7 @@ a target defined in the gyp files.""")
     if args.debugger:
       self.debugger = True
     if args.asan:
+      self.asan = True
       if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
@@ -687,6 +691,12 @@ class Builder:
       cmd.insert(1, '-v')
     if self.options.gyp.use_goma:
       cmd[1:1] = ['-j', '1000']
+    if self.options.asan:
+      platform_dir = os.path.join(self.options.root_dir,
+                                  self.options.out_dir,
+                                  build_type)
+      os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
+                                                        'chrome_sandbox')
     cmd.extend(target_names)
     self.PrintStep(cmd)
     try:
