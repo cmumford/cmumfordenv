@@ -108,6 +108,7 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
       cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
       cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
+      cmd[idx] = cmd[idx].replace(r'${layout_dir}', str(options.layout_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if options.run_args:
       cmd.extend(options.run_args)
@@ -441,6 +442,7 @@ class Options(object):
     self.debugger = False
     self.out_dir = 'out'
     self.run_args = None
+    self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, self.out_dir, '.GYP_STATE'))
     if self.target_os == 'android':
       self.gyp.use_goma = False

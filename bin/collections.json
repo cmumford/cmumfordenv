@@ -272,15 +272,39 @@
       "name": "blink-layout",
       "title": "The Blink layout tests",
       "targets": ["blink_tests"],
-      "command": [
-        "third_party/WebKit/Tools/Scripts/run-webkit-tests",
-        "--no-show-results",
-        "--${build_type}",
-        "--nocheck-sys-deps",
-        "--clobber-old-results",
-        "--no-retry-failures",
-        "--no-new-test-results",
-        "--fully-parallel"
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "${xvfb}",
+            "third_party/WebKit/Tools/Scripts/run-webkit-tests",
+            "--no-show-results",
+            "--${build_type}",
+            "--nocheck-sys-deps",
+            "--clobber-old-results",
+            "--no-retry-failures",
+            "--no-new-test-results",
+            "--fully-parallel"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
+            "${out_dir}/${Build_type}/content_shell",
+            "--no-timeout"
+          ]
+        },
+        {
+          "name": "valgrind",
+          "command": [
+            "tools/valgrind/chrome_tests.sh",
+            "--build-dir=${out_dir}/${Build_type}",
+            "-t",
+            "webkit"
+          ]
+        }
       ]
     }
   ],
@@ -369,6 +393,17 @@
       "executable": "blink-layout",
       "args": [
         "storage/indexeddb"
+      ]
+    },
+    {
+      "name": "blink-layout-idb-single",
+      "title": "The IndexedDB subset of the Blink layout tests",
+      "executable": "blink-layout",
+      "args": [
+        "${layout_dir}/storage/indexeddb/event-init.html"
+      ],
+      "-commands": [
+        "--fully-parallel"
       ]
     }
   ],
