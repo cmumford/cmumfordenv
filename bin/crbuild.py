@@ -612,7 +612,8 @@ a target defined in the gyp files.""")
         self.gyp.gyp_generators = 'ninja'
         # According to docs SyzyASAN not yet compatible shared library.
         self.gyp.gyp_defines.remove('component=shared_library')
-        self.gyp.gyp_defines.remove('disable_nacl=1')
+        if 'disable_nacl=1' in self.gyp.gyp_defines:
+          self.gyp.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('component=shared_library')
