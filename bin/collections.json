@@ -17,7 +17,7 @@
     {
       "name": "devchrome",
       "title": "Chromium with user-data-dir",
-      "targets": ["chrome"],
+      "targets": ["chrome_sandbox", "chrome"],
       "commands": [
         {
           "name": "normal",
