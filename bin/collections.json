@@ -23,7 +23,8 @@
           "name": "normal",
           "command": [
             "${out_dir}/${Build_type}/chrome",
-            "--user-data-dir=${HOME}/.chrome_dev"
+            "--user-data-dir=${HOME}/.chrome_dev",
+            "--allow-file-access"
           ]
         },
         {
