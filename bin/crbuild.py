@@ -453,7 +453,7 @@ class Options(object):
 
   @staticmethod
   def OutputColor():
-    if self.target_os == 'win':
+    if platform.system() == 'Windows':
       return False
     else:
       return sys.stdout.isatty()
