@@ -30,12 +30,29 @@
           "name": "asan",
           "command": [
             "${out_dir}/${Build_type}/chrome",
-            "--user-data-dir=${HOME}/.chrome_dev",
             "--allow-file-access-from-files",
+            "--disable-click-to-play",
+            "--disable-gpu",
+            "--disable-hang-monitor",
+            "--disable-metrics",
             "--disable-popup-blocking",
+            "--disable-prompt-on-repost",
+            "--enable-experimental-extension-apis",
+            "--enable-extension-apps",
+            "--enable-extension-timeline-api",
+            "--enable-nacl",
+            "--enable-search-provider-api-v2",
+            "--enable-video-track",
             "--js-flags=\"--expose_gc\"",
-            "--user-data-dir=/usr/local/google/home/cmumford/work/ssd/chrome/src/bisect_data_dir",
-            "/usr/local/google/home/cmumford/bugs/scriptValueToIDBKey/fuzz-crossfuzz-1377525766.html"
+            "--new-window",
+            "--no-default-browser-check",
+            "--no-first-run",
+            "--no-process-singleton-dialog",
+            "--no-sandbox",
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+            "--use-gl=osmesa",
+            "--user-data-dir=${HOME}/.chrome_asan"
           ]
         },
         {
