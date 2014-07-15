@@ -7,6 +7,7 @@ import multiprocessing
 import os
 import pickle
 import platform
+import re
 import shutil
 import subprocess
 import sys
@@ -218,14 +219,41 @@ class Collections(object):
     self.target_names[target_name] = target
     return target
 
+  # Target names are either "<target-name>" or "(<condition>)<target-name>"
+  @staticmethod
+  def ParseTargetName(target_str):
+    reg = re.compile(r'^\(([^\)]+)\)\s*(.+)$')
+    m = reg.match(target_str)
+    if m:
+      return (m.group(1), m.group(2))
+    else:
+      return (None, target_str)
+
+  def ConditionTrue(self, condition):
+    if condition == None:
+      return True
+    reg = re.compile('^OS([!=]=)[\'"](.*)[\'"]$')
+    m = reg.match(condition)
+    assert(m)
+    op = m.group(1)
+    os_name = m.group(2)
+    if op == '==' and os_name == self.options.target_os:
+      return True
+    if op == '!=' and os_name != self.options.target_os:
+      return True
+    return False
+
   def ParseExecutable(self, exe_obj, exe_name):
     target_names = []
     if 'targets' in exe_obj:
       for target_name in exe_obj['targets']:
-        if target_name == '${executable_name}':
+        (condition, tname) = Collections.ParseTargetName(target_name)
+        if not self.ConditionTrue(condition):
+          continue
+        if tname == '${executable_name}':
           target_names.append(exe_name)
         else:
-          target_names.append(target_name)
+          target_names.append(tname)
     else:
       target_names.append(exe_name)
     targets = []
