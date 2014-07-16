@@ -452,6 +452,7 @@ class Options(object):
     self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
+    self.gyp.gyp_defines.add('disable_nacl=1')
     if self.target_os == 'win':
       # Should read in chromium.gyp_env and append to those values
       self.gyp.gyp_defines.add('component=shared_library')
