@@ -59,7 +59,7 @@ class Executable(BuildTypeItem):
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
-      print "$ %s" % ' '.join(cmd)
+      Options.OutputCommand("$ %s" % ' '.join(cmd))
 
   def GetCommandToRun(self):
     config_name = None
@@ -487,6 +487,18 @@ class Options(object):
     else:
       return sys.stdout.isatty()
 
+  @staticmethod
+  def OutputCommand(cmd):
+    if type(cmd) is list:
+      str_cmd = ' '.join(cmd)
+    else:
+      assert type(cmd) is str or type(cmd) is unicode
+      str_cmd = cmd
+    if Options.OutputColor():
+      print "%s%s%s" % (bcolors.OKBLUE, str_cmd, bcolors.ENDC)
+    else:
+      print ' '.join(str_cmd)
+
   def GetActiveTargets(self):
     targets = set()
     for item_name in self.active_items:
@@ -635,7 +647,7 @@ class Builder:
     assert self.options.target_os == 'win'
     cmd = "taskkill /F /im mspdbsrv.exe"
     if self.options.print_cmds:
-      print cmd
+      Options.OutputCommand(cmd)
     if not self.options.noop:
       os.system(cmd)
 
@@ -684,12 +696,12 @@ class Builder:
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
-      print "$ %s" % ' '.join(cmd)
+      Options.OutputCommand("$ %s" % ' '.join(cmd))
 
   def GN(self, build_dir):
     cmd = ['gn', 'gen', build_dir]
     if self.options.print_cmds:
-      print ' '.join(cmd)
+      Options.OutputCommand(' '.join(cmd))
     if self.options.noop:
       return
     subprocess.check_call(cmd)
@@ -709,7 +721,7 @@ class Builder:
   def DeleteDir(self, dir_path):
     if os.path.exists(dir_path):
       if self.options.print_cmds:
-        print "Deleting %s" % dir_path
+        Options.OutputCommand("Deleting %s" % dir_path)
       if not self.options.noop:
         shutil.rmtree(dir_path)
 
