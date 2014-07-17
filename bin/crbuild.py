@@ -538,6 +538,16 @@ class Options(object):
       print >> sys.stderr, "Unknown platform: '%s'" % platform.system()
       sys.exit(1)
 
+  # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
+  # argparse can't deal with multiple positional arguments. So before we parse
+  # argv we strip off the "bare double dash" args which we pass to an executable
+  # *if* we wind up running one.
+  def StripRunPositionalArgs(self):
+    if '--' in sys.argv:
+      positional_start_idx = sys.argv.index('--')
+      self.run_args = sys.argv[positional_start_idx+1:]
+      sys.argv = sys.argv[:positional_start_idx]
+
   def Parse(self):
     desc = "A script to compile/test Chromium."
     parser = argparse.ArgumentParser(description=desc,
@@ -557,8 +567,6 @@ class Options(object):
                         help="Don't do anything, print what would be done")
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
-    parser.add_argument('-a', '--run-arg', action='append',
-                        help="Extra args to pass when *running* an executable.")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
@@ -574,6 +582,7 @@ predefined target/executable/run/collection items defined in
 collections.json (see below). If not then it is assumed to be
 a target defined in the gyp files.""")
 
+    self.StripRunPositionalArgs()
     args = parser.parse_args()
     self.debug = args.debug
     self.release = args.release
@@ -632,8 +641,6 @@ a target defined in the gyp files.""")
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('component=shared_library')
     self.gyp.gyp_defines.add('OS=%s' % self.target_os)
-
-    self.run_args = args.run_arg
 
 class Builder:
   def __init__(self, options):
