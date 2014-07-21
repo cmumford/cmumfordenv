@@ -27,7 +27,6 @@
 	autocrlf = false
 	filemode = false
 	deltaBaseCacheLimit = 1G
-	pager = less -r
 [rerere]
 	enabled = 1
 [mergetool "mymeld"]
