@@ -618,7 +618,8 @@ class Options(object):
     self.chromeos_build = 'link'
     self.shared_libraries = True
     self.gyp.gyp_defines.add('disable_nacl=1')
-    self.gyp.gyp_defines.add('linux_use_debug_fission=0')
+    if self.target_os == 'linux':
+      self.gyp.gyp_defines.add('linux_use_debug_fission=0')
     if (self.target_os == 'win' or self.target_os == 'linux') and \
         self.shared_libraries:
       # Should read in chromium.gyp_env and append to those values
