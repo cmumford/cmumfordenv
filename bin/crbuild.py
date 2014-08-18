@@ -13,6 +13,10 @@ import subprocess
 import sys
 import time
 from argparse import RawTextHelpFormatter
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join("tools", "valgrind", "asan")))
+if cmd_subfolder not in sys.path:
+  sys.path.insert(0, cmd_subfolder)
+from third_party import asan_symbolize
 
 class bcolors:
     HEADER = '\033[95m'
@@ -117,7 +121,17 @@ class Executable(BuildTypeItem):
     errors = []
     try:
       if not self.options.noop:
-        subprocess.check_call(cmd)
+        if self.options.asan:
+          asan_symbolize.demangle = True
+          loop = asan_symbolize.SymbolizationLoop(binary_name_filter=asan_symbolize.fix_filename)
+          p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
+          for line in iter(p.stderr.readline, ""):
+            print >> sys.stderr, ''.join(loop.process_line(line))
+          p.wait()
+          if p.returncode:
+            raise subprocess.CalledProcessError(returncode=p.returncode, cmd=cmd)
+        else:
+          subprocess.check_call(cmd)
       if extra_args == None:
         self.MarkDoneFor(build_type)
     except subprocess.CalledProcessError as e:
@@ -622,7 +636,7 @@ a target defined in the gyp files.""")
         self.out_dir = 'out_asan'
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('clang=1')
-        self.gyp.gyp_defines.add('linux_use_tcmalloc=0')
+        self.gyp.gyp_defines.add('use_allocator=none')
         self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
         self.gyp.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
         self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
@@ -748,7 +762,7 @@ class Builder:
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
     if self.options.gyp.use_goma:
-      cmd[1:1] = ['-j', '1000']
+      cmd[1:1] = ['-j', '4000']
     if self.options.asan:
       platform_dir = os.path.join(self.options.root_dir,
                                   self.options.out_dir,

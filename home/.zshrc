@@ -197,6 +197,9 @@ zstyle ':completion:*' completer _complete _ignored
 zstyle ':completion:*' use-compctl true
 zstyle :compinstall filename '$HOME/.zshrc'
 
+# My custom zsh completions
+fpath=(~/cmumford/zsh_completion $fpath) 
+
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall

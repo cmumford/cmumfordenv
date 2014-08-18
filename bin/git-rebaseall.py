@@ -126,6 +126,13 @@ class Rebaser(object):
         break
     return False
 
+  def prune(self):
+    branches = self.git.getBranches()
+    for branch in branches:
+      if branch.name in self.options.skip_branches:
+        continue
+      cmd = ['git', 'branch', '--set-upstream-to=%s' % up, branch.name]
+
   def rebase(self, branches, branch):
     #print "%s < %s" % (branch.name, branch.parent)
     if not branch.parent:

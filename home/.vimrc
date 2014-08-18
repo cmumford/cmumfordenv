@@ -222,6 +222,8 @@ au BufWinLeave * set colorcolumn=0
 
 set bg=dark
 
+let NERDTreeIgnore = ['\.pyc$']
+
 " fugitive-vim stuff
 " Auto-clean fugitive buffers
 autocmd BufReadPost fugitive://* set bufhidden=delete

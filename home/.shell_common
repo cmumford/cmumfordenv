@@ -22,7 +22,6 @@ alias gitdiff='git diff --no-ext-diff'
 alias wgethtml='wget -E -H -k -K -p -nd -o logwget.txt'
 alias dos2unix="tr -d '\r'"
 alias mac2unix="tr '\r' '\n'"
-alias pmake="USE_CCACHE=1 CCACHE_DIR=$HOME/.ccache_sourcery PREBUILT_CCACHE_PATH='/usr/bin/ccache' make --jobs=$NUMCPUS"
 alias logcat=$HOME/src/adb-logcat-color/adb-logcat-color.rb
 
 function jgrep()
@@ -48,6 +47,16 @@ function jsongrep()
 function gypgrep()
 {
 	grep -n --color=always --recursive --include="*.gyp" --include="*.gypi" $@ .
+}
+
+function gngrep()
+{
+	grep -n --color=always --recursive --include="*.gn" $@ .
+}
+
+function idlgrep()
+{
+	grep -n --color=always --recursive --include="*.idl" $@ .
 }
 
 function cgrep()

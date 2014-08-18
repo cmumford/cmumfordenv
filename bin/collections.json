@@ -108,6 +108,29 @@
       ]
     },
     {
+      "name": "leveldb-endurance",
+      "title": "The LevelDB endurance test app",
+      "targets": ["leveldb_endurance_test"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "${out_dir}/${Build_type}/leveldb_endurance_test",
+            "/tmp/leveldb-endurance"
+          ]
+        },
+        {
+          "name": "debug",
+          "command": [
+            "cgdb",
+            "--args",
+            "${out_dir}/${Build_type}/leveldb_endurance_test",
+            "/tmp/leveldb-endurance"
+          ]
+        }
+      ]
+    },
+    {
       "name": "indexeddb_perf",
       "title": "IndexedDB Telemetry based performance tests",
       "targets": ["chrome"],
@@ -205,7 +228,8 @@
           "command": [
             "cgdb",
             "--args",
-            "${out_dir}/${Build_type}/${executable_name}"
+            "${out_dir}/${Build_type}/${executable_name}",
+            "--single-process-tests"
           ]
         },
         {
@@ -257,7 +281,7 @@
       "names": ["env_chromium_unittests", "performance_browser_tests",
               "webkit_unit_tests", "content_endurancetests"],
       "type": "gtest",
-      "targets": ["xdisplaycheck", "${executable_name}"],
+      "targets": ["${executable_name}"],
       "commands": [
         {
           "name": "normal",
@@ -311,7 +335,17 @@
             "cgdb",
             "--args",
             "${out_dir}/${Build_type}/content_shell",
-            "--no-timeout"
+            "--no-timeout",
+            "--no-sandbox",
+            "--single-process"
+          ]
+        },
+        {
+          "name": "asan",
+          "command": [
+            "${out_dir}/${Build_type}/content_shell",
+            "--no-timeout",
+            "--no-sandbox"
           ]
         },
         {
@@ -342,7 +376,8 @@
       "args": [
         "tools/ipc_fuzzer/play_testcase.py",
         "--build-type=${Build_type}",
-        "--out-dir=${out_dir}"
+        "--out-dir=${out_dir}",
+        "/usr/local/google/home/cmumford/Downloads/fuzz-sjonhggdixmlvveo_unminimized.ipcdump"
       ]
     },
     {
@@ -390,11 +425,109 @@
       ]
     },
     {
-      "name": "idb-content-browsertests-android",
+      "name": "content-browsertests-idb-one",
+      "title": "The IndexedDB tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*VersionChangeCrashResilience*:'"
+      ],
+      "-commands": [
+        "${xvfb}"
+      ]
+    },
+    {
+      "name": "content-browsertests-idb-null",
+      "title": "The IndexedDB tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*NullKeyPathPersistence*:'"
+      ],
+      "-commands": [
+        "${xvfb}"
+      ]
+    },
+    {
+      "name": "content-browsertests-idb-single",
+      "title": "The IndexedDB tests from content_browsertests (single process)",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*IndexedDB*:'",
+        "--single-process"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
+      ]
+    },
+    {
+      "name": "content-browsertests-idb-android",
       "title": "The IndexedDB tests from content_browsertests on Android",
       "executable": "content_browsertests_apk",
       "args": [
         "--gtest_filter=':*IndexedDB*:'"
+      ]
+    },
+    {
+      "name": "content-browsertests-idb-android-one",
+      "title": "The IndexedDB tests from content_browsertests on Android",
+      "executable": "content_browsertests_apk",
+      "args": [
+        "--gtest_filter=':*IndexedDBBrowserTestSingleProcess.RenderThreadShutdownTest*:'"
+      ]
+    },
+    {
+      "name": "content-browsertests-idb-android-hang",
+      "title": "The hanging IndexedDB tests from content_browsertests on Android",
+      "executable": "content_browsertests_apk",
+      "args": [
+        "--gtest_filter=':*NullKeyPathPersistence*:'"
+      ]
+    },
+    {
+      "name": "corrupt",
+      "title": "Run the new corruption (while open) test",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*CorruptedOpenDatabase/2*:'",
+        "--single-process-tests",
+        "--test-launcher-jobs=1"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}XXXX",
+        "${xvfb}"
+      ]
+    },
+    {
+      "name": "idb-endurance",
+      "title": "Run the IndexedDB endurance test",
+      "executable": "devchrome",
+      "args": [
+        "--disable-web-security",
+        "--allow-file-access",
+        "file://${root_dir}/content/test/data/indexeddb_endurance_test.html"
+      ]
+    },
+    {
+      "name": "fuzz",
+      "title": "A Clusterfuzz bug of mine: crbug.com/397980",
+      "executable": "devchrome",
+      "args": [
+        "--disable-web-security",
+        "--allow-file-access",
+        "--js-flags=\"--expose_gc --verify-heap\"",
+        "--no-first-run",
+        "--use-gl=osmesa",
+        "file:///usr/local/google/home/cmumford/Downloads/fuzz-run_15576430315759846263_644193967.html"
+      ]
+    },
+    {
+      "name": "chromeInternals",
+      "title": "The chromeInternals unit tests from browser_tests (Chrome extension API)",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*InternalsApiTest*:'"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
       ]
     },
     {
@@ -411,6 +544,9 @@
       "executable": "blink-layout",
       "args": [
         "storage/indexeddb"
+      ],
+      "-commands": [
+        "--fully-parallelXXX"
       ]
     },
     {
@@ -419,6 +555,17 @@
       "executable": "blink-layout",
       "args": [
         "${layout_dir}/storage/indexeddb/event-init.html"
+      ],
+      "-commands": [
+        "--fully-parallel"
+      ]
+    },
+    {
+      "name": "blink-layout-enum",
+      "title": "The Blink layout tests to verify enum verification changes",
+      "executable": "blink-layout",
+      "args": [
+        "storage/indexeddb/event-init.html"
       ],
       "-commands": [
         "--fully-parallel"
