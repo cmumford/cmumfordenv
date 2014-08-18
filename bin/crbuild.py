@@ -474,7 +474,7 @@ class Options(object):
     self.out_dir = 'out'
     self.run_args = None
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
-    self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, self.out_dir, '.GYP_STATE'))
+    self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
     if self.target_os == 'android':
       self.gyp.use_goma = False
       self.gyp.use_clang = False
