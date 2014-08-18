@@ -458,7 +458,7 @@ class Options(object):
       # Should read in chromium.gyp_env and append to those values
       self.gyp.gyp_defines.add('component=shared_library')
     self.verbosity = 0
-    self.print_cmds = False
+    self.print_cmds = True
     self.noop = False
     self.regyp = False
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
@@ -593,11 +593,8 @@ a target defined in the gyp files.""")
     if self.clobber:
       self.regyp = True
     self.verbosity = args.verbose
-    if self.verbosity > 0:
-      self.print_cmds = True
     if args.noop:
       self.noop = True
-      self.print_cmds = True
     for target_name in args.targets:
       if self.collections.GetItemName(target_name) == None:
         # Not one of our predefined meta-targets (AKA items), so assume this is
