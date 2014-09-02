@@ -591,6 +591,29 @@
       "name": "perf-idb",
       "title": "Run all IdexedDB performance tests",
       "executables": ["performance_browser_tests"]
+    },
+    {
+      "name": "unit-leveldb",
+      "title": "Run all LevelDB tests",
+      "executables": [
+        "leveldb_arena_test",
+        "leveldb_bloom_test",
+        "leveldb_cache_test",
+        "leveldb_coding_test",
+        "leveldb_corruption_test",
+        "leveldb_crc32c_test",
+        "leveldb_db_bench",
+        "leveldb_db_test",
+        "leveldb_dbformat_test",
+        "leveldb_env_test",
+        "leveldb_filename_test",
+        "leveldb_filter_block_test",
+        "leveldb_log_test",
+        "leveldb_skiplist_test",
+        "leveldb_table_test",
+        "leveldb_version_edit_test",
+        "leveldb_write_batch_test"
+      ]
     }
   ],
   "default": "chrome"
