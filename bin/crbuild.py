@@ -42,14 +42,15 @@ class BuildTarget(BuildTypeItem):
     self.name = name
     self.title = ''
     self.built_for = set()
+    self.auto_generated = False
 
   def GetTargets(self):
     return [self]
 
 class Commands(object):
-  def __init__(self, args):
+  def __init__(self, args, name=''):
     self.args = args
-    self.name = ''
+    self.name = name
 
 class Executable(BuildTypeItem):
   def __init__(self, name, build_targets, commands, options):
@@ -60,6 +61,7 @@ class Executable(BuildTypeItem):
     self.commands = commands
     self.options = options
     self.type = 'normal'
+    self.auto_generated = False
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
@@ -347,6 +349,21 @@ class Collections(object):
 
     return lines
 
+  def CreateStockExecutable(self, exe_name):
+    run_args = ["${out_dir}/${Build_type}/%s" % exe_name]
+    if exe_name not in self.target_names:
+      target = self.CreateTarget(exe_name)
+
+    commands = [
+        Commands(run_args, ''),
+        Commands(['cgdb', '--args'] + run_args, 'debug')
+    ]
+
+    exe = Executable(exe_name, [self.target_names[exe_name]], commands, self.options)
+    exe.auto_generated = True
+    self.exe_names[exe_name] = exe
+    return exe
+
   def LoadDataFile(self):
     file_path = Collections.GetDataFilePath()
     with open(file_path) as f:
@@ -398,6 +415,8 @@ class Collections(object):
             items.append(self.target_names[target_name])
         if 'executables' in collection_obj:
           for exe_name in collection_obj['executables']:
+            if exe_name not in self.exe_names:
+              self.CreateStockExecutable(exe_name)
             items.append(self.exe_names[exe_name])
         if 'runs' in collection_obj:
           for run_name in collection_obj['runs']:
