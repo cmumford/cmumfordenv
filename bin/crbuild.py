@@ -89,7 +89,8 @@ class Executable(BuildTypeItem):
       sys.exit(5)
     return self.commands[0]
 
-  def Run(self, build_type, extra_args = None, no_run_commands = None):
+  def GetCommands(self, build_type, extra_args = None, no_run_commands = None):
+    xvfb = ["python", "testing/xvfb.py", "${out_dir}/${Build_type}"]
     bt_lowercase = build_type.lower()
     command = self.GetCommandToRun()
     cmd = copy.copy(command.args)
@@ -99,8 +100,6 @@ class Executable(BuildTypeItem):
       for arg in no_run_commands:
         if arg in cmd:
           cmd.remove(arg)
-
-    xvfb = ["python", "testing/xvfb.py", "${out_dir}/${Build_type}"]
     new_cmd = []
     for c in cmd:
       if c == '${xvfb}':
@@ -117,10 +116,15 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
       cmd[idx] = cmd[idx].replace(r'${layout_dir}', str(options.layout_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
-    if options.run_args:
-      cmd.extend(options.run_args)
+    if self.options.run_args:
+      cmd.extend(self.options.run_args)
+    return cmd
+
+  def Run(self, build_type, extra_args = None, no_run_commands = None):
+
+    cmd = self.GetCommands(build_type, extra_args, no_run_commands)
     self.PrintStep(cmd)
-    errors = []
+    run_errors = []
     try:
       if not self.options.noop:
         if self.options.asan:
@@ -137,8 +141,8 @@ class Executable(BuildTypeItem):
       if extra_args == None:
         self.MarkDoneFor(build_type)
     except subprocess.CalledProcessError as e:
-      errors.append(e)
-    return errors
+      run_errors.append(e)
+    return run_errors
 
   def GetTargets(self):
     targets = []
