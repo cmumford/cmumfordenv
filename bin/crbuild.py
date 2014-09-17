@@ -36,6 +36,9 @@ class BuildTypeItem(object):
   def MarkDoneFor(self, build_type):
     self.done_for.add(build_type)
 
+  def GetExePath(self, build_type):
+    return 'chrome?'
+
 class BuildTarget(BuildTypeItem):
   def __init__(self, name):
     super(BuildTarget, self).__init__()
@@ -66,6 +69,15 @@ class Executable(BuildTypeItem):
   def PrintStep(self, cmd):
     if self.options.print_cmds:
       Options.OutputCommand("$ %s" % ' '.join(cmd))
+
+  def GetExePath(self, build_type):
+    # An executable "command" is just a list of parameters to pass to
+    # launch the process. Which one is the "executable" is a little nebulous.
+    # Our heuristic is the one that exists on disk, and is in the out dir.
+    for cmd in self.GetCommands(build_type):
+      if os.path.exists(cmd) and options.out_dir in cmd:
+        return cmd
+    return super(Executable, self).GetExePath()
 
   def GetCommandToRun(self):
     config_name = None
@@ -517,6 +529,8 @@ class Options(object):
       self.gyp.use_clang = False
     self.jobs = multiprocessing.cpu_count()
     self.asan = False
+    self.profile = False
+    self.profile_file = "/tmp/cpuprofile"
 
   @staticmethod
   def OutputColor():
@@ -604,6 +618,8 @@ class Options(object):
                         help="Don't do anything, print what would be done")
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
+    parser.add_argument('-p', '--profile', action='store_true',
+                        help="Profile the executable")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
@@ -675,6 +691,9 @@ a target defined in the gyp files.""")
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('component=shared_library')
     self.gyp.gyp_defines.add('OS=%s' % self.target_os)
+    if args.profile:
+      self.profile = True
+      self.gyp.gyp_defines.add('profiling=1')
 
 class Builder:
   def __init__(self, options):
@@ -735,6 +754,8 @@ class Builder:
                                    'without')
     if len(self.options.gyp.gyp_generator_flags):
       os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.gyp.gyp_generator_flags)
+    if self.options.profile:
+      os.environ['CPUPROFILE'] = self.options.profile_file
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
@@ -864,6 +885,9 @@ class Builder:
           print 'Skipping "%s": already run' % item_name
         else:
           errors.extend(item.Run(build_type))
+          if self.options.profile:
+            print 'View profile results via "pprof --gv %s %s"' % \
+                (item.GetExePath(build_type), self.options.profile_file)
     return errors
 
 def FormatDur(seconds):
