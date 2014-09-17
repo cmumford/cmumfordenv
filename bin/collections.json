@@ -589,7 +589,7 @@
     },
     {
       "name": "perf-idb",
-      "title": "Run all IdexedDB performance tests",
+      "title": "Run all IndexedDB performance tests",
       "executables": ["performance_browser_tests"]
     },
     {
