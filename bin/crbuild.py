@@ -839,6 +839,8 @@ class Builder:
       print "Must regyp"
       return True
     try:
+      if not os.path.exists(self.options.out_dir):
+        return True
       current_gyp = GypValues.ReadFromFile(self.options.gyp_state_path)
       if current_gyp != self.options.gyp:
         if self.options.print_cmds:
