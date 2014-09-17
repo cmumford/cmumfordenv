@@ -498,6 +498,7 @@ class Options(object):
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = False
+    self.keep_going = True
     self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
@@ -807,6 +808,8 @@ class Builder:
       cmd.insert(1, '-v')
     if self.options.gyp.use_goma:
       cmd[1:1] = ['-j', '4000']
+    if self.options.keep_going:
+      cmd[1:1] = ['-k', '50000']
     if self.options.asan:
       platform_dir = os.path.join(self.options.root_dir,
                                   self.options.out_dir,
