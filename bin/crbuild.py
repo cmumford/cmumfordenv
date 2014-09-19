@@ -29,6 +29,7 @@ class bcolors:
 class BuildTypeItem(object):
   def __init__(self):
     self.done_for = set()
+    self.auto_generated = False
 
   def WasDoneFor(self, build_type):
     return build_type in self.done_for
@@ -45,7 +46,6 @@ class BuildTarget(BuildTypeItem):
     self.name = name
     self.title = ''
     self.built_for = set()
-    self.auto_generated = False
 
   def GetTargets(self):
     return [self]
@@ -64,7 +64,6 @@ class Executable(BuildTypeItem):
     self.commands = commands
     self.options = options
     self.type = 'normal'
-    self.auto_generated = False
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
@@ -293,7 +292,9 @@ class Collections(object):
       if target_name in self.target_names:
         targets.append(self.target_names[target_name])
       else:
-        targets.append(self.CreateTarget(target_name))
+        target = self.CreateTarget(target_name)
+        target.auto_generated = True
+        targets.append(target)
     commands = Collections.ParseCommands(exe_obj, exe_name)
     executable = Executable(exe_name, targets, commands, self.options)
     if 'type' in exe_obj:
@@ -333,10 +334,12 @@ class Collections(object):
     items = list(set(items))
     return sorted(items)
 
-  def GetItemNames(self):
+  def GetItemNames(self, include_auto_generated):
     lines = []
     lines.append("Build target items:")
     for name in sorted(self.target_names.keys()):
+      if not include_auto_generated and self.target_names[name].auto_generated:
+        continue
       if self.target_names[name].title:
         lines.append("  %s : %s" % (name, self.target_names[name].title))
       else:
@@ -344,6 +347,8 @@ class Collections(object):
 
     lines.append("Executable items:")
     for name in sorted(self.exe_names.keys()):
+      if not include_auto_generated and self.exe_names[name].auto_generated:
+        continue
       if self.exe_names[name].title:
         lines.append("  %s : %s" % (name, self.exe_names[name].title))
       else:
@@ -369,6 +374,7 @@ class Collections(object):
     run_args = ["${out_dir}/${Build_type}/%s" % exe_name]
     if exe_name not in self.target_names:
       target = self.CreateTarget(exe_name)
+      target.auto_generated = True
 
     commands = [
         Commands(run_args, ''),
@@ -604,7 +610,7 @@ class Options(object):
     desc = "A script to compile/test Chromium."
     parser = argparse.ArgumentParser(description=desc,
                                      formatter_class=RawTextHelpFormatter,
-                                     epilog='\n'.join(self.collections.GetItemNames()))
+                                     epilog='\n'.join(self.collections.GetItemNames(False)))
     parser.add_argument('-d', '--debug', action='store_true',
                         help='Do a debug build (default: debug)')
     parser.add_argument('-r', '--release', action='store_true',
