@@ -538,6 +538,7 @@ class Options(object):
     self.asan = False
     self.profile = False
     self.profile_file = "/tmp/cpuprofile"
+    self.run_targets = True
 
   @staticmethod
   def OutputColor():
@@ -623,6 +624,8 @@ class Options(object):
                         help='Delete out dir before building')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-R', '--no-run', action='store_true',
+                        help="Do not run targets after building.")
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
     parser.add_argument('-p', '--profile', action='store_true',
@@ -655,6 +658,8 @@ a target defined in the gyp files.""")
     self.verbosity = args.verbose
     if args.noop:
       self.noop = True
+    if args.no_run:
+      self.run_targets = False
     for target_name in args.targets:
       if self.collections.GetItemName(target_name) == None:
         # Not one of our predefined meta-targets (AKA items), so assume this is
@@ -883,6 +888,9 @@ class Builder:
       for target_name in active_target_names:
         collections.MarkTargetBuilt(target_name, build_type)
     if len(errors):
+      return errors
+
+    if not self.options.run_targets:
       return errors
 
     # Now run all executables
