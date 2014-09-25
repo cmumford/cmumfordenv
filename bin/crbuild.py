@@ -504,7 +504,7 @@ class Options(object):
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = False
-    self.keep_going = True
+    self.keep_going = False
     self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
