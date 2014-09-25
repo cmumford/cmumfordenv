@@ -54,7 +54,10 @@ class Options(object):
   def GetEditorPath(self):
     # This assumes that VIM's executables are in the path.
     if self.gui_editor:
-      return 'gvim'
+      if platform.system() == 'Darwin':
+        return 'mvim'
+      else:
+        return 'gvim'
     else:
       return 'vim'
 
