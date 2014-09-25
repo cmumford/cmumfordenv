@@ -824,7 +824,10 @@ class Builder:
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
     if self.options.gyp.use_goma:
-      cmd[1:1] = ['-j', '4000']
+      if self.options.target_os == 'mac':
+        cmd[1:1] = ['-j', '100']
+      else:
+        cmd[1:1] = ['-j', '4000']
     if self.options.keep_going:
       cmd[1:1] = ['-k', '50000']
     if self.options.asan:
