@@ -594,6 +594,8 @@ class Options(object):
         return 'win'
       elif platform.system() == 'Linux':
         return 'linux'
+      elif platform.system() == 'Darwin':
+        return 'mac'
       print >> sys.stderr, "Unknown platform: '%s'" % platform.system()
       sys.exit(1)
 
@@ -702,6 +704,10 @@ a target defined in the gyp files.""")
       elif self.target_os == 'android':
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('component=shared_library')
+      elif platform.system() == 'mac':
+        self.gyp.gyp_defines.add('asan=1')
+        self.gyp.gyp_defines.add('target_arch=x64')
+        self.gyp.gyp_defines.add('host_arch=x64')
     self.gyp.gyp_defines.add('OS=%s' % self.target_os)
     if args.profile:
       self.profile = True
