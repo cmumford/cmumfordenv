@@ -557,7 +557,7 @@ class Options(object):
     if Options.OutputColor():
       print "%s%s%s" % (bcolors.OKBLUE, str_cmd, bcolors.ENDC)
     else:
-      print ' '.join(str_cmd)
+      print str_cmd
 
   def GetActiveTargets(self):
     targets = set()
