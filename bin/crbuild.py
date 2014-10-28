@@ -632,6 +632,8 @@ class Options(object):
                         help="Do a SyzyASan build")
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
+    parser.add_argument('-j', '--jobs',
+                        help="Num jobs when both building & running")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
@@ -681,6 +683,8 @@ a target defined in the gyp files.""")
       self.gyp.valgrind = True
     if args.debugger:
       self.debugger = True
+    if args.jobs:
+      self.jobs = args.jobs
     if args.asan:
       self.asan = True
       if self.target_os == 'linux':
