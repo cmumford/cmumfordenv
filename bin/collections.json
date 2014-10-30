@@ -311,6 +311,22 @@
       ]
     },
     {
+      "name": "clusterfuzz",
+      "title": "Runs an ASAN-ified build",
+      "targets": ["chrome", "ipc_fuzzer_replay"],
+      "commands": [
+        {
+          "name": "asan",
+          "command": [
+            "tools/ipc_fuzzer/play_testcase.py",
+            "--build-type=${Build_type}",
+            "--out-dir=${out_dir}",
+            "/usr/local/google/home/cmumford/work/ssd/chrome/src/fuzz-force-closed-minimized.ipcdump"
+          ]
+        }
+      ]
+    },
+    {
       "name": "blink-layout",
       "title": "The Blink layout tests",
       "targets": ["blink_tests"],
@@ -367,17 +383,6 @@
       "executable": "smoothness",
       "args": [
         "tools/perf/page_sets/top_25.json"
-      ]
-    },
-    {
-      "name": "clusterfuzz",
-      "title": "Runs an ASAN-ified build",
-      "targets": ["chrome", "ipc_fuzzer_replay"],
-      "args": [
-        "tools/ipc_fuzzer/play_testcase.py",
-        "--build-type=${Build_type}",
-        "--out-dir=${out_dir}",
-        "/usr/local/google/home/cmumford/Downloads/fuzz-sjonhggdixmlvveo_unminimized.ipcdump"
       ]
     },
     {
