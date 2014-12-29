@@ -585,6 +585,7 @@ class Options(object):
     self.keep_going = False
     self.debug = False
     self.release = False
+    self.chromeos_build = 'link'
     self.shared_libraries = True
     self.gyp.gyp_defines.add('disable_nacl=1')
     self.gyp.gyp_defines.add('linux_use_debug_fission=0')
@@ -606,7 +607,10 @@ class Options(object):
     self.clobber = False
     self.active_items = []
     self.debugger = False
-    self.out_dir = 'out'
+    if self.target_os == 'chromeos':
+      self.out_dir = 'out_%s' % self.chromeos_build
+    else:
+      self.out_dir = 'out'
     self.run_args = None
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
@@ -867,7 +871,7 @@ class Builder:
 
   def Gyp(self):
     print "Gyp'ing..."
-    if self.options.target_os == 'android':
+    if self.options.target_os == 'android' or self.options.target_os == 'chromeos':
       cmd = ['gclient', 'runhooks']
     else:
       cmd = ['python', os.path.join('build', 'gyp_chromium')]
