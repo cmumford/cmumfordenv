@@ -585,9 +585,11 @@ class Options(object):
     self.keep_going = False
     self.debug = False
     self.release = False
+    self.shared_libraries = True
     self.gyp.gyp_defines.add('disable_nacl=1')
     self.gyp.gyp_defines.add('linux_use_debug_fission=0')
-    if self.target_os == 'win' or self.target_os == 'linux':
+    if (self.target_os == 'win' or self.target_os == 'linux') and \
+        self.shared_libraries:
       # Should read in chromium.gyp_env and append to those values
       self.gyp.gyp_defines.add('component=shared_library')
     self.verbosity = 0
@@ -776,7 +778,8 @@ a target defined in the gyp files.""")
           self.gyp.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
         self.gyp.gyp_defines.add('asan=1')
-        self.gyp.gyp_defines.add('component=shared_library')
+        if self.shared_libraries:
+          self.gyp.gyp_defines.add('component=shared_library')
       elif platform.system() == 'mac':
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('target_arch=x64')
