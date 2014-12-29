@@ -18,6 +18,8 @@ if cmd_subfolder not in sys.path:
   sys.path.insert(0, cmd_subfolder)
 from third_party import asan_symbolize
 
+# python -m doctest -v crbuild.py
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
@@ -453,20 +455,86 @@ class Collections(object):
           print 'Unknown default item "%s"' % self.default
           sys.exit(1)
 
+class GClient(object):
+  def __init__(self, gclient_path):
+    self.contents = GClient.Read(gclient_path)
+
+  @staticmethod
+  def Read(gclient_path):
+    result = {}
+    with open(gclient_path, 'r') as f:
+      try:
+        exec(f.read(), {}, result)
+      except SyntaxError, e:
+        e.filename = os.path.abspath(gclient_path)
+        raise
+    return result
+
+  def GetTargetOS(self):
+    if 'target_os' in self.contents:
+      if len(contents['target_os']) > 1:
+        print "Multiple target OS's: using the first"
+      return self.contents['target_os'][0]
+
 ##
 # Values in this class affect how build_gyp generates makefiles.
 class GypValues(object):
-  def __init__(self, target_os):
+  def __init__(self, gyp_env_path):
     self.gyp_generator_flags = set()
     self.gyp_defines = set()
-    self.target_os = target_os
-    if self.target_os == 'win':
-      self.gyp_generators = 'ninja,msvs'
-    else:
-      self.gyp_generators = 'ninja'
+    gyp_env = GypValues.ReadGypEnv(gyp_env_path)
+    self.target_os = GypValues.GetTargetOS(gyp_env)
+    self.SetDefaultGypGenerator(self.target_os)
     self.use_clang = True
     self.use_goma = True
     self.valgrind = False
+
+  def SetDefaultGypGenerator(self, target_os):
+    if target_os == 'win':
+      self.gyp_generators = 'ninja,msvs'
+    else:
+      self.gyp_generators = 'ninja'
+
+  @staticmethod
+  def ExtractOSValue(env_val):
+    """Extract the OS name from the GYP_DEFINES value.
+    >>> GypValues.ExtractOSValue("chromeos=1")
+    'chromeos'
+    >>> GypValues.ExtractOSValue("OS=linux")
+    'linux'
+    >>> GypValues.ExtractOSValue("some-other=value")
+    """
+    if env_val == 'chromeos=1':
+      return 'chromeos'
+    vals = env_val.split('=')
+    if len(vals) == 2 and vals[0] == 'OS':
+      return vals[1]
+    return None
+
+  @staticmethod
+  def GetTargetOS(gyp_env_contents):
+    if not gyp_env_contents:
+      return None
+    for env in gyp_env_contents:
+      if env == 'GYP_DEFINES':
+        for val in gyp_env_contents[env].split():
+          os = GypValues.ExtractOSValue(val)
+          if os:
+            return os
+    return None
+
+  @staticmethod
+  def ReadGypEnv(gyp_env_path):
+    if not os.path.exists(gyp_env_path):
+      return
+    file_data = {}
+    with open(gyp_env_path, 'rU') as f:
+      try:
+        file_data = eval(f.read(), {'__builtins__': None}, None)
+      except SyntaxError, e:
+        e.filename = os.path.abspath(gyp_env_path)
+        raise
+    return file_data
 
   def WriteToFile(self, fname):
     with open(fname, 'w') as f:
@@ -496,16 +564,25 @@ class Options(object):
   def __init__(self):
     self.root_dir = os.path.abspath('.')
     try:
-      self.target_os = self.GetPlatform()
-    except IOError as e:
-      print >> sys.stderr, "ERROR: %s" % e.filename
+      self.gclient = GClient(self.GetGClientPath())
+    except:
+      print >> sys.stderr, "ERROR: %s" % self.GetGClientPath()
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
+    self.gyp = GypValues(self.GetGypEnvPath())
+    self.target_os = self.gyp.target_os
+    if not self.target_os:
+      # Not specified in chromium.gyp_env file (which is OK) so see if it's
+      # in the .gclient file
+      self.target_os = self.gclient.GetTargetOS()
+      if not self.target_os:
+        # Not in .gcient either (also OK), so default to the host OS
+        self.target_os = Options.GetHostOS()
+      self.gyp.SetDefaultGypGenerator(self.target_os)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = False
     self.keep_going = False
-    self.gyp = GypValues(self.target_os)
     self.debug = False
     self.release = False
     self.gyp.gyp_defines.add('disable_nacl=1')
@@ -576,28 +653,20 @@ class Options(object):
   def GetGClientPath(self):
     return os.path.join(self.GetTopDir(), '.gclient')
 
-  def ReadGClient(self):
-    result = {}
-    with open(self.GetGClientPath(), 'r') as f:
-      exec(f.read(), {}, result)
-    return result
+  def GetGypEnvPath(self):
+    return os.path.join(self.GetTopDir(), 'chromium.gyp_env')
 
-  def GetPlatform(self):
-    config = self.ReadGClient()
-    if 'target_os' in config:
-      if len(config['target_os']) > 1:
-        print "Multiple target OS's: using the first"
-      return config['target_os'][0]
-    else:
-      # Assume the target platform is the one on which the build is taking place
-      if platform.system() == 'Windows':
-        return 'win'
-      elif platform.system() == 'Linux':
-        return 'linux'
-      elif platform.system() == 'Darwin':
-        return 'mac'
-      print >> sys.stderr, "Unknown platform: '%s'" % platform.system()
-      sys.exit(1)
+  # The "host" OS is the one on which the build is taking place.
+  @staticmethod
+  def GetHostOS():
+    if platform.system() == 'Windows':
+      return 'win'
+    elif platform.system() == 'Linux':
+      return 'linux'
+    elif platform.system() == 'Darwin':
+      return 'mac'
+    print >> sys.stderr, "Unknown platform: '%s'" % platform.system()
+    sys.exit(1)
 
   # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
   # argparse can't deal with multiple positional arguments. So before we parse
@@ -768,6 +837,8 @@ class Builder:
       if self.options.verbosity > 2:
         Builder.PrintAllEnvVars()
       else:
+        print "Target OS: %s" % self.options.target_os
+        print "Host OS: %s" % Options.GetHostOS()
         print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
         print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
         print "PATH: %s" % os.environ['PATH']
