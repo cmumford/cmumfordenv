@@ -867,7 +867,10 @@ class Builder:
 
   def Gyp(self):
     print "Gyp'ing..."
-    cmd = ['python', os.path.join('build', 'gyp_chromium')]
+    if self.options.target_os == 'android':
+      cmd = ['gclient', 'runhooks']
+    else:
+      cmd = ['python', os.path.join('build', 'gyp_chromium')]
     self.PrintStep(cmd)
     if not self.options.noop:
       if os.path.exists(self.options.gyp_state_path):
