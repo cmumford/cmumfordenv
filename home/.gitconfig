@@ -17,7 +17,8 @@
 	co = checkout
     l = log --graph --decorate --pretty=oneline --abbrev-commit
     ll = log --graph --decorate --pretty=medium --abbrev-commit
-    dd = diff --no-ext-diff --word-diff
+    dd = diff --no-ext-diff
+    wd = diff --no-ext-diff --word-diff
     vd = difftool --tool=vimdiff
 [branch]
 	autosetuprebase = always
