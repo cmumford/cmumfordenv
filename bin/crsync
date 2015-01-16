@@ -1,10 +1,6 @@
 #!/bin/bash -e
 
-function g
-{
-  GDPATH="$(~/bin/go.py $*)"
-  cd "$GDPATH"
-}
+top_dir=`pwd`
 
 # Update depot tools
 gclient --version
@@ -12,28 +8,28 @@ gclient --version
 
 echo ""
 echo "Updating/rebasing Blink..."
-g b
+cd ${top_dir}/third_party/WebKit
 git fetch origin
 git rebaseall
 git checkout master
 
 echo ""
 echo "Updating/rebasing Chromium..."
-g c
+cd ${top_dir}
 git fetch origin
 git rebaseall
 git checkout master
 
 echo ""
 echo "Updating/rebasing Leveldb"
-g level
+cd ${top_dir}/third_party/leveldatabase/src
 git fetch origin
 git rebaseall
 git checkout master
 
 echo ""
 echo "Syncing all projects..."
-g c
+cd ${top_dir}
 gclient sync
 
 # Now delete my gyp state file to force crbuild to regyp
