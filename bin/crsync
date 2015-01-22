@@ -1,5 +1,18 @@
 #!/bin/bash -e
 
+OPTIND=1
+
+fetch_only=0
+
+while getopts "f" opt; do
+  case "$opt" in
+  f)  fetch_only=1
+      ;;
+  esac
+done
+
+shift $((OPTIND-1))
+
 top_dir=`pwd`
 
 # Update depot tools
@@ -10,27 +23,35 @@ echo ""
 echo "Updating/rebasing Blink..."
 cd ${top_dir}/third_party/WebKit
 git fetch origin
-git rebaseall
-git checkout master
+if [[ "${fetch_only}" == "0" ]]; then
+  git rebaseall
+  git checkout master
+fi
 
 echo ""
 echo "Updating/rebasing Chromium..."
 cd ${top_dir}
 git fetch origin
-git rebaseall
-git checkout master
+if [[ "${fetch_only}" == "0" ]]; then
+  git rebaseall
+  git checkout master
+fi
 
 echo ""
 echo "Updating/rebasing Leveldb"
 cd ${top_dir}/third_party/leveldatabase/src
 git fetch origin
-git rebaseall
-git checkout master
+if [[ "${fetch_only}" == "0" ]]; then
+  git rebaseall
+  git checkout master
+fi
 
 echo ""
-echo "Syncing all projects..."
-cd ${top_dir}
-gclient sync
+  if [[ "${fetch_only}" == "0" ]]; then
+  echo "Syncing all projects..."
+  cd ${top_dir}
+  gclient sync
+fi
 
 # Now delete my gyp state file to force crbuild to regyp
 rm -f .GYP_STATE
