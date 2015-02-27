@@ -476,10 +476,18 @@ class GClient(object):
         print "Multiple target OS's: using the first"
       return self.contents['target_os'][0]
 
+class Git(object):
+  @staticmethod
+  def CurrentBranch():
+    cmd = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
+    for line in subprocess.check_output(cmd).split():
+      return line.strip()
+    return None
+
 ##
 # Values in this class affect how build_gyp generates makefiles.
 class GypValues(object):
-  def __init__(self, gyp_env_path):
+  def __init__(self, gyp_env_path, branch):
     self.gyp_generator_flags = set()
     self.gyp_defines = set()
     gyp_env = GypValues.ReadGypEnv(gyp_env_path)
@@ -488,6 +496,7 @@ class GypValues(object):
     self.use_clang = True
     self.use_goma = True
     self.valgrind = False
+    self.branch = branch
 
   def SetDefaultGypGenerator(self, target_os):
     if target_os == 'win':
@@ -554,9 +563,19 @@ class GypValues(object):
       return True
     if self.use_clang != other.use_clang:
       return True
-    if self.valgrind != other.valgrind:
+    if self.use_goma != other.use_goma:
       return True
     if self.valgrind != other.valgrind:
+      return True
+    if hasattr(other, 'branch'):
+      other_branch = other.branch
+    else:
+      other_branch = ''
+    if hasattr(self, 'branch'):
+      self_branch = self.branch
+    else:
+      self_branch = ''
+    if self_branch != other_branch:
       return True
     return False
 
@@ -569,7 +588,7 @@ class Options(object):
       print >> sys.stderr, "ERROR: %s" % self.GetGClientPath()
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
-    self.gyp = GypValues(self.GetGypEnvPath())
+    self.gyp = GypValues(self.GetGypEnvPath(), Git.CurrentBranch())
     self.target_os = self.gyp.target_os
     if not self.target_os:
       # Not specified in chromium.gyp_env file (which is OK) so see if it's
