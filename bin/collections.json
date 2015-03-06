@@ -57,6 +57,15 @@
           ]
         },
         {
+          "name": "profile",
+          "command": [
+            "pprof",
+            "-gv",
+            "${out_dir}/${Build_type}/chrome",
+            "/tmp/cpuprofile"
+          ]
+        },
+        {
           "name": "debug",
           "command": [
             "cgdb",
