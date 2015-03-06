@@ -595,6 +595,11 @@
                "content-browsertests-idb", "idb_browser_tests"]
     },
     {
+      "name": "chromeos",
+      "title": "The main Chrome OS targets",
+      "executables": ["chrome", "chrome_sandbox", "nacl_helper"]
+    },
+    {
       "name": "unit-all",
       "title": "Run *all* unit tests",
       "executables": ["env_chromium_unittests", "webkit_unit_tests",
