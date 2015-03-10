@@ -138,22 +138,18 @@ class Git:
   @staticmethod
   def GetModifiedFilesInBranch(branch, print_cmds):
     assert(branch.parent)
-    cmd = ['git', '--no-pager', 'log', '--name-only', '--pretty=oneline',
-           branch.name, '--not', branch.parent]
+    cmd = ['git', '--no-pager', 'diff', '--name-only', branch.name, branch.parent]
     files = set()
     if print_cmds:
       print ' '.join(cmd)
     maxCommits = 30
     commitCount = 0
-    commit_re = re.compile(r'^[0-9a-f]{40}\s.*$')
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       line.strip()
-      if commit_re.match(line):
-        commitCount += 1
-        if commitCount >= maxCommits:
-          break
-      else:
-        files.add(line)
+      commitCount += 1
+      if commitCount >= maxCommits:
+        break
+      files.add(line)
     return files
 
   @staticmethod
