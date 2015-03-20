@@ -25,13 +25,10 @@ class Go:
       print >> sys.stderr, 'Unknown shortcut "%s"' % val
       sys.exit(1)
 
-def main(argv):
+if __name__ == '__main__':
   g = Go()
-  if len(argv) == 2:
-    print "%s" % g.getval(argv[1])
+  if len(sys.argv) == 2:
+    print "%s" % g.getval(sys.argv[1])
   else:
     g.do_print()
     print '.'
-
-if __name__ == '__main__':
-  main(sys.argv)
