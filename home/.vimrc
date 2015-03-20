@@ -246,4 +246,6 @@ au! BufEnter *.c let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
 au! BufEnter *.cc let b:fswitchdst = 'hpp,h' | let b:fswitchlocs = '.'
 au! BufEnter *.h let b:fswitchdst = 'cc,cpp,c' | let b:fswitchlocs = '.'
 
+set nofoldenable    " disable folding
+
 source ~/.vimrc_work
