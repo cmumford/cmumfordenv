@@ -407,7 +407,7 @@
       "title": "ChromiumEnv unit tests"
     },
     {
-      "name": "idb_webkit_unit_tests",
+      "name": "blink-unit-idb",
       "title": "The IndexedDB tests from webkit_unit_tests",
       "executable": "webkit_unit_tests",
       "args": [
@@ -590,7 +590,7 @@
     {
       "name": "unit-idb",
       "title": "Run all IndexedDB unit tests",
-      "runs": ["env_chromium_unittests", "idb_webkit_unit_tests",
+      "runs": ["env_chromium_unittests", "blink-unit-idb",
                "idb_content_unittests", "idb_unit_tests",
                "content-browsertests-idb", "idb_browser_tests"]
     },
