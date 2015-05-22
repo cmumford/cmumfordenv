@@ -202,6 +202,22 @@
       ]
     },
     {
+      "name": "chrome_public_apk",
+      "targets": ["chrome_public_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/adb_install_apk.py",
+            "--apk",
+            "ChromePublic.apk",
+            "--${build_type}"
+          ]
+        }
+      ]
+    },
+    {
       "name": "env_chromium_unittests_apk",
       "targets": ["env_chromium_unittests_apk", "forwarder2"],
       "commands": [
