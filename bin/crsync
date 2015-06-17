@@ -3,15 +3,22 @@
 OPTIND=1
 
 fetch_only=0
+force=0
 
-while getopts "f" opt; do
+while getopts "fF" opt; do
   case "$opt" in
   f)  fetch_only=1
+      ;;
+  F)  force=1
       ;;
   esac
 done
 
 shift $((OPTIND-1))
+
+if [[ "${force}" == "0" ]]; then
+  chrome-tree-open
+fi
 
 top_dir=`pwd`
 
