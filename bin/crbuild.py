@@ -134,7 +134,8 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${user_data_img_dir}', str(options.user_data_img_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if self.options.run_args:
-      cmd.extend(self.options.run_args)
+      args = [os.path.expandvars(arg) for arg in self.options.run_args]
+      cmd.extend(args)
     return cmd
 
   def Run(self, build_type, extra_args = None, no_run_commands = None):
