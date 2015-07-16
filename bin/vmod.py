@@ -75,6 +75,13 @@ class BranchInfo(object):
 
 class Git:
   @staticmethod
+  def Path():
+    if platform.system() == 'Windows':
+      return os.path.expanduser(r'~\depot_tools\git.bat')
+    else:
+      return 'git'
+
+  @staticmethod
   def UseShell():
     # TODO: Figure out why Windows will only with with shell=True, and Linux
     # will only work with shell=False.
@@ -83,7 +90,7 @@ class Git:
   @staticmethod
   def GetBranches(print_cmds):
     branches = {}
-    cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
+    cmd = [Git.Path(), '--no-pager', 'branch', '--list', '-v', '-v']
     if print_cmds:
       print ' '.join(cmd)
     for line in subprocess.check_output(cmd).splitlines():
@@ -108,7 +115,7 @@ class Git:
 
   @staticmethod
   def GetModifiedFiles(print_cmds):
-    cmd = ['git', '--no-pager', 'status', '--porcelain']
+    cmd = [Git.Path(), '--no-pager', 'status', '--porcelain']
     files = []
     p = re.compile(r'^[\sAM]+\s+(.*)$')
     if print_cmds:
@@ -121,7 +128,7 @@ class Git:
 
   @staticmethod
   def GetModifiedFilesInCommit(commit, print_cmds):
-    cmd = ['git', '--no-pager', 'show', '--name-only', '--pretty=oneline',
+    cmd = [Git.Path(), '--no-pager', 'show', '--name-only', '--pretty=oneline',
            commit]
     files = []
     line_no = 0
@@ -138,7 +145,7 @@ class Git:
   @staticmethod
   def GetModifiedFilesInBranch(branch, print_cmds, maxCommits):
     assert(branch.parent)
-    cmd = ['git', '--no-pager', 'diff', '--name-only', branch.name, branch.parent]
+    cmd = [Git.Path(), '--no-pager', 'diff', '--name-only', branch.name, branch.parent]
     files = set()
     if print_cmds:
       print ' '.join(cmd)

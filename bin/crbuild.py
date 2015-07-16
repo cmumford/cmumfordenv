@@ -482,8 +482,15 @@ class GClient(object):
 
 class Git(object):
   @staticmethod
+  def Path():
+    if platform.system() == 'Windows':
+      return os.path.expanduser(r'~\depot_tools\git.bat')
+    else:
+      return 'git'
+
+  @staticmethod
   def CurrentBranch():
-    cmd = ['git', 'rev-parse', '--abbrev-ref', 'HEAD']
+    cmd = [Git.Path(), 'rev-parse', '--abbrev-ref', 'HEAD']
     for line in subprocess.check_output(cmd).split():
       return line.strip()
     return None
