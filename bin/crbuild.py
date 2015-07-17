@@ -823,10 +823,14 @@ a target defined in the gyp files.""")
         self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
       elif self.target_os == 'win':
         self.gyp.gyp_defines.add('syzyasan=1')
+        self.gyp.gyp_defines.add('win_z7=1')
+        self.gyp.gyp_defines.add('chromium_win_pch=0')
         self.gyp.gyp_defines.add('chrome_multiple_dll=0')
         self.gyp.gyp_generators = 'ninja'
         # According to docs SyzyASAN not yet compatible shared library.
-        self.gyp.gyp_defines.remove('component=shared_library')
+        if 'component=shared_library' in self.gyp.gyp_defines:
+          self.gyp.gyp_defines.remove('component=shared_library')
+        self.gyp.gyp_defines.add('component=static_library')
         if 'disable_nacl=1' in self.gyp.gyp_defines:
           self.gyp.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
@@ -946,6 +950,32 @@ class Builder:
     if self.options.print_cmds:
       Options.OutputCommand("$ %s" % ' '.join(cmd))
 
+  # https://code.google.com/p/syzygy/wiki/SyzyASanBug
+  def Instrument_SyzyASan(self, build_dir):
+    syzygy_exes = os.path.join('third_party', 'syzygy', 'binaries', 'exe')
+    instrument_exe = os.path.join(syzygy_exes, 'instrument.exe')
+    input_chrome_dll = os.path.join(build_dir, 'chrome.dll')
+    output_chrome_dll = os.path.join(build_dir, 'chrome_syzygy.dll')
+    cmd = [instrument_exe,
+           '--mode=asan',
+           '--overwrite',
+           '--input-image=%s' % input_chrome_dll,
+           '--output-image=%s' % output_chrome_dll,
+           '--debug-friendly']
+    if self.options.print_cmds:
+      Options.OutputCommand(cmd)
+    if not self.options.noop:
+      if os.path.exists(output_chrome_dll):
+        in_time = os.path.getmtime(input_chrome_dll)
+        out_time = os.path.getmtime(output_chrome_dll)
+        if out_time > in_time:
+          print "No need to re Syzy chrome"
+          return
+        os.remove(output_chrome_dll)
+      subprocess.check_call(cmd)
+      shutil.copyfile(os.path.join(syzygy_exes, 'syzyasan_rtl.dll'),
+                      os.path.join(build_dir, 'syzyasan_rtl.dll'))
+
   def GN(self, build_dir):
     cmd = ['gn', 'gen', build_dir]
     if self.options.print_cmds:
@@ -1010,6 +1040,8 @@ class Builder:
     self.PrintStep(cmd)
     try:
       subprocess.check_call(cmd)
+      if self.options.asan and self.options.target_os == 'win':
+        self.Instrument_SyzyASan(build_dir)
       return []
     except subprocess.CalledProcessError as e:
       return [e]
