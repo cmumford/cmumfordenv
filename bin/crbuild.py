@@ -511,10 +511,7 @@ class GypValues(object):
     self.branch = branch
 
   def SetDefaultGypGenerator(self, target_os):
-    if target_os == 'win':
-      self.gyp_generators = 'ninja,msvs'
-    else:
-      self.gyp_generators = 'ninja'
+    self.gyp_generators = 'ninja'
 
   @staticmethod
   def ExtractOSValue(env_val):
