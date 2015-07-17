@@ -634,8 +634,8 @@ class Options(object):
     self.noop = False
     self.regyp = False
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
-    if not os.path.exists(self.goma_path):
-      self.gyp.use_goma = False
+    if self.gyp.use_goma:
+      self.gyp.use_goma = self.CanUseGoma()
     self.llvm_path = os.path.abspath(os.path.join('third_party', 'llvm-build',
                                                   'Release+Asserts', 'bin'))
     if not os.path.exists(self.llvm_path):
@@ -651,13 +651,23 @@ class Options(object):
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
     if self.target_os == 'android':
-      self.gyp.use_goma = False
       self.gyp.use_clang = False
-    self.jobs = multiprocessing.cpu_count()
+    self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     self.asan = False
     self.profile = False
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
+
+  def IsGomaRunning(self):
+    if not os.path.exists(self.goma_path):
+      print "Can't find goma at %s" % self.goma_path
+      return False
+    return True
+
+  def CanUseGoma(self):
+    if self.target_os == 'android':
+      return False
+    return self.IsGomaRunning()
 
   @staticmethod
   def OutputColor():
@@ -911,6 +921,8 @@ class Builder:
     if 'GYP_DEFINES' in os.environ:
       for prev_val in os.environ['GYP_DEFINES'].split():
         gyp_defines.add(prev_val)
+    if self.options.gyp.use_goma:
+        gyp_defines.add('win_z7=0')
     os.environ['GYP_DEFINES'] = ' '.join(gyp_defines)
 
     if self.options.verbosity > 0:
