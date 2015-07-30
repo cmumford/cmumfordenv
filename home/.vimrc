@@ -82,7 +82,7 @@ filetype off  " Required!
 if has("win32") || has("win16")
     set rtp+=~/vimfiles/bundle/vundle
 else
-    set rtp+=~/.vim/bundle/vundle
+    set rtp+=~/.vim/bundle/Vundle.vim
 endif
 call vundle#rc()
 " Self-manage Vundle
