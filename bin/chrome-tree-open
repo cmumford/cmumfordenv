@@ -9,7 +9,7 @@ if cmd_subfolder not in sys.path:
   sys.path.insert(0, cmd_subfolder)
 from chromite.cbuildbot import tree_status
 
-if tree_status.IsTreeOpen():
+if tree_status.IsTreeOpen(throttled_ok=True):
   sys.exit(0)
 else:
   print >> sys.stderr, "Chromium tree is closed"
