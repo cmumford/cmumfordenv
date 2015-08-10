@@ -269,7 +269,8 @@
       ]
     },
     {
-      "names": ["base_unittests", "net_unittests", "unit_tests", "content_unittests"],
+      "names": ["base_unittests", "net_unittests", "unit_tests",
+                "content_unittests", "components_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
