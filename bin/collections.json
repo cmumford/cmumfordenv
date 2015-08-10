@@ -284,6 +284,14 @@
           ]
         },
         {
+          "name": "asan",
+          "command": [
+            "${out_dir}/${Build_type}/${executable_name}",
+            "--brave-new-test-launcher",
+            "--test-launcher-jobs=${jobs}"
+          ]
+        },
+        {
           "name": "debug",
           "command": [
             "cgdb",
