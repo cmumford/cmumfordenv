@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <script>
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function setCookie() {
+      document.cookie = 'cookie1=value1; expires=1 Jan 2016 12:00:00 UTC';
+      document.cookie = 'cookie2=value2; expires=1 Jan 2016 12:00:00 UTC';
+      updateCookies();
+    }
+
+    function updateCookies() {
+      $('cookies').innerHTML = document.cookie;
+    }
+
+    function init() {
+      updateCookies();
+    }
+    </script>
+  </head>
+  <body onload="init()">
+    <h1>Cookie Test</h1>
+    <button id="run" onclick="setCookie()">Set Cookie</button><br>
+    <p><span id="cookies"></span></p>
+  </body>
+</html>
