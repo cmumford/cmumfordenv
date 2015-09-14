@@ -472,7 +472,7 @@ class GClient(object):
 
   def GetTargetOS(self):
     if 'target_os' in self.contents:
-      if len(contents['target_os']) > 1:
+      if len(self.contents['target_os']) > 1:
         print "Multiple target OS's: using the first"
       return self.contents['target_os'][0]
 
