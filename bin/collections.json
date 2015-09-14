@@ -448,6 +448,54 @@
       ]
     },
     {
+      "name": "cookie_content_unittests",
+      "title": "The Cookie tests from content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "cookie_net_unittests",
+      "title": "The Cookie tests from net_unittests",
+      "executable": "net_unittests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "bookmark_unit_tests",
+      "title": "The Bookmark tests from unit_tests",
+      "executable": "unit_tests",
+      "args": [
+        "--gtest_filter=':*Bookmark*:'"
+      ]
+    },
+    {
+      "name": "bookmark_components_unittests",
+      "title": "The Bookmark tests from components_unittests",
+      "executable": "components_unittests",
+      "args": [
+        "--gtest_filter=':*Bookmark*:'"
+      ]
+    },
+    {
+      "name": "cookie_unit_tests",
+      "title": "The Bookmark tests from unit_tests",
+      "executable": "unit_tests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "cookie_components_unittests",
+      "title": "The Bookmark tests from components_unittests",
+      "executable": "components_unittests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
       "name": "idb_unit_tests",
       "title": "The IndexedDB tests from unit_tests",
       "executable": "unit_tests",
@@ -461,6 +509,14 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*IndexedDB*:'"
+      ]
+    },
+    {
+      "name": "content-browsertests-cookie",
+      "title": "The Cookie tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
       ]
     },
     {
@@ -618,6 +674,18 @@
       "runs": ["env_chromium_unittests", "blink-unit-idb",
                "idb_content_unittests", "idb_unit_tests",
                "content-browsertests-idb", "idb_browser_tests"]
+    },
+    {
+      "name": "unit-bookmark",
+      "title": "Run all Bookmark unit tests",
+      "runs": ["bookmark_components_unittests", "bookmark_unit_tests"]
+    },
+    {
+      "name": "unit-cookie",
+      "title": "Run all Cookie unit tests",
+      "runs": ["cookie_components_unittests", "cookie_unit_tests",
+               "cookie_content_unittests", "content-browsertests-cookie",
+               "cookie_net_unittests"]
     },
     {
       "name": "chromeos",
