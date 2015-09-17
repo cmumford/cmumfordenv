@@ -11,8 +11,8 @@ stdout_lock=thread.allocate_lock()
 class Git:
   @staticmethod
   def CountCommits(branch):
-    cmd = ['git', '--no-pager', 'log', '--format=%h', 'master..%s' % branch]
-    return len(subprocess.check_output(cmd).splitlines())
+    cmd = ['git', 'rev-list', '--count', 'master..%s' % branch]
+    return int(subprocess.check_output(cmd))
 
   @staticmethod
   def GetBranches(prefix):
@@ -75,7 +75,7 @@ def task_runner(branch):
 def DoStuff():
   branch_heads = ChromeGitInfo.GetBranchHeads()
 
-  pool_size = 24
+  pool_size = 48
   pool = ThreadPool(pool_size)
   branch_commits = pool.map(task_runner, branch_heads)
   print "Branch,Num Commits"
