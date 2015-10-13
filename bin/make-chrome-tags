@@ -70,8 +70,7 @@ if __name__ == '__main__':
   pool = ThreadPool(pool_size)
   tasks = []
   scan_dirs = {
-    'c': '*third_party*',
-    'b': None,
+    'c': '*third_party/[a-z]*',
     'level': None
   }
   for shortcut in scan_dirs.keys():
