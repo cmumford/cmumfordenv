@@ -1,7 +1,29 @@
-#!/bin/sh
+#!/usr/bin/env python
 
-if [ -t 0 ] ; then
-    xclip -selection clipboard -o
-else
-    xclip -selection clipboard
-fi
+import os
+import stat
+
+def ReadFromStdin():
+  mode = os.fstat(0).st_mode
+  if stat.S_ISFIFO(mode):
+    # stdin is piped
+    return True
+  elif stat.S_ISREG(mode):
+    # stdin is redirected
+    return True
+  else:
+    # stdin is terminal
+    return False
+
+def WriteStdinToClipboard():
+  cmd = 'xclip -in -selection clipboard'
+  os.system(cmd)
+
+def WriteClipboardToStdout():
+  cmd = 'xclip -out -selection clipboard'
+  os.system(cmd)
+
+if ReadFromStdin():
+  WriteStdinToClipboard()
+else:
+  WriteClipboardToStdout()
