@@ -29,19 +29,15 @@ gclient --version
 echo ""
 echo "Updating/rebasing Chromium..."
 cd ${top_dir}
-git fetch origin
 if [[ "${fetch_only}" == "0" ]]; then
-  git rebaseall
-  git checkout master
+  git rebase-update
 fi
 
 echo ""
 echo "Updating/rebasing Leveldb"
 cd ${top_dir}/third_party/leveldatabase/src
-git fetch origin
 if [[ "${fetch_only}" == "0" ]]; then
-  git rebaseall
-  git checkout master
+  git rebase-update
 fi
 
 echo ""
