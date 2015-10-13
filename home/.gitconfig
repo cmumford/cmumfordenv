@@ -20,6 +20,7 @@
     dd = diff --no-ext-diff
     wd = diff --no-ext-diff --word-diff
     vd = difftool --tool=vimdiff
+    mb = map-branches --description
 [branch]
 	autosetuprebase = always
 [push]
