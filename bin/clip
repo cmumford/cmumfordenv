@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import os
+import platform
 import stat
 
 def ReadFromStdin():
@@ -16,11 +17,17 @@ def ReadFromStdin():
     return False
 
 def WriteStdinToClipboard():
-  cmd = 'xclip -in -selection clipboard'
+  if platform.system() == 'Darwin':
+    cmd = 'pbcopy'
+  else:
+    cmd = 'xclip -in -selection clipboard'
   os.system(cmd)
 
 def WriteClipboardToStdout():
-  cmd = 'xclip -out -selection clipboard'
+  if platform.system() == 'Darwin':
+    cmd = 'pbpaste'
+  else:
+    cmd = 'xclip -out -selection clipboard'
   os.system(cmd)
 
 if ReadFromStdin():
