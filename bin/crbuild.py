@@ -7,6 +7,7 @@ import multiprocessing
 import os
 import pickle
 import platform
+import getpass
 import re
 import shutil
 import subprocess
@@ -17,6 +18,8 @@ cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join("tools", "valgrind
 if cmd_subfolder not in sys.path:
   sys.path.insert(0, cmd_subfolder)
 from third_party import asan_symbolize
+from fsmounter import Mounter
+from fsimage import Image
 
 # python -m doctest -v crbuild.py
 
@@ -128,6 +131,7 @@ class Executable(BuildTypeItem):
       cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
       cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
       cmd[idx] = cmd[idx].replace(r'${layout_dir}', str(options.layout_dir))
+      cmd[idx] = cmd[idx].replace(r'${user_data_img_dir}', str(options.user_data_img_dir))
       cmd[idx] = os.path.expandvars(cmd[idx])
     if self.options.run_args:
       cmd.extend(self.options.run_args)
@@ -604,6 +608,13 @@ class Options(object):
     self.keep_going = False
     self.debug = False
     self.release = False
+    self.user_data_in_image = False
+    self.desired_root_path = os.path.join(os.path.expanduser('~'),
+                                          'chrome_img_dir')
+    self.user_data_img_dir = os.path.join(self.desired_root_path, 'user_data')
+    self.img_block_size = 512
+    self.img_num_blocks = 50*1024*1024/self.img_block_size
+    self.sudo_pwd = None
     self.chromeos_build = 'link'
     self.shared_libraries = True
     self.gyp.gyp_defines.add('disable_nacl=1')
@@ -660,6 +671,9 @@ class Options(object):
       print "%s%s%s" % (bcolors.OKBLUE, str_cmd, bcolors.ENDC)
     else:
       print str_cmd
+
+  def PromptForPassword(self):
+    self.sudo_pwd = getpass.getpass('Please enter your sudo password (for mount): ')
 
   def GetActiveTargets(self):
     targets = set()
@@ -838,6 +852,40 @@ class Builder:
     for key in sorted(os.environ):
       print "%s=%s" % (key, os.environ[key])
 
+  # The mounted filesystem (initially empty) is root.root, so create a
+  # subdirectory writable by me.
+  def CreateUserDataDir(self, path, user, group):
+    if not os.path.exists(path):
+      cmd = ['sudo', '-S', 'mkdir', path]
+      p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+      p.communicate("%s\n" % self.options.sudo_pwd)
+      if p.returncode:
+        raise Exception('Unable to create %s' % path, p.returncode)
+    cmd = ['sudo', '-S', '/bin/chown', '%s.%s' % (user, group), path]
+    p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+    p.communicate("%s\n" % self.options.sudo_pwd)
+    if p.returncode:
+      raise Exception('Unable to change owner of %s' % path, p.returncode)
+
+  def CreateAndMountDiskImage(self):
+    if not os.path.exists(self.options.desired_root_path):
+      os.mkdir(self.options.desired_root_path)
+    mounter = Mounter()
+    if not mounter.IsMounted(self.options.desired_root_path):
+      image_path = os.path.join(os.path.expanduser('~'), 'chrome_tst.img')
+      if not os.path.exists(image_path):
+        image_creator = Image()
+        image_creator.Create(image_path, self.options.img_block_size,
+                             self.options.img_num_blocks)
+      if not self.options.sudo_pwd:
+        self.options.PromptForPassword()
+      mounter.MountImage(image_path, self.options.desired_root_path,
+                         self.options.sudo_pwd)
+    if not os.path.exists(self.options.user_data_img_dir):
+      user = getpass.getuser()
+      group = 'eng'
+      self.CreateUserDataDir(self.options.user_data_img_dir, user, group)
+
   def SetEnvVars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.gyp.gyp_defines)
@@ -1005,6 +1053,9 @@ class Builder:
 
     if not self.options.run_targets:
       return errors
+
+    if self.options.user_data_in_image:
+      self.CreateAndMountDiskImage()
 
     # Now run all executables
     for build_type in build_types:
