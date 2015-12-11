@@ -2,6 +2,8 @@
 
 from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE, STDOUT
+import platform
+import sys
 import time
 import thread
 import go
@@ -73,8 +75,12 @@ if __name__ == '__main__':
     'c': '*third_party/[a-z]*',
     'level': None
   }
+  if platform.system() == 'Darwin':
+    ctags = 'ctags'
+  else:
+    ctags = 'ctags-exuberant'
   for shortcut in scan_dirs.keys():
-    cmd = ['ctags-exuberant',
+    cmd = [ctags,
            '--extra=+f',
            '--languages=+C++,+C,+Java,-JavaScript,+Perl,+Python,+Ruby',
            '--recurse=yes',
