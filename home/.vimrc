@@ -249,3 +249,12 @@ au! BufEnter *.h let b:fswitchdst = 'cc,cpp,c' | let b:fswitchlocs = '.'
 set nofoldenable    " disable folding
 
 source ~/.vimrc_work
+
+if has("gui_running")
+  highlight Cursor guifg=yellow guibg=red
+  highlight iCursor guifg=red guibg=green
+  set guicursor=n-v-c:block-Cursor
+  set guicursor+=i:ver100-iCursor
+  set guicursor+=n-v-c:blinkon0
+  set guicursor+=i:blinkwait10
+endif
