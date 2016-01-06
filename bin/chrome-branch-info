@@ -11,7 +11,7 @@ stdout_lock=thread.allocate_lock()
 class Git:
   @staticmethod
   def CountCommits(branch):
-    cmd = ['git', 'rev-list', '--count', 'master..%s' % branch]
+    cmd = ['git', 'rev-list', '--count', 'origin/master..%s' % branch]
     return int(subprocess.check_output(cmd))
 
   @staticmethod
