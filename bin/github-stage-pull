@@ -1,0 +1,234 @@
+#!/usr/bin/env python3
+
+import argparse
+from github import Github
+import os
+import platform
+from pprint import pprint
+import re
+import shutil
+import subprocess
+import sys
+import urllib.request
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+
+class Options(object):
+  def __init__(self):
+    self.noop = False
+    self.print_args = True
+    self.org_name = 'google'
+    self.repo_name = 'leveldb'
+
+  def Parse(self):
+    desc = 'Script to automate GitHub pull requests'
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument('-n', '--noop', action='store_true',
+                        help="Don't do anything, print what would be done")
+    parser.add_argument("request")
+    args = parser.parse_args()
+    if args.noop:
+      self.noop = True
+    pull_number = int(args.request)
+
+    with open(Options.GetAuthFilePath()) as f:
+      username = f.readline().strip()
+      password = f.readline().strip()
+    github = Github(username, password)
+    pull_request = self.GetPullRequest(github, pull_number)
+    if not pull_request:
+      raise Exception('Cannot find pull request %d' % pull_number)
+    self.pull_request_username=pull_request.user.login
+    self.remote_pull_branch_name = pull_request.head.label.split(':')[1]
+    self.stage_dir = '%s-stage' % self.repo_name
+    self.target_branch_name = pull_request.base.label.split(':')[1]
+    self.local_pull_branch_name = '%s-%s' % (self.pull_request_username, \
+                                             self.remote_pull_branch_name)
+    self.pull_url = 'https://github.com/%s/%s.git' % \
+                    (self.pull_request_username, self.repo_name)
+    self.pull_remote_name = self.pull_request_username
+    #pprint(vars(self))
+
+  def GetPullRequest(self, github, number):
+    repo = github.get_organization(self.org_name).get_repo(self.repo_name)
+    for pull_request in repo.get_pulls():
+      if pull_request.number == number:
+        return pull_request
+    return None
+
+  @staticmethod
+  def OutputColor():
+    if platform.system() == 'Windows':
+      return False
+    else:
+      return sys.stdout.isatty()
+
+  @staticmethod
+  def GetAuthFilePath():
+    return os.path.join(os.path.dirname(__file__), 'github-auth.txt')
+
+class BranchInfo(object):
+  def __init__(self, name, parent, isCurrent):
+    self.name = name
+    self.parent = parent
+    self.isCurrent = isCurrent
+
+class Git(object):
+  def __init__(self, noop, print_args):
+    self.noop = noop
+    self.print_args = print_args
+
+  def Run(self, cmd):
+    exec_cmd = ['git']
+    exec_cmd.extend(cmd)
+    if self.print_args:
+      Git.OutputCommand(exec_cmd)
+    if self.noop:
+      return
+    subprocess.check_call(exec_cmd)
+
+  def GetBranches(self):
+    branches = {}
+    cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
+    if self.print_args:
+      Git.OutputCommand(cmd)
+    for line in subprocess.check_output(cmd).splitlines():
+      line = line.decode('ascii')
+      isCurrent = line.startswith('*')
+      if isCurrent:
+        line = line.lstrip('*')
+      line = line.strip()
+      m = re.search(r'^(\S+)\s+(\S+)\s+\[([^\]]+)\].*$', line)
+      if m:
+        branchName = m.group(1)
+        items = m.group(3).split(':')
+        parentBranchName = items[0]
+        if parentBranchName not in branches:
+          branches[parentBranchName] = BranchInfo(parentBranchName, None, False)
+        if branchName in branches:
+          info = branches[branchName]
+          info.parent = parentBranchName
+          info.isCurrent = isCurrent
+        else:
+          branches[branchName] = BranchInfo(branchName, parentBranchName, isCurrent)
+    return branches
+
+  @staticmethod
+  def OutputCommand(cmd):
+    if type(cmd) is list:
+      str_cmd = ' '.join(cmd)
+    else:
+      assert type(cmd) is str or type(cmd) is unicode
+      str_cmd = cmd
+    if Options.OutputColor():
+      print("%s%s%s" % (bcolors.OKBLUE, str_cmd, bcolors.ENDC))
+    else:
+      print(str_cmd)
+
+class CheckoutMethod(object):
+  def __init__(self, options):
+    self.git = Git(options.noop, options.print_args)
+    self.options = options
+
+  @staticmethod
+  def CreateProjectUrl(org_name, repo_name):
+    return 'https://github.com/%s/%s.git' % (org_name, repo_name)
+
+  def CheckoutAuthoritative(self):
+    print('Checking out authoritative repo...')
+    shutil.rmtree(self.options.stage_dir, True)
+    authorative_url = CheckoutMethod.CreateProjectUrl(self.options.org_name,
+                                                      self.options.repo_name)
+    self.git.Run(['clone', authorative_url, self.options.stage_dir])
+    if not self.options.noop:
+      os.chdir(self.options.stage_dir)
+
+class GitHubMethod(CheckoutMethod):
+  """These are the steps recommended by GitHub for manual pull"""
+  def __init__(self, options):
+    super().__init__(options)
+
+  def CreatePullBranch(self):
+    self.git.Run(['checkout', '-b', self.options.local_pull_branch_name,
+                  self.options.target_branch_name])
+
+  def PullBranch(self):
+    self.git.Run(['pull', self.options.pull_url,
+                  self.options.remote_pull_branch_name])
+
+  def CheckoutTargetBranch(self):
+    self.git.Run(['checkout', self.options.target_branch_name])
+
+  def MergeBranch(self):
+    self.git.Run(['merge', '--no-ff', self.options.local_pull_branch_name])
+
+  def Run(self):
+    self.CheckoutAuthoritative()
+    self.CreatePullBranch()
+    self.PullBranch()
+    self.CheckoutTargetBranch()
+    self.MergeBranch()
+
+class MyMethod(CheckoutMethod):
+  """My preferred way to merge (and test) an pull request"""
+  def __init__(self, options):
+    super().__init__(options)
+
+  def AddPullRepo(self):
+    self.git.Run(['remote', 'add', self.options.pull_remote_name,
+                  self.options.pull_url])
+    self.git.Run(['fetch', self.options.pull_remote_name])
+
+  def CreatePullBranch(self):
+    track_branch = '%s/%s' % (self.options.pull_remote_name,
+                              self.options.target_branch_name)
+    self.git.Run(['checkout', '-b', self.options.local_pull_branch_name,
+                  '--track', track_branch])
+
+  def MergePullBranch(self):
+    branches = self.git.GetBranches()
+    if self.options.target_branch_name in branches:
+      self.git.Run(['checkout', self.options.target_branch_name])
+    else:
+      branch_pt = 'origin/%s' % self.options.target_branch_name
+      self.git.Run(['checkout', '-b', self.options.target_branch_name, branch_pt])
+    self.git.Run(['merge', self.options.local_pull_branch_name])
+
+  def RebasePullBranch(self):
+    self.git.Run(['rebase', self.options.target_branch_name])
+
+  def Run(self):
+    self.CheckoutAuthoritative()
+    self.AddPullRepo()
+    self.CreatePullBranch()
+    #self.RebasePullBranch()
+    self.MergePullBranch()
+
+class Stager(object):
+  def __init__(self, options):
+    self.git = Git(options.noop, options.print_args)
+    self.options = options
+
+  @staticmethod
+  def PrintBuildCmd():
+    print()
+    print('Now test using:')
+    str_cmd = 'make -j `cat /proc/cpuinfo | grep processor | wc -l` check'
+    print("%s%s%s" % (bcolors.OKGREEN, str_cmd, bcolors.ENDC))
+
+  def Run(self):
+    #MyMethod(self.options).Run()
+    GitHubMethod(self.options).Run()
+    Stager.PrintBuildCmd()
+
+if __name__ == '__main__':
+  options = Options()
+  options.Parse()
+  stager = Stager(options)
+  stager.Run()
