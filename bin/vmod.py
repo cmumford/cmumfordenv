@@ -12,7 +12,7 @@ class Options(object):
     self.noop = False
     self.verbosity = 0
     self.print_cmds = False
-    self.max_files_to_edit = 30
+    self.max_files_to_edit = 80
     self.commit = None
     self.gui_editor = Options.CanDoGUI()
     self.branch = False
@@ -136,13 +136,12 @@ class Git:
     return files
 
   @staticmethod
-  def GetModifiedFilesInBranch(branch, print_cmds):
+  def GetModifiedFilesInBranch(branch, print_cmds, maxCommits):
     assert(branch.parent)
     cmd = ['git', '--no-pager', 'diff', '--name-only', branch.name, branch.parent]
     files = set()
     if print_cmds:
       print ' '.join(cmd)
-    maxCommits = 30
     commitCount = 0
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       line.strip()
@@ -153,12 +152,12 @@ class Git:
     return files
 
   @staticmethod
-  def GetModifiedFilesInCurrentBranch(print_cmds):
+  def GetModifiedFilesInCurrentBranch(print_cmds, maxCommits):
     branches = Git.GetBranches(print_cmds)
     for branchName in branches:
       branch = branches[branchName]
       if branch.isCurrent:
-        return Git.GetModifiedFilesInBranch(branch, print_cmds)
+        return Git.GetModifiedFilesInBranch(branch, print_cmds, maxCommits)
     return set()
 
 class App:
@@ -181,11 +180,13 @@ class App:
       files = Git.GetModifiedFilesInCommit(self.options.commit,
                                            self.options.print_cmds)
     elif self.options.branch:
-      files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds)
+      files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds,
+                                                  self.options.max_files_to_edit)
     else:
       files = Git.GetModifiedFiles(self.options.print_cmds)
       if len(files) == 0:
-        files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds)
+        files = Git.GetModifiedFilesInCurrentBranch(self.options.print_cmds,
+                                                    self.options.max_files_to_edit)
 
     (files, filtered) = App.FilterExisting(files)
     if len(files) == 0:
