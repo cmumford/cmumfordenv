@@ -1,0 +1,33 @@
+#!/usr/bin/env python
+
+import HTMLParser
+import os
+import pyperclip
+import stat
+import sys
+
+h = HTMLParser.HTMLParser()
+
+def ReadFromStdin():
+  mode = os.fstat(0).st_mode
+  if stat.S_ISFIFO(mode):
+    # stdin is piped
+    return True
+  elif stat.S_ISREG(mode):
+    # stdin is redirected
+    return True
+  else:
+    # stdin is terminal
+    return False
+
+def DecodeStream(fin, fout):
+  for line in fin:
+    fout.write(h.unescape(line))
+
+def DecodeClipboard():
+  pyperclip.copy(h.unescape(pyperclip.paste()))
+
+if ReadFromStdin():
+  DecodeStream(sys.stdin, sys.stdout)
+else:
+  DecodeClipboard()
