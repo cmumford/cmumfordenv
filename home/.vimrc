@@ -270,7 +270,7 @@ endfunction
 source ~/.vimrc_work
 
 if has("gui_running")
-  highlight Cursor guifg=yellow guibg=red
+  highlight Cursor guifg=black guibg=cyan
   highlight iCursor guifg=red guibg=green
   set guicursor=n-v-c:block-Cursor
   set guicursor+=i:ver100-iCursor
