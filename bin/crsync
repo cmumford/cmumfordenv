@@ -5,6 +5,9 @@ OPTIND=1
 fetch_only=0
 force=0
 
+# Delete my gyp state file to force crbuild to regyp
+rm -f .GYP_STATE
+
 while getopts "fF" opt; do
   case "$opt" in
   f)  fetch_only=1
@@ -46,6 +49,3 @@ echo ""
   cd ${top_dir}
   gclient sync
 fi
-
-# Now delete my gyp state file to force crbuild to regyp
-rm -f .GYP_STATE
