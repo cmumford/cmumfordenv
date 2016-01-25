@@ -270,7 +270,8 @@
     },
     {
       "names": ["base_unittests", "net_unittests", "unit_tests",
-                "content_unittests", "components_unittests"],
+                "content_unittests", "components_unittests",
+                "extensions_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
@@ -472,11 +473,27 @@
       ]
     },
     {
+      "name": "extensions_content_unittests",
+      "title": "The extension tests from content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*Extension*:'"
+      ]
+    },
+    {
       "name": "storage_net_unittests",
       "title": "The CStorage tests from net_unittests",
       "executable": "net_unittests",
       "args": [
         "--gtest_filter=':*Storage*:'"
+      ]
+    },
+    {
+      "name": "extensions_net_unittests",
+      "title": "The extension tests from net_unittests",
+      "executable": "net_unittests",
+      "args": [
+        "--gtest_filter=':*Extension*:'"
       ]
     },
     {
@@ -520,11 +537,32 @@
       ]
     },
     {
+      "name": "extensions_unit_tests",
+      "title": "The extension tests from unit_tests",
+      "executable": "unit_tests",
+      "args": [
+        "--gtest_filter=':*Extension*:'"
+      ]
+    },
+    {
+      "name": "extensions_unittests",
+      "title": "The extensions unit tests",
+      "executable": "extensions_unittests"
+    },
+    {
       "name": "storage_components_unittests",
       "title": "The Storage tests from components_unittests",
       "executable": "components_unittests",
       "args": [
         "--gtest_filter=':*Storage*:'"
+      ]
+    },
+    {
+      "name": "extensions_components_unittests",
+      "title": "The Extensions tests from components_unittests",
+      "executable": "components_unittests",
+      "args": [
+        "--gtest_filter=':*Extension*:'"
       ]
     },
     {
@@ -557,6 +595,14 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*Storage*:'"
+      ]
+    },
+    {
+      "name": "content-browsertests-extension",
+      "title": "The extension tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*Extension*:'"
       ]
     },
     {
@@ -733,6 +779,13 @@
       "runs": ["storage_components_unittests", "storage_unit_tests",
                "storage_content_unittests", "content-browsertests-storage",
                "storage_net_unittests"]
+    },
+    {
+      "name": "unit-extensions",
+      "title": "Run all extensions unit tests",
+      "runs": ["extensions_components_unittests", "extensions_unit_tests",
+               "extensions_content_unittests", "content-browsertests-extension",
+               "extensions_net_unittests", "extensions_unittests"]
     },
     {
       "name": "chromeos",
