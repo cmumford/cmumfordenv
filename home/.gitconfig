@@ -1,35 +1,37 @@
 [user]
-    email = cmumford@chromium.org
-	name = Chris Mumford
+  email = cmumford@chromium.org
+  name = Chris Mumford
 [color]
-	diff = auto
-	status = auto
-	branch = auto
-	ui = auto
+  diff = auto
+  status = auto
+  branch = auto
+  ui = auto
 [merge]
-	tool = mymeld
-	renameLimit = 9999999
+  tool = mymeld
+  renameLimit = 9999999
 [diff]
-	external = $HOME/bin/gitdiff.py
-	renames = true
-	renameLimit = 999999
+  external = $HOME/bin/gitdiff.py
+  renames = true
+  renameLimit = 999999
 [alias]
-	co = checkout
-    l = log --graph --decorate --pretty=oneline --abbrev-commit
-    ll = log --graph --decorate --pretty=medium --abbrev-commit
-    dd = diff --no-ext-diff
-    wd = diff --no-ext-diff --word-diff
-    vd = difftool --tool=vimdiff
-    mb = map-branches --description
+  l = log --graph --decorate --pretty=oneline --abbrev-commit
+  ll = log --graph --decorate --pretty=medium --abbrev-commit
+  dd = diff --no-ext-diff
+  wd = diff --no-ext-diff --word-diff
+  vd = difftool --tool=vimdiff
+  mb = map-branches --description
+  summary = log --max-count=1 --format='%s'
 [branch]
-	autosetuprebase = always
+  autosetuprebase = always
 [push]
-	default = tracking
+  default = tracking
 [core]
-	autocrlf = false
-	filemode = false
-	deltaBaseCacheLimit = 1G
+  autocrlf = false
+  filemode = false
+  deltaBaseCacheLimit = 1G
 [rerere]
-	enabled = 1
+  enabled = 1
 [mergetool "mymeld"]
-	cmd = $HOME/bin/gitmerge $BASE $LOCAL $REMOTE $MERGED
+  cmd = $HOME/bin/gitmerge $BASE $LOCAL $REMOTE $MERGED
+[http]
+  cookiefile = /usr/local/google/home/cmumford/.gitcookies
