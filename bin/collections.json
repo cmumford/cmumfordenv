@@ -482,7 +482,7 @@
     },
     {
       "name": "storage_net_unittests",
-      "title": "The CStorage tests from net_unittests",
+      "title": "The Storage tests from net_unittests",
       "executable": "net_unittests",
       "args": [
         "--gtest_filter=':*Storage*:'"
@@ -775,7 +775,7 @@
     },
     {
       "name": "unit-storage",
-      "title": "Run all Cookie unit tests",
+      "title": "Run all storage unit tests",
       "runs": ["storage_components_unittests", "storage_unit_tests",
                "storage_content_unittests", "content-browsertests-storage",
                "storage_net_unittests"]
