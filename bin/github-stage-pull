@@ -19,22 +19,36 @@ class bcolors:
     FAIL = '\033[91m'
     ENDC = '\033[0m'
 
+class StageMethod:
+    GITHUB = 0
+    MERGE = 1
+
 class Options(object):
   def __init__(self):
     self.noop = False
     self.print_args = True
     self.org_name = 'google'
     self.repo_name = 'leveldb'
+    self.stage_method = StageMethod.GITHUB
 
   def Parse(self):
     desc = 'Script to automate GitHub pull requests'
     parser = argparse.ArgumentParser(description=desc)
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-m', '--method',
+                        help='Stage method ("github" (default) or "merge")')
     parser.add_argument("request")
     args = parser.parse_args()
     if args.noop:
       self.noop = True
+    if args.method:
+      if args.method == 'github':
+        self.stage_method = StageMethod.GITHUB
+      elif args.method == 'merge':
+        self.stage_method = StageMethod.MERGE
+      else:
+        raise Exception('Unknown stage method: "' + method + ':')
     pull_number = int(args.request)
 
     with open(Options.GetAuthFilePath()) as f:
@@ -46,7 +60,7 @@ class Options(object):
       raise Exception('Cannot find pull request %d' % pull_number)
     self.pull_request_username=pull_request.user.login
     self.remote_pull_branch_name = pull_request.head.label.split(':')[1]
-    self.stage_dir = '%s-stage' % self.repo_name
+    self.stage_dir = '%s-pull-test' % self.repo_name
     self.target_branch_name = pull_request.base.label.split(':')[1]
     self.local_pull_branch_name = '%s-%s' % (self.pull_request_username, \
                                              self.remote_pull_branch_name)
@@ -175,7 +189,7 @@ class GitHubMethod(CheckoutMethod):
     self.CheckoutTargetBranch()
     self.MergeBranch()
 
-class MyMethod(CheckoutMethod):
+class MergeMethod(CheckoutMethod):
   """My preferred way to merge (and test) an pull request"""
   def __init__(self, options):
     super().__init__(options)
@@ -207,7 +221,7 @@ class MyMethod(CheckoutMethod):
     self.CheckoutAuthoritative()
     self.AddPullRepo()
     self.CreatePullBranch()
-    #self.RebasePullBranch()
+    self.RebasePullBranch()
     self.MergePullBranch()
 
 class Stager(object):
@@ -223,8 +237,10 @@ class Stager(object):
     print("%s%s%s" % (bcolors.OKGREEN, str_cmd, bcolors.ENDC))
 
   def Run(self):
-    #MyMethod(self.options).Run()
-    GitHubMethod(self.options).Run()
+    if self.options.stage_method == StageMethod.MERGE:
+      MergeMethod(self.options).Run()
+    else:
+      GitHubMethod(self.options).Run()
     Stager.PrintBuildCmd()
 
 if __name__ == '__main__':
