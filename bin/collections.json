@@ -675,6 +675,14 @@
       ]
     },
     {
+      "name": "content-browsertests-service-worker",
+      "title": "The ServiceWorker tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*ServiceWorker*:'"
+      ]
+    },
+    {
       "name": "corrupt",
       "title": "Run the new corruption (while open) test",
       "executable": "content_browsertests",
@@ -728,6 +736,14 @@
       "executable": "browser_tests",
       "args": [
         "--gtest_filter=':*IndexedDB*:BrowserActionApiTest.IncognitoBasic:BrowsingDataIndexedDBHelperTest:'"
+      ]
+    },
+    {
+      "name": "browser_tests-service-worker",
+      "title": "The ServiceWorker tests from browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*ServiceWorker*:'"
       ]
     },
     {
@@ -797,6 +813,13 @@
       "runs": ["extensions_components_unittests", "unit_tests-extensions",
                "extensions_content_unittests", "content-browsertests-extension",
                "extensions_net_unittests", "extensions_unittests"]
+    },
+    {
+      "name": "unit-service-worker",
+      "title": "Run all service worker unit tests",
+      "runs": ["service_worker_content_unittests",
+               "content-browsertests-service-worker",
+               "browser_tests-service-worker"]
     },
     {
       "name": "chromeos",
