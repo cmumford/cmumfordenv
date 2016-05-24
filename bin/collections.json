@@ -93,6 +93,25 @@
           ]
         },
         {
+          "name": "asan",
+          "command": [
+            "${out_dir}/${Build_type}/content_shell",
+            "--allow-file-access-from-files",
+            "--disable-gl-drawing-for-tests",
+            "--disable-hang-monitor",
+            "--disable-metrics",
+            "--disable-popup-blocking",
+            "--disable-prompt-on-repost",
+            "--enable-experimental-extension-apis",
+            "--enable-extension-apps",
+            "--enable-extension-timeline-api",
+            "--js-flags=\"--expose-gc --verify-heap\"",
+            "--no-sandbox",
+            "--use-gl=osmesa",
+            "--user-data-dir=${HOME}/.chrome_asan"
+          ]
+        },
+        {
           "name": "debug",
           "command": [
             "cgdb",
