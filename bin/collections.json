@@ -548,11 +548,11 @@
       ]
     },
     {
-      "name": "extensions_unit_tests",
+      "name": "unit_tests-extensions",
       "title": "The extension tests from unit_tests",
       "executable": "unit_tests",
       "args": [
-        "--gtest_filter=':*Extension*:'"
+        "--gtest_filter=':*Extension*:*RulesRegistry*:'"
       ]
     },
     {
@@ -794,7 +794,7 @@
     {
       "name": "unit-extensions",
       "title": "Run all extensions unit tests",
-      "runs": ["extensions_components_unittests", "extensions_unit_tests",
+      "runs": ["extensions_components_unittests", "unit_tests-extensions",
                "extensions_content_unittests", "content-browsertests-extension",
                "extensions_net_unittests", "extensions_unittests"]
     },
