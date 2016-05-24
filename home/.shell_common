@@ -51,7 +51,7 @@ function gypgrep()
 
 function gngrep()
 {
-	grep -n --color=always --recursive --include="*.gn" $@ .
+	grep -n --color=always --recursive --include="*.gn" --include="*.gni" $@ .
 }
 
 function idlgrep()
