@@ -508,6 +508,14 @@
       ]
     },
     {
+      "name": "service_worker_content_unittests",
+      "title": "The Service Worker tests from content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*ServiceWorker*:'"
+      ]
+    },
+    {
       "name": "bookmark_components_unittests",
       "title": "The Bookmark tests from components_unittests",
       "executable": "components_unittests",
