@@ -164,7 +164,7 @@
       "targets": ["chrome"],
       "command": [
         "python",
-        "tools/perf/run_measurement",
+        "tools/perf/run_benchmark",
         "--browser=${build_type}",
         "indexeddb_perf"
       ]
