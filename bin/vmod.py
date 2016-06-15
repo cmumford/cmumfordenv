@@ -12,7 +12,7 @@ class Options(object):
     self.noop = False
     self.verbosity = 0
     self.print_cmds = False
-    self.max_files_to_edit = 80
+    self.max_files_to_edit = 120
     self.commit = None
     self.gui_editor = Options.CanDoGUI()
     self.branch = False
@@ -201,7 +201,7 @@ class App:
           (len(files), self.options.max_files_to_edit)
       files = files[:self.options.max_files_to_edit]
     cmd = [self.options.GetEditorPath()]
-    cmd.extend(sorted(files))
+    cmd.extend(sorted(files, key=lambda fname: os.path.basename(fname.lower())))
     if self.options.print_cmds:
       print '\n   '.join(cmd)
     if not self.options.noop:
