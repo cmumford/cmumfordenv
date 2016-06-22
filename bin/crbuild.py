@@ -99,6 +99,15 @@ class Executable(BuildTypeItem):
       elif cmd.name == 'normal':
         return cmd
 
+    if self.options.asan:
+      config_name = None
+      for cmd in self.commands:
+        if config_name:
+          if config_name == cmd.name:
+            return cmd
+        elif cmd.name == 'normal':
+          return cmd
+
     if config_name:
       print >> sys.stderr, "Couldn't find config %s for %s" % (config_name,
                                                                self.name)
@@ -871,6 +880,7 @@ a target defined in the gyp files.""")
           print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
         self.out_dir = 'out_asan'
         self.gyp.gyp_defines.add('asan=1')
+        self.gyp.gyp_defines.add('lsan=1')
         self.gyp.gyp_defines.add('clang=1')
         self.gyp.gyp_defines.add('use_allocator=none')
         self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
