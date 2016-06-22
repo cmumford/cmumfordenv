@@ -496,6 +496,61 @@ class Git(object):
       return line.strip()
     return None
 
+class GN(object):
+  @staticmethod
+  def ArgsFName(build_dir):
+    return os.path.join(build_dir, 'args.gn')
+
+  @staticmethod
+  def GetArgs(build_dir, all_args=False):
+    args = {}
+    if all_args:
+      cmd = ['gn', 'args', build_dir, '--list', '--short']
+      for line in subprocess.check_output(cmd).splitlines():
+        vals = line.strip().split('=')
+        if len(vals) == 2:
+          args[vals[0].strip()] = vals[1].strip()
+    else:
+      for line in open(GN.ArgsFName(build_dir)):
+        line = line.strip()
+        if re.match('^#', line):
+          continue
+        vals = line.strip().split('=')
+        if len(vals) == 2:
+          args[vals[0].strip()] = vals[1].strip()
+    return args
+
+  @staticmethod
+  def BuildArgs(options):
+    args = {}
+    args['is_debug'] = str(options.debug).lower()
+    args['is_component_build'] = str(options.shared_libraries).lower()
+    args['is_clang'] = str(options.gyp.use_clang).lower()
+    args['use_goma'] = str(options.gyp.use_goma).lower()
+    return args
+
+  @staticmethod
+  def PutArgs(build_dir, args):
+    existing_args = GN.GetArgs(build_dir)
+    existing_args.update(args)
+    with open(GN.ArgsFName(build_dir), 'w') as f:
+      print >> f, '# Build arguments go here. Examples:'
+      print >> f, '#   is_component_build = true'
+      print >> f, '#   is_debug = false'
+      print >> f, '# See "gn args <out_dir> --list" for available build arguments.'
+      print >> f
+      for arg in sorted(args):
+        print >> f, "%s = %s" % (arg, args[arg])
+
+  @staticmethod
+  def Gen(build_dir, options):
+    cmd = ['gn', 'gen', build_dir]
+    if options.print_cmds:
+      Options.OutputCommand(' '.join(cmd))
+    if options.noop:
+      return
+    subprocess.check_call(cmd)
+
 ##
 # Values in this class affect how build_gyp generates makefiles.
 class GypValues(object):
@@ -609,7 +664,7 @@ class Options(object):
       self.gyp.SetDefaultGypGenerator(self.target_os)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
-    self.use_gn = False
+    self.use_gn = True
     self.keep_going = False
     self.debug = False
     self.release = False
@@ -976,14 +1031,6 @@ class Builder:
       shutil.copyfile(os.path.join(syzygy_exes, 'syzyasan_rtl.dll'),
                       os.path.join(build_dir, 'syzyasan_rtl.dll'))
 
-  def GN(self, build_dir):
-    cmd = ['gn', 'gen', build_dir]
-    if self.options.print_cmds:
-      Options.OutputCommand(' '.join(cmd))
-    if self.options.noop:
-      return
-    subprocess.check_call(cmd)
-
   def Gyp(self):
     print "Gyp'ing..."
     if self.options.target_os == 'android' or self.options.target_os == 'chromeos':
@@ -1054,6 +1101,9 @@ class Builder:
       build_types.append('Release')
     return build_types
 
+  def GetBuildDir(self, build_type):
+    return os.path.join(self.options.out_dir, build_type)
+
   def NeedToReGyp(self):
     if self.options.use_gn:
       return False
@@ -1075,6 +1125,13 @@ class Builder:
         print "Can't get current state, need to regyp"
       return True
 
+  def NeedToReGN(self, build_type):
+    if not self.options.use_gn:
+      return False
+    existing_args = GN.GetArgs(self.GetBuildDir(build_type))
+    preferred_args = GN.BuildArgs(self.options)
+    return existing_args != preferred_args
+
   def DoBuild(self):
     build_types = self.GetBuildTypes()
 
@@ -1093,8 +1150,10 @@ class Builder:
     active_target_names = self.options.GetActiveTargets()
     errors = []
     for build_type in build_types:
-      if self.options.use_gn:
-        self.GN(os.path.join(self.options.out_dir, build_type))
+      if self.NeedToReGN(build_type):
+        build_dir = self.GetBuildDir(build_type)
+        GN.PutArgs(build_dir, GN.BuildArgs(self.options))
+        GN.Gen(build_dir, self.options)
       errors.extend(self.Build(build_type, active_target_names))
       for target_name in active_target_names:
         collections.MarkTargetBuilt(target_name, build_type)
