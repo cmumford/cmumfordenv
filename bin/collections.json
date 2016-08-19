@@ -436,7 +436,7 @@
       "title": "ChromiumEnv unit tests"
     },
     {
-      "name": "blink-unit-idb",
+      "name": "webkit_unit_tests-idb",
       "title": "The IndexedDB tests from webkit_unit_tests",
       "executable": "webkit_unit_tests",
       "args": [
@@ -444,7 +444,7 @@
       ]
     },
     {
-      "name": "idb_content_unittests",
+      "name": "content_unittests-idb",
       "title": "The IndexedDB tests from content_unittests",
       "executable": "content_unittests",
       "args": [
@@ -577,7 +577,7 @@
       ]
     },
     {
-      "name": "idb_unit_tests",
+      "name": "unit_tests-idb",
       "title": "The IndexedDB tests from unit_tests",
       "executable": "unit_tests",
       "args": [
@@ -585,7 +585,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb",
+      "name": "content_browsertests-idb",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -617,7 +617,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-one",
+      "name": "content_browsertests-idb-one",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -628,7 +628,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-null",
+      "name": "content_browsertests-idb-null",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -639,7 +639,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-single",
+      "name": "content_browsertests-idb-single",
       "title": "The IndexedDB tests from content_browsertests (single process)",
       "executable": "content_browsertests",
       "args": [
@@ -651,7 +651,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-android",
+      "name": "content_browsertests-idb-android",
       "title": "The IndexedDB tests from content_browsertests on Android",
       "executable": "content_browsertests_apk",
       "args": [
@@ -659,7 +659,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-android-one",
+      "name": "content_browsertests-idb-android-one",
       "title": "The IndexedDB tests from content_browsertests on Android",
       "executable": "content_browsertests_apk",
       "args": [
@@ -667,7 +667,7 @@
       ]
     },
     {
-      "name": "content-browsertests-idb-android-hang",
+      "name": "content_browsertests-idb-android-hang",
       "title": "The hanging IndexedDB tests from content_browsertests on Android",
       "executable": "content_browsertests_apk",
       "args": [
@@ -731,7 +731,7 @@
       ]
     },
     {
-      "name": "idb_browser_tests",
+      "name": "browser_tests-idb",
       "title": "The IndexedDB tests from browser_tests",
       "executable": "browser_tests",
       "args": [
@@ -784,9 +784,9 @@
     {
       "name": "unit-idb",
       "title": "Run all IndexedDB unit tests",
-      "runs": ["env_chromium_unittests", "blink-unit-idb",
-               "idb_content_unittests", "idb_unit_tests",
-               "content-browsertests-idb", "idb_browser_tests"]
+      "runs": ["env_chromium_unittests", "webkit_unit_tests-idb",
+               "content_unittests-idb", "unit_tests-idb",
+               "content_browsertests-idb", "browser_tests-idb"]
     },
     {
       "name": "unit-bookmark",
