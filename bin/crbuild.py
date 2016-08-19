@@ -544,6 +544,9 @@ class GN(object):
 
   @staticmethod
   def PutArgs(build_dir, args):
+    args_fname = GN.ArgsFName(build_dir)
+    if not os.path.exists(args_fname):
+      open(args_fname, 'a').close() # Create empty file
     existing_args = GN.GetArgs(build_dir)
     existing_args.update(args)
     with open(GN.ArgsFName(build_dir), 'w') as f:
@@ -1146,11 +1149,15 @@ class Builder:
       return True
 
   def NeedToReGN(self, build_type):
-    if not self.options.use_gn:
-      return False
-    existing_args = GN.GetArgs(self.GetBuildDir(build_type))
-    preferred_args = GN.BuildArgs(self.options)
-    return existing_args != preferred_args
+    if self.options.use_gn:
+      try:
+        existing_args = GN.GetArgs(self.GetBuildDir(build_type))
+        preferred_args = GN.BuildArgs(self.options)
+        return existing_args != preferred_args
+      except IOError:
+        # File not found (likely).
+        return True
+    return False
 
   def DoBuild(self):
     build_types = self.GetBuildTypes()
@@ -1172,6 +1179,9 @@ class Builder:
     for build_type in build_types:
       if self.NeedToReGN(build_type):
         build_dir = self.GetBuildDir(build_type)
+        if not os.path.isdir(build_dir):
+          # This creates the directory.
+          GN.Gen(build_dir, self.options)
         GN.PutArgs(build_dir, GN.BuildArgs(self.options))
         GN.Gen(build_dir, self.options)
       errors.extend(self.Build(build_type, active_target_names))
