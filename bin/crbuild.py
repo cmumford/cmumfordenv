@@ -721,8 +721,6 @@ class Options(object):
     self.run_args = None
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
-    if self.target_os == 'android':
-      self.gyp.use_clang = False
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     self.fuzzer = False
     self.asan = False
