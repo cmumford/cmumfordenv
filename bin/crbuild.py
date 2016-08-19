@@ -536,6 +536,10 @@ class GN(object):
     args['is_component_build'] = str(options.shared_libraries).lower()
     args['is_clang'] = str(options.gyp.use_clang).lower()
     args['use_goma'] = str(options.gyp.use_goma).lower()
+    args['use_libfuzzer'] = str(options.fuzzer).lower()
+    args['is_asan'] = str(options.asan).lower()
+    if options.fuzzer:
+      args['enable_nacl'] = 'false'
     return args
 
   @staticmethod
@@ -717,6 +721,7 @@ class Options(object):
     if self.target_os == 'android':
       self.gyp.use_clang = False
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
+    self.fuzzer = False
     self.asan = False
     self.profile = False
     self.profile_file = "/tmp/cpuprofile"
@@ -822,6 +827,8 @@ class Options(object):
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
                         help="Num jobs when both building & running")
+    parser.add_argument('--fuzzer',
+                        help="Do a fuzzer build (implies asan).")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
@@ -873,6 +880,9 @@ a target defined in the gyp files.""")
       self.debugger = True
     if args.jobs:
       self.jobs = args.jobs
+    if args.fuzzer:
+      self.fuzzer = True
+      args.asan = True
     if args.asan:
       self.asan = True
       if self.target_os == 'linux':
