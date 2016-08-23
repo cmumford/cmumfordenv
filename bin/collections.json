@@ -508,11 +508,19 @@
       ]
     },
     {
-      "name": "service_worker_content_unittests",
+      "name": "content_unittests-service-worker",
       "title": "The Service Worker tests from content_unittests",
       "executable": "content_unittests",
       "args": [
         "--gtest_filter=':*ServiceWorker*:'"
+      ]
+    },
+    {
+      "name": "content_unittests-cache-storage",
+      "title": "The Cache Storage tests from content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*CacheStorage*:'"
       ]
     },
     {
@@ -675,11 +683,53 @@
       ]
     },
     {
-      "name": "content-browsertests-service-worker",
+      "name": "content_browsertests-service-worker",
       "title": "The ServiceWorker tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*ServiceWorker*:'"
+      ]
+    },
+    {
+      "name": "content_browsertests-cache-storage",
+      "title": "The CacheStorage tests from content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*CacheStorage*:'"
+      ]
+    },
+    {
+      "name": "unit_tests-extensions-one",
+      "executable": "unit_tests",
+      "args": [
+        "--gtest_filter=':*ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseNoApproval*:*ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseApprovalOldVersion:*'",
+        "--single-process-tests"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
+      ]
+    },
+    {
+      "name": "content_unittests-cache-storage-one",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*CacheStorageManagerTest.StorageReuseCacheName*:'",
+        "--single-process-tests"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
+      ]
+    },
+    {
+      "name": "extensions_unittests-extensions-one",
+      "executable": "extensions_unittests",
+      "args": [
+        "--gtest_filter=':*ProfileValueStoreFactoryTest*:'",
+        "--test-launcher-jobs=1",
+        "--single-process-tests"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
       ]
     },
     {
@@ -744,6 +794,14 @@
       "executable": "browser_tests",
       "args": [
         "--gtest_filter=':*ServiceWorker*:'"
+      ]
+    },
+    {
+      "name": "browser_tests-cache-storage",
+      "title": "The CacheStorage tests from browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*CacheStorage*:'"
       ]
     },
     {
@@ -817,9 +875,16 @@
     {
       "name": "unit-service-worker",
       "title": "Run all service worker unit tests",
-      "runs": ["service_worker_content_unittests",
-               "content-browsertests-service-worker",
+      "runs": ["content_unittests-service-worker",
+               "content_browsertests-service-worker",
                "browser_tests-service-worker"]
+    },
+    {
+      "name": "unit-cache-storage",
+      "title": "Run all cache storage unit tests",
+      "runs": ["content_unittests-cache-storage",
+               "content_browsertests-cache-storage",
+               "browser_tests-cache-storage"]
     },
     {
       "name": "chromeos",
