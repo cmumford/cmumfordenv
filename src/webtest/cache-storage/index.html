@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CacheStorage Test</title>
+    <script>
+    // A set of Request/Response pairs to be used with prepopulated_cache_test().
+    // These contain a mix of test cases that use Vary headers.
+    var vary_entries = [
+      {
+        name: 'vary_cookie_is_cookie',
+        request: new Request('http://example.com/c',
+                             {headers: {'Cookies': 'is-for-cookie'}}),
+        response: new Response('',
+                               {headers: {'Vary': 'Cookies'}})
+      },
+      {
+        name: 'vary_cookie_is_good',
+        request: new Request('http://example.com/c',
+                             {headers: {'Cookies': 'is-good-enough-for-me'}}),
+        response: new Response('',
+                               {headers: {'Vary': 'Cookies'}})
+      },
+      {
+        name: 'vary_cookie_absent',
+        request: new Request('http://example.com/c'),
+        response: new Response('',
+                               {headers: {'Vary': 'Cookies'}})
+      }
+    ];
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function doMatch() {
+      $('status').innerHTML = 'Clicked';
+      var cacheName = 'test-cache';
+      caches.open(cacheName).then(function(cache) {
+        $('status').innerHTML = 'The cache is open.';
+        puts = [];
+        vary_entries.forEach(function(entry) {
+          puts.push(cache.put(entry.request.clone(),
+                              entry.response.clone()));
+        });
+        Promise.all(puts).then(function() {
+          $('status').innerHTML = 'All the puts have finished';
+          cache.match('http://example.com/c').then(function(response) {
+            $('status').innerHTML = 'Got the responses';
+            console.log(response);
+          });
+        });
+      });
+    }
+
+    function doAdd() {
+      $('status').innerHTML = 'Clicked';
+      var cacheName = 'test-cache';
+      caches.open(cacheName).then(function(cache) {
+        $('status').innerHTML = 'The cache is open.';
+        cache.addAll(['index.html', 'favicon.ico']).then(function() {
+          $('status').innerHTML = 'Items added';
+        });
+      });
+    }
+
+    function clicked() {
+      //doMatch();
+      doAdd();
+    }
+    </script>
+  </head>
+  <body>
+    <h1>CacheStorage Test</h1>
+    <p>A simple CacheStorage test.</p>
+    <p>Status: <span id="status"></span></p>
+    <button type="button" onclick="clicked()">Click Me!</button>
+  </body>
+</html>
+
