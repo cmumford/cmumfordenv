@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>CacheStorage Test</title>
+    <script>
+    var cache_name = 'test-cache';
+    var entry = {
+      name: 'vary_cookie_is_cookie',
+      request: new Request('http://example.com/c'),
+      response: new Response('ResponseBody')
+    };
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function doPut() {
+      $('status').innerHTML = 'Putting entry...';
+      caches.open(cache_name).then(function(cache) {
+        $('status').innerHTML = 'The cache is open.';
+        cache.put(entry.request, entry.response.clone()).then(() => {
+          $('status').innerHTML = 'Put completed.';
+        }).catch((e) => {
+          $('status').innerHTML = e.message;
+          console.error(e);
+        });
+      });
+    }
+
+    function doDelete() {
+      $('status').innerHTML = 'Deleting entry...';
+      caches.open(cache_name).then(function(cache) {
+        $('status').innerHTML = 'The cache is open.';
+        cache.delete(entry.request).then((success) => {
+          if (success) {
+            $('status').innerHTML = 'entry deleted.';
+          } else {
+            $('status').innerHTML = 'entry not deleted.';
+          }
+        }).catch((e) => {
+          $('status').innerHTML = e.message;
+          console.error(e);
+        });
+      });
+    }
+    </script>
+  </head>
+  <body>
+    <h1>CacheStorage Test</h1>
+    <p>A simple CacheStorage test.</p>
+    <p>Status: <span id="status"></span></p>
+    <button type="button" onclick="doPut()">Put</button>
+    <button type="button" onclick="doDelete()">Delete</button>
+  </body>
+</html>
+
