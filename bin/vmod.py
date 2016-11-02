@@ -5,6 +5,7 @@ import os
 import platform
 import re
 import subprocess
+import sys
 import time
 
 class Options(object):
@@ -12,7 +13,7 @@ class Options(object):
     self.noop = False
     self.verbosity = 0
     self.print_cmds = False
-    self.max_files_to_edit = 120
+    self.max_files_to_edit = 200
     self.commit = None
     self.gui_editor = Options.CanDoGUI()
     self.branch = False
@@ -80,6 +81,18 @@ class Git:
       return os.path.expanduser(r'~\depot_tools\git.bat')
     else:
       return 'git'
+
+  @staticmethod
+  def IsGitDir(dir):
+    if not dir:
+      return False
+    git_dir = os.path.join(dir, '.git')
+    if os.path.isdir(git_dir):
+      return True
+    parent_dir = os.path.abspath(os.path.join(dir, os.pardir))
+    if parent_dir == dir:
+      return False
+    return Git.IsGitDir(parent_dir)
 
   @staticmethod
   def UseShell():
@@ -167,6 +180,19 @@ class Git:
         return Git.GetModifiedFilesInBranch(branch, print_cmds, maxCommits)
     return set()
 
+class G4:
+  @staticmethod
+  def GetModifiedFiles(maxCommits):
+    files = []
+    cmd = ['g4', 'status']
+    commitCount = 0
+    reg = re.compile(r'^//depot/google3/(.*)#\d+.*$')
+    for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
+      m = reg.match(line)
+      if m:
+        files.append(m.group(1))
+    return files
+
 class App:
   def __init__(self, options):
     self.options = options
@@ -182,7 +208,30 @@ class App:
         filtered_files.append(f)
     return (existing_files, filtered_files)
 
-  def Run(self):
+  def ShowFiles(self, files):
+    (files, filtered) = App.FilterExisting(files)
+    if len(files) == 0:
+      print "No modified files to open"
+      return
+    if len(filtered):
+      for f in filtered:
+        print "Doesn't exist: %s" % f
+      time.sleep(2);  # Give user a chance to read message.
+    if len(files) > self.options.max_files_to_edit:
+      print "You have %d files, but will only edit %d of them" % \
+          (len(files), self.options.max_files_to_edit)
+      files = files[:self.options.max_files_to_edit]
+    cmd = [self.options.GetEditorPath()]
+    cmd.extend(sorted(files, key=lambda fname: os.path.basename(fname.lower())))
+    if self.options.print_cmds:
+      print '\n   '.join(cmd)
+    if not self.options.noop:
+      if self.options.gui_editor:
+        subprocess.Popen(cmd)
+      else:
+        subprocess.call(cmd)
+
+  def RunGit(self):
     if self.options.commit:
       files = Git.GetModifiedFilesInCommit(self.options.commit,
                                            self.options.print_cmds)
@@ -216,6 +265,16 @@ class App:
         subprocess.Popen(cmd)
       else:
         subprocess.call(cmd)
+
+  def RunG4(self):
+    fnames = G4.GetModifiedFiles('.')
+    self.ShowFiles(fnames)
+
+  def Run(self):
+    if Git.IsGitDir('.'):
+      self.RunGit()
+    else:
+      self.RunG4()
 
 if __name__ == '__main__':
   app = App(Options.Parse())
