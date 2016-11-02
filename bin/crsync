@@ -33,19 +33,25 @@ echo ""
 echo "Updating/rebasing Chromium..."
 cd ${top_dir}
 if [[ "${fetch_only}" == "0" ]]; then
-  git rebase-update
+  #git rebase-update
+  git fetch origin
+  #git rebaseall
+  git checkout master
+  git rebase origin/master
 fi
 
 echo ""
 echo "Updating/rebasing Leveldb"
 cd ${top_dir}/third_party/leveldatabase/src
 if [[ "${fetch_only}" == "0" ]]; then
-  git rebase-update
+  #git rebase-update
+  git fetch origin
+  git rebaseall
 fi
 
 echo ""
   if [[ "${fetch_only}" == "0" ]]; then
   echo "Syncing all projects..."
   cd ${top_dir}
-  gclient sync
+  gclient sync --with_branch_heads
 fi
