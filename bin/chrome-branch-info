@@ -74,6 +74,9 @@ def task_runner(branch):
 
 def DoStuff():
   branch_heads = ChromeGitInfo.GetBranchHeads()
+  if not branch_heads:
+    print >> sys.stderr, 'There were not branch heads'
+    sys.exit(1)
 
   pool_size = 48
   pool = ThreadPool(pool_size)
@@ -83,6 +86,6 @@ def DoStuff():
     print "%s,%s" % (branch_heads[idx], branch_commits[idx])
 
 if __name__ == "__main__":
-    import doctest
-    doctest.testmod()
-    DoStuff()
+  import doctest
+  doctest.testmod()
+  DoStuff()
