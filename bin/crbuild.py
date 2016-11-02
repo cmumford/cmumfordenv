@@ -888,7 +888,7 @@ a target defined in the gyp files.""")
       self.asan = True
       if self.target_os == 'linux':
         if args.no_use_clang:
-          print >> sys.stderr, "ASAN *is* clang to don't tell me not to use it."
+          print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
         self.out_dir = 'out_asan'
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('lsan=1')
@@ -903,7 +903,7 @@ a target defined in the gyp files.""")
         self.gyp.gyp_defines.add('chromium_win_pch=0')
         self.gyp.gyp_defines.add('chrome_multiple_dll=0')
         self.gyp.gyp_generators = 'ninja'
-        # According to docs SyzyASAN not yet compatible shared library.
+        # According to docs SyzyASan not yet compatible shared library.
         if 'component=shared_library' in self.gyp.gyp_defines:
           self.gyp.gyp_defines.remove('component=shared_library')
         self.gyp.gyp_defines.add('component=static_library')
@@ -921,6 +921,9 @@ a target defined in the gyp files.""")
     if args.profile:
       self.profile = True
       self.gyp.gyp_defines.add('profiling=1')
+    if self.asan and self.debug:
+      print >> sys.stderr, "ASan only works on a release build."
+      sys.exit(1)
 
 class Builder:
   def __init__(self, options):
