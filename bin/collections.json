@@ -451,6 +451,15 @@
       ]
     },
     {
+      "name": "content_unittests-one",
+      "title": "Just one content_unittests",
+      "executable": "content_unittests",
+      "args": [
+        "--gtest_filter=':*SQLitePersistentCookieStoreTest.TestAddThenDelete*:'",
+        "--single-process-tests"
+      ]
+    },
+    {
       "name": "cookie_content_unittests",
       "title": "The Cookie tests from content_unittests",
       "executable": "content_unittests",
@@ -464,6 +473,15 @@
       "executable": "net_unittests",
       "args": [
         "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "net_unittests-one",
+      "title": "A single test from net_unittests",
+      "executable": "net_unittests",
+      "args": [
+        "--gtest_filter=':*TestCookieDeletion*:'",
+        "--single-process-tests"
       ]
     },
     {
@@ -488,6 +506,14 @@
       "executable": "net_unittests",
       "args": [
         "--gtest_filter=':*Storage*:'"
+      ]
+    },
+    {
+      "name": "webkit_unit_tests-storage",
+      "title": "The Storage tests from webkit_unit_tests",
+      "executable": "webkit_unit_tests",
+      "args": [
+        "--gtest_filter=':*CacheStorage*:'"
       ]
     },
     {
