@@ -379,8 +379,7 @@
             "--nocheck-sys-deps",
             "--clobber-old-results",
             "--no-retry-failures",
-            "--no-new-test-results",
-            "--fully-parallel"
+            "--child-processes=${jobs}"
           ]
         },
         {
