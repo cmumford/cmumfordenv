@@ -650,25 +650,12 @@
       ]
     },
     {
-      "name": "content_browsertests-idb-one",
-      "title": "The IndexedDB tests from content_browsertests",
+      "name": "content_browsertests-one",
+      "title": "A subset of content_browsertests",
       "executable": "content_browsertests",
       "args": [
-        "--gtest_filter=':*VersionChangeCrashResilience*:'"
-      ],
-      "-commands": [
-        "${xvfb}"
-      ]
-    },
-    {
-      "name": "content_browsertests-idb-null",
-      "title": "The IndexedDB tests from content_browsertests",
-      "executable": "content_browsertests",
-      "args": [
-        "--gtest_filter=':*NullKeyPathPersistence*:'"
-      ],
-      "-commands": [
-        "${xvfb}"
+        "--gtest_filter='*IndexedDBBrowserTest.CursorPrefetch*'",
+        "--single-process-tests"
       ]
     },
     {
