@@ -839,6 +839,26 @@
       ]
     },
     {
+      "name": "blink-layout-cache-storage",
+      "title": "The CacheStorage subset of the Blink layout tests",
+      "executable": "blink-layout",
+      "args": [
+        "http/tests/cachestorage",
+        "http/tests/inspector/cache-storage"
+      ],
+      "-commands": [
+        "--no-show-results"
+      ]
+    },
+    {
+      "name": "blink-layout-one",
+      "title": "The single CacheStorage Blink layout tests",
+      "executable": "blink-layout",
+      "args": [
+        "http/tests/cachestorage/serviceworker/cache-match.html"
+      ]
+    },
+    {
       "name": "blink-layout-enum",
       "title": "The Blink layout tests to verify enum verification changes",
       "executable": "blink-layout",
