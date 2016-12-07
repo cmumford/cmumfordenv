@@ -115,7 +115,11 @@ class Executable(BuildTypeItem):
     return self.commands[0]
 
   def GetCommands(self, build_type, extra_args = None, no_run_commands = None):
-    xvfb = ["python", "testing/xvfb.py", "${out_dir}/${Build_type}"]
+    xvfb = ["python", "testing/xvfb.py"]
+    # In chromium/3d074282ede build_dir was no longer a required arg.
+    pass_out_dir = False
+    if pass_out_dir:
+      xvfb.append("${out_dir}/${Build_type}")
     bt_lowercase = build_type.lower()
     command = self.GetCommandToRun()
     cmd = copy.copy(command.args)
