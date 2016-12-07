@@ -895,7 +895,7 @@
       "title": "Run all storage unit tests",
       "runs": ["storage_components_unittests", "storage_unit_tests",
                "storage_content_unittests", "content-browsertests-storage",
-               "storage_net_unittests"]
+               "storage_net_unittests", "webkit_unit_tests-storage"]
     },
     {
       "name": "unit-extensions",
