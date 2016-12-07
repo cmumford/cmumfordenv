@@ -292,7 +292,10 @@
           "command": [
             "${out_dir}/${Build_type}/${executable_name}",
             "--brave-new-test-launcher",
-            "--test-launcher-jobs=${jobs}"
+            "--test-launcher-batch-limit=1",
+            "--test-launcher-jobs=${jobs}",
+            "--test-launcher-print-test-stdio=always",
+            "--no-sandbox"
           ]
         },
         {
