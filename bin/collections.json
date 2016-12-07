@@ -824,21 +824,8 @@
       "title": "The IndexedDB subset of the Blink layout tests",
       "executable": "blink-layout",
       "args": [
-        "storage/indexeddb"
-      ],
-      "-commands": [
-        "--fully-parallelXXX"
-      ]
-    },
-    {
-      "name": "blink-layout-idb-single",
-      "title": "The IndexedDB subset of the Blink layout tests",
-      "executable": "blink-layout",
-      "args": [
-        "${layout_dir}/storage/indexeddb/event-init.html"
-      ],
-      "-commands": [
-        "--fully-parallel"
+        "storage/indexeddb",
+        "http/tests/inspector/indexeddb"
       ]
     },
     {
