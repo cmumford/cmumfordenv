@@ -85,7 +85,7 @@ class Executable(BuildTypeItem):
 
   def GetCommandToRun(self):
     config_name = None
-    if self.options.gyp.valgrind:
+    if self.options.buildopts.valgrind:
       config_name = 'valgrind'
     elif self.options.debugger:
       config_name = 'debug'
@@ -538,8 +538,8 @@ class GN(object):
     args = {}
     args['is_debug'] = str(options.debug).lower()
     args['is_component_build'] = str(options.shared_libraries).lower()
-    args['is_clang'] = str(options.gyp.use_clang).lower()
-    args['use_goma'] = str(options.gyp.use_goma).lower()
+    args['is_clang'] = str(options.buildopts.use_clang).lower()
+    args['use_goma'] = str(options.buildopts.use_goma).lower()
     args['use_libfuzzer'] = str(options.fuzzer).lower()
     args['is_asan'] = str(options.asan).lower()
     if options.fuzzer:
@@ -573,12 +573,12 @@ class GN(object):
 
 ##
 # Values in this class affect how build_gyp generates makefiles.
-class GypValues(object):
+class BuildSettings(object):
   def __init__(self, gyp_env_path, branch):
     self.gyp_generator_flags = set()
     self.gyp_defines = set()
-    gyp_env = GypValues.ReadGypEnv(gyp_env_path)
-    self.target_os = GypValues.GetTargetOS(gyp_env)
+    gyp_env = BuildSettings.ReadGypEnv(gyp_env_path)
+    self.target_os = BuildSettings.GetTargetOS(gyp_env)
     self.SetDefaultGypGenerator(self.target_os)
     self.use_clang = True
     self.use_goma = True
@@ -591,11 +591,11 @@ class GypValues(object):
   @staticmethod
   def ExtractOSValue(env_val):
     """Extract the OS name from the GYP_DEFINES value.
-    >>> GypValues.ExtractOSValue("chromeos=1")
+    >>> BuildSettings.ExtractOSValue("chromeos=1")
     'chromeos'
-    >>> GypValues.ExtractOSValue("OS=linux")
+    >>> BuildSettings.ExtractOSValue("OS=linux")
     'linux'
-    >>> GypValues.ExtractOSValue("some-other=value")
+    >>> BuildSettings.ExtractOSValue("some-other=value")
     """
     if env_val == 'chromeos=1':
       return 'chromeos'
@@ -611,7 +611,7 @@ class GypValues(object):
     for env in gyp_env_contents:
       if env == 'GYP_DEFINES':
         for val in gyp_env_contents[env].split():
-          os = GypValues.ExtractOSValue(val)
+          os = BuildSettings.ExtractOSValue(val)
           if os:
             return os
     return None
@@ -672,8 +672,8 @@ class Options(object):
       print >> sys.stderr, "ERROR: %s" % self.GetGClientPath()
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
-    self.gyp = GypValues(self.GetGypEnvPath(), Git.CurrentBranch())
-    self.target_os = self.gyp.target_os
+    self.buildopts = BuildSettings(self.GetGypEnvPath(), Git.CurrentBranch())
+    self.target_os = self.buildopts.target_os
     if not self.target_os:
       # Not specified in chromium.gyp_env file (which is OK) so see if it's
       # in the .gclient file
@@ -681,7 +681,7 @@ class Options(object):
       if not self.target_os:
         # Not in .gcient either (also OK), so default to the host OS
         self.target_os = Options.GetHostOS()
-      self.gyp.SetDefaultGypGenerator(self.target_os)
+      self.buildopts.SetDefaultGypGenerator(self.target_os)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = True
@@ -697,24 +697,24 @@ class Options(object):
     self.sudo_pwd = None
     self.chromeos_build = 'link'
     self.shared_libraries = True
-    self.gyp.gyp_defines.add('disable_nacl=1')
+    self.buildopts.gyp_defines.add('disable_nacl=1')
     if self.target_os == 'linux':
-      self.gyp.gyp_defines.add('linux_use_debug_fission=0')
+      self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
     if (self.target_os == 'win' or self.target_os == 'linux') and \
         self.shared_libraries:
       # Should read in chromium.gyp_env and append to those values
-      self.gyp.gyp_defines.add('component=shared_library')
+      self.buildopts.gyp_defines.add('component=shared_library')
     self.verbosity = 0
     self.print_cmds = True
     self.noop = False
     self.regyp = False
     self.goma_path = os.path.join(os.path.expanduser('~'), 'goma')
-    if self.gyp.use_goma:
-      self.gyp.use_goma = self.CanUseGoma()
+    if self.buildopts.use_goma:
+      self.buildopts.use_goma = self.CanUseGoma()
     self.llvm_path = os.path.abspath(os.path.join('third_party', 'llvm-build',
                                                   'Release+Asserts', 'bin'))
     if not os.path.exists(self.llvm_path):
-      self.gyp.use_clang = False
+      self.buildopts.use_clang = False
     self.clobber = False
     self.active_items = []
     self.debugger = False
@@ -835,14 +835,14 @@ class Options(object):
     parser.add_argument('--fuzzer',
                         help="Do a fuzzer build (implies asan).")
     parser.add_argument('-V', '--valgrind', action='store_true',
-                        help="Build for Valgrind (memcheck) (default: %s)" % self.gyp.valgrind)
+                        help="Build for Valgrind (memcheck) (default: %s)" % self.buildopts.valgrind)
     parser.add_argument('-D', '--debugger', action='store_true',
                         help="Run the debug executable profile (default: %s)" % self.debugger)
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--use-clang', action='store_true',
-                        help="Use the clang compiler (default %s)" % self.gyp.use_clang)
+                        help="Use the clang compiler (default %s)" % self.buildopts.use_clang)
     group.add_argument('--no-use-clang', action='store_true',
-                        help="Use the clang compiler (default %s)" % (not self.gyp.use_clang))
+                        help="Use the clang compiler (default %s)" % (not self.buildopts.use_clang))
     parser.add_argument('targets', metavar='TARGET', type=str, nargs='*',
                         help="""Target(s) to build/run. The target name can be one of the
 predefined target/executable/run/collection items defined in
@@ -873,14 +873,14 @@ a target defined in the gyp files.""")
     if len(self.active_items) == 0:
       self.active_items.append(self.collections.default)
     if args.use_clang:
-      self.gyp.use_clang = True
+      self.buildopts.use_clang = True
     elif args.no_use_clang:
-      self.gyp.use_clang = False
-    if self.gyp.use_clang and not os.path.exists(self.llvm_path):
+      self.buildopts.use_clang = False
+    if self.buildopts.use_clang and not os.path.exists(self.llvm_path):
       print >> sys.stderr, "Can't use clang (llvm path !exists)"
-      self.gyp.use_clang = False
+      self.buildopts.use_clang = False
     if args.valgrind:
-      self.gyp.valgrind = True
+      self.buildopts.valgrind = True
     if args.debugger:
       self.debugger = True
     if args.jobs:
@@ -893,37 +893,37 @@ a target defined in the gyp files.""")
       if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
-        self.gyp.gyp_defines.add('asan=1')
-        self.gyp.gyp_defines.add('lsan=1')
-        self.gyp.gyp_defines.add('clang=1')
-        self.gyp.gyp_defines.add('use_allocator=none')
-        self.gyp.gyp_defines.add('enable_ipc_fuzzer=1')
-        self.gyp.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
-        self.gyp.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
+        self.buildopts.gyp_defines.add('asan=1')
+        self.buildopts.gyp_defines.add('lsan=1')
+        self.buildopts.gyp_defines.add('clang=1')
+        self.buildopts.gyp_defines.add('use_allocator=none')
+        self.buildopts.gyp_defines.add('enable_ipc_fuzzer=1')
+        self.buildopts.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
+        self.buildopts.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
       elif self.target_os == 'win':
-        self.gyp.gyp_defines.add('syzyasan=1')
-        self.gyp.gyp_defines.add('win_z7=1')
-        self.gyp.gyp_defines.add('chromium_win_pch=0')
-        self.gyp.gyp_defines.add('chrome_multiple_dll=0')
-        self.gyp.gyp_generators = 'ninja'
+        self.buildopts.gyp_defines.add('syzyasan=1')
+        self.buildopts.gyp_defines.add('win_z7=1')
+        self.buildopts.gyp_defines.add('chromium_win_pch=0')
+        self.buildopts.gyp_defines.add('chrome_multiple_dll=0')
+        self.buildopts.gyp_generators = 'ninja'
         # According to docs SyzyASan not yet compatible shared library.
-        if 'component=shared_library' in self.gyp.gyp_defines:
-          self.gyp.gyp_defines.remove('component=shared_library')
-        self.gyp.gyp_defines.add('component=static_library')
-        if 'disable_nacl=1' in self.gyp.gyp_defines:
-          self.gyp.gyp_defines.remove('disable_nacl=1')
+        if 'component=shared_library' in self.buildopts.gyp_defines:
+          self.buildopts.gyp_defines.remove('component=shared_library')
+        self.buildopts.gyp_defines.add('component=static_library')
+        if 'disable_nacl=1' in self.buildopts.gyp_defines:
+          self.buildopts.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
-        self.gyp.gyp_defines.add('asan=1')
+        self.buildopts.gyp_defines.add('asan=1')
         if self.shared_libraries:
-          self.gyp.gyp_defines.add('component=shared_library')
+          self.buildopts.gyp_defines.add('component=shared_library')
       elif platform.system() == 'mac':
-        self.gyp.gyp_defines.add('asan=1')
-        self.gyp.gyp_defines.add('target_arch=x64')
-        self.gyp.gyp_defines.add('host_arch=x64')
-    self.gyp.gyp_defines.add('OS=%s' % self.target_os)
+        self.buildopts.gyp_defines.add('asan=1')
+        self.buildopts.gyp_defines.add('target_arch=x64')
+        self.buildopts.gyp_defines.add('host_arch=x64')
+    self.buildopts.gyp_defines.add('OS=%s' % self.target_os)
     if args.profile:
       self.profile = True
-      self.gyp.gyp_defines.add('profiling=1')
+      self.buildopts.gyp_defines.add('profiling=1')
     if self.asan and self.debug:
       print >> sys.stderr, "ASan only works on a release build."
       sys.exit(1)
@@ -990,24 +990,24 @@ class Builder:
 
   def SetEnvVars(self):
     # Copy so as to not modify options
-    gyp_defines = copy.copy(self.options.gyp.gyp_defines)
-    os.environ['GYP_GENERATORS'] = self.options.gyp.gyp_generators
-    if self.options.gyp.use_clang:
+    gyp_defines = copy.copy(self.options.buildopts.gyp_defines)
+    os.environ['GYP_GENERATORS'] = self.options.buildopts.gyp_generators
+    if self.options.buildopts.use_clang:
       os.environ['CC'] = 'clang'
       os.environ['CXX'] = 'clang++'
       os.environ['builddir_name'] = 'llvm'
       assert os.path.exists(self.options.llvm_path)
       Builder.PrependToPath(self.options.llvm_path)
       gyp_defines.add('clang=1')
-    if self.options.gyp.valgrind:
+    if self.options.buildopts.valgrind:
       gyp_defines.add('build_for_tool=memcheck')
     # Must be prepended to PATH last
-    if self.options.gyp.use_goma:
+    if self.options.buildopts.use_goma:
       Builder.PrependToPath(self.options.goma_path)
     if 'GYP_DEFINES' in os.environ:
       for prev_val in os.environ['GYP_DEFINES'].split():
         gyp_defines.add(prev_val)
-    if self.options.gyp.use_goma:
+    if self.options.buildopts.use_goma:
         gyp_defines.add('win_z7=0')
     os.environ['GYP_DEFINES'] = ' '.join(gyp_defines)
 
@@ -1020,11 +1020,11 @@ class Builder:
         print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
         print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
         print "PATH: %s" % os.environ['PATH']
-      print "Using %s %s goma" %  ('clang' if self.options.gyp.use_clang else 'gcc',
-                                   'with' if self.options.gyp.use_goma else
+      print "Using %s %s goma" %  ('clang' if self.options.buildopts.use_clang else 'gcc',
+                                   'with' if self.options.buildopts.use_goma else
                                    'without')
-    if len(self.options.gyp.gyp_generator_flags):
-      os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.gyp.gyp_generator_flags)
+    if len(self.options.buildopts.gyp_generator_flags):
+      os.environ['GYP_GENERATOR_FLAGS'] = ' '.join(self.options.buildopts.gyp_generator_flags)
     if self.options.profile:
       os.environ['CPUPROFILE'] = self.options.profile_file
 
@@ -1071,7 +1071,7 @@ class Builder:
       subprocess.check_call(cmd)
     if self.options.verbosity > 1:
       print "Writing GYP state to %s" % self.options.gyp_state_path
-    self.options.gyp.WriteToFile(self.options.gyp_state_path)
+    self.options.buildopts.WriteToFile(self.options.gyp_state_path)
 
   def DeleteDir(self, dir_path):
     if os.path.exists(dir_path):
@@ -1097,7 +1097,7 @@ class Builder:
       cmd.insert(1, '-n')
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
-    if self.options.gyp.use_goma:
+    if self.options.buildopts.use_goma:
       if self.options.target_os == 'mac':
         cmd[1:1] = ['-j', '100']
       else:
@@ -1143,7 +1143,7 @@ class Builder:
     try:
       if not os.path.exists(self.options.out_dir):
         return True
-      current_gyp = GypValues.ReadFromFile(self.options.gyp_state_path)
+      current_gyp = BuildSettings.ReadFromFile(self.options.gyp_state_path)
       if current_gyp != self.options.gyp:
         if self.options.print_cmds:
           print "Gyp related values have changed, need to regyp"
