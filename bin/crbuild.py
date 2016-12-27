@@ -893,7 +893,6 @@ a target defined in the gyp files.""")
       if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
-        self.out_dir = 'out_asan'
         self.gyp.gyp_defines.add('asan=1')
         self.gyp.gyp_defines.add('lsan=1')
         self.gyp.gyp_defines.add('clang=1')
@@ -1091,7 +1090,7 @@ class Builder:
 
   def Build(self, build_type, target_names):
     print "Building %s..." % build_type
-    assert build_type in ['Debug', 'Release']
+    assert build_type in ['Debug', 'Release', 'asan']
     build_dir = os.path.join(self.options.out_dir, build_type)
     cmd = ['ninja', '-C', build_dir]
     if self.options.noop:
@@ -1126,7 +1125,10 @@ class Builder:
     if self.options.debug:
       build_types.append('Debug')
     if self.options.release:
-      build_types.append('Release')
+      if self.options.asan:
+        build_types.append('asan')
+      else:
+        build_types.append('Release')
     return build_types
 
   def GetBuildDir(self, build_type):
