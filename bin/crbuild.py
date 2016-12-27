@@ -1101,7 +1101,7 @@ class Builder:
       if self.options.target_os == 'mac':
         cmd[1:1] = ['-j', '100']
       else:
-        cmd[1:1] = ['-j', '4000']
+        cmd[1:1] = ['-j', '1024']
     if self.options.keep_going:
       cmd[1:1] = ['-k', '50000']
     if self.options.asan:
