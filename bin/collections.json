@@ -629,7 +629,7 @@
       ]
     },
     {
-      "name": "content-browsertests-cookie",
+      "name": "content_browsertests-cookie",
       "title": "The Cookie tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -877,7 +877,7 @@
       "name": "unit-cookie",
       "title": "Run all Cookie unit tests",
       "runs": ["cookie_components_unittests", "cookie_unit_tests",
-               "cookie_content_unittests", "content-browsertests-cookie",
+               "cookie_content_unittests", "content_browsertests-cookie",
                "net_unittests-cookie"]
     },
     {
