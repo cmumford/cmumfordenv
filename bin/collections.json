@@ -544,7 +544,7 @@
       ]
     },
     {
-      "name": "content_unittests-cache-storage",
+      "name": "content_unittests-cs",
       "title": "The Cache Storage tests from content_unittests",
       "executable": "content_unittests",
       "args": [
@@ -706,7 +706,7 @@
       ]
     },
     {
-      "name": "content_browsertests-cache-storage",
+      "name": "content_browsertests-cs",
       "title": "The CacheStorage tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -725,7 +725,7 @@
       ]
     },
     {
-      "name": "content_unittests-cache-storage-one",
+      "name": "content_unittests-cs-one",
       "executable": "content_unittests",
       "args": [
         "--gtest_filter=':*CacheStorageManagerTest.StorageReuseCacheName*:'",
@@ -812,7 +812,7 @@
       ]
     },
     {
-      "name": "browser_tests-cache-storage",
+      "name": "browser_tests-cs",
       "title": "The CacheStorage tests from browser_tests",
       "executable": "browser_tests",
       "args": [
@@ -829,12 +829,12 @@
       ]
     },
     {
-      "name": "blink-layout-cache-storage",
+      "name": "blink-layout-cs",
       "title": "The CacheStorage subset of the Blink layout tests",
       "executable": "blink-layout",
       "args": [
         "http/tests/cachestorage",
-        "http/tests/inspector/cache-storage"
+        "http/tests/inspector/cs"
       ],
       "-commands": [
         "--no-show-results"
@@ -902,11 +902,11 @@
                "browser_tests-service-worker"]
     },
     {
-      "name": "unit-cache-storage",
+      "name": "unit-cs",
       "title": "Run all cache storage unit tests",
-      "runs": ["content_unittests-cache-storage",
-               "content_browsertests-cache-storage",
-               "browser_tests-cache-storage"]
+      "runs": ["content_unittests-cs",
+               "content_browsertests-cs",
+               "browser_tests-cs"]
     },
     {
       "name": "chromeos",
