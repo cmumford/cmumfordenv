@@ -189,6 +189,25 @@
       ]
     },
     {
+      "name": "unit_tests_apk",
+      "targets": ["unit_tests_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/test_runner.py",
+            "gtest",
+            "-s",
+            "unit_tests",
+            "--verbose",
+            "--${build_type}",
+            "--num_retries=1"
+          ]
+        }
+      ]
+    },
+    {
       "name": "content_shell_apk",
       "targets": ["content_shell_apk", "forwarder2"],
       "commands": [
