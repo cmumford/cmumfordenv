@@ -536,12 +536,14 @@ class GN(object):
   @staticmethod
   def BuildArgs(options):
     args = {}
+    args['target_os'] = '"%s"' % options.target_os
     args['is_debug'] = str(options.debug).lower()
     args['is_component_build'] = str(options.shared_libraries).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
     args['use_goma'] = str(options.buildopts.use_goma).lower()
     args['use_libfuzzer'] = str(options.fuzzer).lower()
     args['is_asan'] = str(options.asan).lower()
+    args['is_tsan'] = str(options.tsan).lower()
     if options.fuzzer:
       args['enable_nacl'] = 'false'
     return args
@@ -728,6 +730,7 @@ class Options(object):
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     self.fuzzer = False
     self.asan = False
+    self.tsan = False
     self.profile = False
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
@@ -828,6 +831,8 @@ class Options(object):
                         help="Do not run targets after building.")
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
+    parser.add_argument('-t', '--tsan', action='store_true',
+                        help="Do a TSan build")
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
@@ -888,6 +893,10 @@ a target defined in the gyp files.""")
     if args.fuzzer:
       self.fuzzer = True
       args.asan = True
+    if args.tsan:
+      self.tsan = True
+      self.shared_libraries = False
+      self.buildopts.use_goma = False
     if args.asan:
       self.asan = True
       if self.target_os == 'linux':
@@ -926,6 +935,12 @@ a target defined in the gyp files.""")
       self.buildopts.gyp_defines.add('profiling=1')
     if self.asan and self.debug:
       print >> sys.stderr, "ASan only works on a release build."
+      sys.exit(1)
+    if self.tsan and self.debug:
+      print >> sys.stderr, "TSan only works on a release build."
+      sys.exit(1)
+    if self.tsan and self.asan:
+      print >> sys.stderr, "Can't do both TSan and ASan builds."
       sys.exit(1)
 
 class Builder:
@@ -1090,7 +1105,7 @@ class Builder:
 
   def Build(self, build_type, target_names):
     print "Building %s..." % build_type
-    assert build_type in ['Debug', 'Release', 'asan']
+    assert build_type in ['Debug', 'Release', 'asan', 'tsan']
     build_dir = os.path.join(self.options.out_dir, build_type)
     cmd = ['ninja', '-C', build_dir]
     if self.options.noop:
@@ -1127,6 +1142,8 @@ class Builder:
     if self.options.release:
       if self.options.asan:
         build_types.append('asan')
+      elif self.options.tsan:
+        build_types.append('tsan')
       else:
         build_types.append('Release')
     return build_types
