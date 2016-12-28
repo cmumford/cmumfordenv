@@ -84,7 +84,7 @@ if __name__ == '__main__':
            '--extra=+f',
            '--languages=+C++,+C,+Java,-JavaScript,+Perl,+Python,+Ruby',
            '--recurse=yes',
-           '--exclude=*.pyx',
+           '--exclude=*.pyc',
            '--links=no']
     if scan_dirs[shortcut]:
       cmd.append('--exclude=%s' % scan_dirs[shortcut])
