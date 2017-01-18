@@ -2,6 +2,10 @@ source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
 
+if has('win32') || has('win64')
+    set runtimepath=$USERPROFILE\.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$USERPROFILE\.vim/after
+endif
+
 syntax enable
 
 let $PAGER=''
@@ -79,11 +83,7 @@ set nocp
 " git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 " For Windows see https://github.com/gmarik/vundle/wiki/Vundle-for-Windows
 filetype off  " Required!
-if has("win32") || has("win16")
-    set rtp+=~/vimfiles/bundle/vundle
-else
-    set rtp+=~/.vim/bundle/vundle
-endif
+set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#rc()
 " Self-manage Vundle
 Bundle 'gmarik/vundle'
