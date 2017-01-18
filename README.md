@@ -11,6 +11,28 @@ I've tried to keep the shell configurations such that I could use either [Bash](
 I'm not a super shell stud so don't trust my configuration too much, but it seems to work for me.
 I'm mostly a Zsh guy so the Bash configuration may have bit rotted just a bit - but not too much.
 
+    cd
+    git clone url cmumford
+
+## Windows Installation
+
+First download ctags, and put it in your path.
+
+**Note**: mklink requires elevated privileges.
+
+    mklink /J "%USERPROFILE%\.vim" %USERPROFILE%\cmumford\home\.vim
+    mklink _vimrc cmumford\home\.vimrc
+    echo "" > .vimrc_work
+    git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
+	mklink .gitconfig cmumford\home\.gitconfig
+	mklink bin cmumford\bin
+
+## Installing Vundle Plugins
+
+The first time you run Vim you will need to install it's plugins. Start Vim and type:
+
+    :PluginInstall
+
 Utilities
 -------------------------
 <dl>
