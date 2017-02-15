@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Indexed DB Memory Leak Test</title>
+    <script>
+    var dbName = 'requestAnimFrame';
+    var storeName = 'raf';
+    var db = null;
+    var frameNum = 0;
+    var writeFireNum = 0;
+    var writeSuccessNum = 0;
+    var readSuccessNum = 0;
+    var maxNumWrites = 3;
+    var added = false;
+    var run = true;
+
+    var globals = {
+      'count': 0,
+      'id': 1,
+      'info': 'Some global string',
+      'longstr': (new Array(2*1024*1024)).join("x")
+    };
+
+    function $(id) {
+      "use strict";
+      return document.getElementById(id);
+    }
+
+    function setStatus(msg) {
+      "use strict";
+      //console.log(msg);
+      $('status').innerHTML = msg;
+    }
+
+    function shaderProgram(gl, vs, fs) {
+      var prog = gl.createProgram();
+      var addshader = function(type, source) {
+        var s = gl.createShader((type == 'vertex') ?
+          gl.VERTEX_SHADER : gl.FRAGMENT_SHADER);
+        gl.shaderSource(s, source);
+        gl.compileShader(s);
+        if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+          throw "Could not compile "+type+
+            " shader:\n\n"+gl.getShaderInfoLog(s);
+        }
+        gl.attachShader(prog, s);
+      };
+      addshader('vertex', vs);
+      addshader('fragment', fs);
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        throw "Could not link the shader program!";
+      }
+      return prog;
+    }
+
+    function attributeSetFloats(gl, prog, attr_name, rsize, arr) {
+      gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(arr),
+        gl.STATIC_DRAW);
+      var attr = gl.getAttribLocation(prog, attr_name);
+      gl.enableVertexAttribArray(attr);
+      gl.vertexAttribPointer(attr, rsize, gl.FLOAT, false, 0, 0);
+    }
+
+    function draw() {
+      try {
+        var gl = document.getElementById("webgl")
+          .getContext("experimental-webgl");
+        if (!gl) { throw "x"; }
+      } catch (err) {
+        throw "Your web browser does not support WebGL!";
+      }
+      gl.clearColor(0.8, 0.8, 0.8, 1);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      var prog = shaderProgram(gl,
+        "attribute vec3 pos;"+
+        "void main() {"+
+        "  gl_Position = vec4(pos, 2.0);"+
+        "}",
+        "void main() {"+
+        "  gl_FragColor = vec4(0.5, 0.5, 1.0, 1.0);"+
+        "}"
+      );
+      gl.useProgram(prog);
+
+      attributeSetFloats(gl, prog, "pos", 3, [
+        -1, 0, 0,
+        0, 1, 0,
+        0, -1, 0,
+        1, 0, 0
+      ]);
+
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    }
+
+    function readGlobals() {
+      var transaction = db.transaction([storeName], "readonly");
+      transaction.oncomplete = function(event) {
+        readSuccessNum += 1;
+        if (!(readSuccessNum % 25)) {
+          $('read-num').innerHTML = readSuccessNum;
+        }
+      };
+      transaction.onerror = function(event) {
+        setStatus('Failure reading globals.');
+      };
+      var store = transaction.objectStore(storeName);
+      store.get(1);
+    }
+
+    function writeGlobals() {
+      if (!db) {
+        setStatus('Database not opened');
+        return;
+      }
+
+      $('write-num').innerHTML = writeFireNum;
+
+      var transaction = db.transaction([storeName], "readwrite");
+      transaction.oncomplete = function(event) {
+        writeSuccessNum += 1;
+        setStatus('Successfully wrote globals: ' + writeSuccessNum);
+      };
+      transaction.onerror = function(event) {
+        setStatus('Failure writing globals.');
+      };
+      var store = transaction.objectStore(storeName);
+      globals.id += 1;
+      if (!added) {
+        store.add(globals, 1);
+        added = true;
+      } else {
+        store.put(globals, 1);
+      }
+    }
+
+    function rafCallback() {
+      draw();
+      frameNum += 1;
+      if (run) {
+        if (writeFireNum < maxNumWrites) {
+          writeFireNum += 1;
+          writeGlobals();
+        }
+        readGlobals();
+      }
+      window.requestAnimationFrame(rafCallback);
+    }
+
+    function init() {
+      setStatus('Opening database');
+      var openRequest = indexedDB.open(dbName);
+      openRequest.onupgradeneeded = function(evt) {
+        setStatus('onupgradeneeded: old:' + evt.oldVersion + ', new:' + evt.newVersion
+                  + ', dataLoss:' + evt.dataLoss);
+
+        var db = event.target.result;
+        db.onerror = function(event) {
+          setStatus('Error loading database.');
+        };
+
+        var objectStore = db.createObjectStore(storeName);
+        objectStore.createIndex("id", "id");
+      };
+
+      openRequest.onsuccess = function(evt) {
+        setStatus('open: success');
+        db = evt.target.result;
+        db.onversionchange = function(evt) {
+          setStatus('versionchange: old:' + evt.oldVersion + ', new:' + evt.newVersion);
+        };
+        window.requestAnimationFrame(rafCallback);
+      };
+    }
+
+    function toggleCheckbox(element) {
+      run = element.checked;
+    }
+    </script>
+  </head>
+  <body onload="init()">
+    <h1>Indexed DB Memory Leak Test.</h1>
+    <label><input type="checkbox" name="run" value="Run" checked="true" onchange="toggleCheckbox(this)">Run</input></label><br>
+    <p>Status: <span id="status">Not set.</span></p>
+    <p>Write #: <span id="write-num">Not set.</span></p>
+    <p>Read #: <span id="read-num">Not set.</span></p>
+    <canvas id="webgl" width="640" height="480"></canvas>
+  </body>
+</html>
