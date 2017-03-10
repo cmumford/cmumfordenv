@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Many IDB Cursors</title>
+    <script>
+    var dbName = "ManuCursorDatabase";
+    var storeName = "ManyCursorStore";
+    var indexName = "NameIndex";
+    var db = null;
+    var numRows = 10000;
+    var numCursors = 6000;
+
+    function $(id) {
+      "use strict";
+      return document.getElementById(id);
+    }
+
+    function setStatus(msg) {
+      "use strict";
+      console.log(msg);
+      $("status").innerHTML = msg;
+    }
+
+    function iterateCursors() {
+      if (!db) {
+        setStatus("Database is not open");
+        return;
+      }
+      var numComplete = 0;
+      setStatus("Iterating " + numCursors + " through entire DB...");
+      var txn = db.transaction(storeName, "readwrite");
+      var store = txn.objectStore(storeName);
+      for (var i = 0; i < numCursors; i++) {
+        var request = store.openCursor(i);
+        request.onsuccess = (event) => {
+          var cursor = event.target.result;
+          if (cursor) {
+            // cursor.value contains the current record being iterated through
+            // this is where you'd do something with the result
+            cursor.continue();
+          } else {
+            // no more results
+            numComplete += 1;
+            if (numComplete == numCursors) {
+              setStatus("Done iterating " + numCursors + " cursors");
+              store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
+            } else {
+              setStatus("Cursor " + numComplete + " done.");
+            }
+            return;
+          }
+        };
+      }
+    }
+
+    function fillData() {
+      if (!db) {
+        setStatus("Database is not open");
+        return;
+      }
+      setStatus("Filling data...");
+      var txn = db.transaction(storeName, "readwrite");
+      var store = txn.objectStore(storeName);
+      var i;
+      for (i = 0; i < numRows; i++) {
+        store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
+      }
+      txn.oncomplete = () => {
+        setStatus("Data written");
+      };
+    }
+
+    function closeDatabase() {
+      db.close();
+      window.db = undefined;
+      setStatus("Database is closed");
+    }
+
+    function deleteDatabase() {
+      if (db) {
+        setStatus("Close db first");
+        return;
+      }
+
+      var request = window.indexedDB.deleteDatabase(dbName);
+      request.onsuccess = () => {
+        setStatus("Database is deleted");
+      }
+    }
+
+    function openDatabase() {
+      setStatus("Opening database");
+      var openRequest = indexedDB.open(dbName);
+      openRequest.onupgradeneeded = (evt) => {
+        setStatus("onupgradeneeded: old:" + evt.oldVersion + ", new:" + evt.newVersion
+                  + ", dataLoss:" + evt.dataLoss);
+        var db = openRequest.result;
+        var store = db.createObjectStore(storeName, {keyPath: "id"});
+        var index = store.createIndex(indexName, ["name.last", "name.first"]);
+      };
+      openRequest.onsuccess = (evt) => {
+        setStatus("open: success");
+        window.db = openRequest.result;
+        db.onversionchange = (evt) => {
+          setStatus("versionchange: old:" + evt.oldVersion + ", new:" + evt.newVersion);
+        };
+      };
+    }
+
+    function init() {
+    }
+    </script>
+  </head>
+  <body onload="init()">
+    <h1>Many IDB Cursors.</h1>
+    <a href="http://crbug.com/696055">crbug.com/696055</a><br />
+    <button type="button" onclick="openDatabase()">Open DB</button><br />
+    <button type="button" onclick="closeDatabase()">Close DB</button><br />
+    <button type="button" onclick="deleteDatabase()">Delete DB</button><br />
+    <p>&nbsp;</p>
+    <button type="button" onclick="fillData()">Fill Data</button><br />
+    <button type="button" onclick="iterateCursors()">Iterate Cursors</button><br />
+    <p>Status: <span id="status">Not set.</span></p>
+  </body>
+</html>
