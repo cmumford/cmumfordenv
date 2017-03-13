@@ -10,6 +10,8 @@
     var db = null;
     var numRows = 10000;
     var numCursors = 6000;
+    var iterationsCompleted = 0;
+    var iterationsStarted = 0;
 
     function $(id) {
       "use strict";
@@ -22,11 +24,28 @@
       $("status").innerHTML = msg;
     }
 
+    function setBigItem() {
+      if (!db) {
+        setStatus("Database is not open");
+        return;
+      }
+      setStatus("Setting big value.");
+      var txn = db.transaction(storeName, "readwrite");
+      var store = txn.objectStore(storeName);
+      var really_long_string = (new Array(10*1024*1024)).join("x");
+      store.put({id: 1, name: {first: "John", last: really_long_string}, age: 25});
+      txn.oncomplete = () => {
+        setStatus("Big value written");
+      };
+    }
+
     function iterateCursors() {
       if (!db) {
         setStatus("Database is not open");
         return;
       }
+      iterationsStarted += 1;
+      setBigItem();
       var numComplete = 0;
       setStatus("Iterating " + numCursors + " through entire DB...");
       var txn = db.transaction(storeName, "readwrite");
@@ -43,15 +62,19 @@
             // no more results
             numComplete += 1;
             if (numComplete == numCursors) {
-              setStatus("Done iterating " + numCursors + " cursors");
+              iterationsCompleted += 1;
+              setStatus("Done iterating " + numCursors + " cursors: " +
+                        iterationsCompleted + "/" + iterationsStarted);
               store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
             } else {
-              setStatus("Cursor " + numComplete + " done.");
+              //setStatus("Cursor " + numComplete + " done.");
             }
             return;
           }
         };
       }
+      setStatus("Created " + numCursors + " cursors: " +
+                iterationsCompleted + "/" + iterationsStarted);
     }
 
     function fillData() {
