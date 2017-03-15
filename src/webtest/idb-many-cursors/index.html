@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <title>Many IDB Cursors</title>
     <script>
-    var dbName = "ManuCursorDatabase";
+    var dbName = "ManyCursorDatabase";
     var storeName = "ManyCursorStore";
     var indexName = "NameIndex";
     var db = null;
     var numRows = 10000;
-    var numCursors = 6000;
-    var iterationsCompleted = 0;
-    var iterationsStarted = 0;
+    var numValues = 6000;
+    var runsCompleted = 0;
+    var runsStarted = 0;
 
     function $(id) {
       "use strict";
@@ -24,65 +24,122 @@
       $("status").innerHTML = msg;
     }
 
-    function setBigItem() {
+    function enableControls() {
+      "use strict";
+      $("open").disabled = (db != null);
+      $("delete").disabled = (db != null);
+      $("close").disabled = (db == null);
+      $("fill").disabled = (db == null);
+      $("iterate").disabled = (db == null);
+      $("getset").disabled = (db == null);
+    }
+
+    function setBigItem(writtenFunc) {
+      "use strict";
       if (!db) {
         setStatus("Database is not open");
         return;
       }
-      setStatus("Setting big value.");
       var txn = db.transaction(storeName, "readwrite");
+      txn.oncomplete = () => {
+        console.log("Transaction complete");
+      }
+      txn.onerror = () => {
+        console.error("Transaction error");
+      }
+      txn.onabort = (evt) => {
+        console.error("Transaction abort: " + JSON.stringify(evt));
+      }
       var store = txn.objectStore(storeName);
       var really_long_string = (new Array(10*1024*1024)).join("x");
-      store.put({id: 1, name: {first: "John", last: really_long_string}, age: 25});
-      txn.oncomplete = () => {
-        setStatus("Big value written");
-      };
+      var req = store.put({id: 1, name: {first: "John", last: really_long_string}, age: 25});
+      // Not waiting will cause this write to run in parallel with the cursor.
+      writtenFunc();
+      //req.onsuccess = writtenFunc;
     }
 
     function iterateCursors() {
+      "use strict";
       if (!db) {
         setStatus("Database is not open");
         return;
       }
-      iterationsStarted += 1;
-      setBigItem();
-      var numComplete = 0;
-      setStatus("Iterating " + numCursors + " through entire DB...");
-      var txn = db.transaction(storeName, "readwrite");
-      var store = txn.objectStore(storeName);
-      for (var i = 0; i < numCursors; i++) {
-        var request = store.openCursor(i);
-        request.onsuccess = (event) => {
-          var cursor = event.target.result;
-          if (cursor) {
-            // cursor.value contains the current record being iterated through
-            // this is where you'd do something with the result
-            cursor.continue();
-          } else {
-            // no more results
-            numComplete += 1;
-            if (numComplete == numCursors) {
-              iterationsCompleted += 1;
-              setStatus("Done iterating " + numCursors + " cursors: " +
-                        iterationsCompleted + "/" + iterationsStarted);
-              store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
+      enableControls();
+      runsStarted += 1;
+      setStatus("Setting big value #" + runsStarted + ".");
+      setBigItem(function() {
+        enableControls();
+        var numComplete = 0;
+        setStatus("Iterating " + numValues + " cursors through entire DB...");
+        var txn = db.transaction(storeName, "readwrite");
+        var store = txn.objectStore(storeName);
+        for (var i = 0; i < numValues; i++) {
+          var request = store.openCursor(i);
+          request.onsuccess = (event) => {
+            var cursor = event.target.result;
+            if (cursor) {
+              // cursor.value contains the current record being iterated through
+              // this is where you'd do something with the result
+              cursor.continue();
             } else {
-              //setStatus("Cursor " + numComplete + " done.");
+              // no more results
+              numComplete += 1;
+              if (numComplete == numValues) {
+                runsCompleted += 1;
+                setStatus("Done iterating " + numValues + " cursors: " +
+                          runsCompleted + "/" + runsStarted);
+                store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
+              } else {
+                //setStatus("Cursor " + numComplete + " done.");
+              }
+              enableControls();
+              return;
             }
-            return;
-          }
-        };
+          };
+        }
+      });
+    }
+
+    function getset() {
+      "use strict";
+      if (!db) {
+        setStatus("Database is not open");
+        return;
       }
-      setStatus("Created " + numCursors + " cursors: " +
-                iterationsCompleted + "/" + iterationsStarted);
+      enableControls();
+      runsStarted += 1;
+      setStatus("Setting big value #" + runsStarted + ".");
+      setBigItem(function() {
+        enableControls();
+        setStatus("Setting " + numValues + " values in DB " + runsCompleted + "/" + runsStarted + "...");
+        var txn = db.transaction(storeName, "readwrite");
+        txn.oncomplete = (event) => {
+          runsCompleted += 1;
+          setStatus("Done setting " + numValues + " values: " +
+                    runsCompleted + "/" + runsStarted);
+          enableControls();
+        }
+        var store = txn.objectStore(storeName);
+        for (var i = 0; i < numValues; i++) {
+          var request = store.get(i);
+          request.onsuccess = (event) => {
+            var value = event.target.result;
+            request = store.put({id: i, name: {first: "John", last: "Doe"}, age: i});
+            request.onsuccess = (event) => {
+            }
+          };
+        }
+      });
     }
 
     function fillData() {
+      "use strict";
       if (!db) {
         setStatus("Database is not open");
         return;
       }
       setStatus("Filling data...");
+      enableControls();
       var txn = db.transaction(storeName, "readwrite");
       var store = txn.objectStore(storeName);
       var i;
@@ -91,16 +148,20 @@
       }
       txn.oncomplete = () => {
         setStatus("Data written");
+        enableControls();
       };
     }
 
     function closeDatabase() {
+      "use strict";
       db.close();
       window.db = undefined;
       setStatus("Database is closed");
+      enableControls();
     }
 
     function deleteDatabase() {
+      "use strict";
       if (db) {
         setStatus("Close db first");
         return;
@@ -109,11 +170,14 @@
       var request = window.indexedDB.deleteDatabase(dbName);
       request.onsuccess = () => {
         setStatus("Database is deleted");
+        enableControls();
       }
     }
 
     function openDatabase() {
+      "use strict";
       setStatus("Opening database");
+      enableControls();
       var openRequest = indexedDB.open(dbName);
       openRequest.onupgradeneeded = (evt) => {
         setStatus("onupgradeneeded: old:" + evt.oldVersion + ", new:" + evt.newVersion
@@ -125,6 +189,7 @@
       openRequest.onsuccess = (evt) => {
         setStatus("open: success");
         window.db = openRequest.result;
+        enableControls();
         db.onversionchange = (evt) => {
           setStatus("versionchange: old:" + evt.oldVersion + ", new:" + evt.newVersion);
         };
@@ -132,18 +197,21 @@
     }
 
     function init() {
+      "use strict";
+      enableControls();
     }
     </script>
   </head>
   <body onload="init()">
     <h1>Many IDB Cursors.</h1>
     <a href="http://crbug.com/696055">crbug.com/696055</a><br />
-    <button type="button" onclick="openDatabase()">Open DB</button><br />
-    <button type="button" onclick="closeDatabase()">Close DB</button><br />
-    <button type="button" onclick="deleteDatabase()">Delete DB</button><br />
+    <button id="open" type="button" onclick="openDatabase()">Open DB</button><br />
+    <button id="close" type="button" onclick="closeDatabase()">Close DB</button><br />
+    <button id="delete" type="button" onclick="deleteDatabase()">Delete DB</button><br />
     <p>&nbsp;</p>
-    <button type="button" onclick="fillData()">Fill Data</button><br />
-    <button type="button" onclick="iterateCursors()">Iterate Cursors</button><br />
+    <button id="fill" type="button" onclick="fillData()">Fill Data</button><br />
+    <button id="iterate" type="button" onclick="iterateCursors()">Iterate Cursors</button><br />
+    <button id="getset" type="button" onclick="getset()">get/set values</button><br />
     <p>Status: <span id="status">Not set.</span></p>
   </body>
 </html>
