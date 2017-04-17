@@ -26,6 +26,9 @@ set smarttab
 " Don't create the backup files
 set nobackup
 
+" Don't create undo files.
+set noundofile
+
 " Automatically write file before making
 set autowrite
 
