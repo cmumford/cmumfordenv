@@ -664,7 +664,7 @@
       ]
     },
     {
-      "name": "content-browsertests-extension",
+      "name": "content_browsertests-extension",
       "title": "The extension tests from content_browsertests",
       "executable": "content_browsertests",
       "args": [
@@ -910,7 +910,7 @@
       "name": "unit-extensions",
       "title": "Run all extensions unit tests",
       "runs": ["extensions_components_unittests", "unit_tests-extensions",
-               "extensions_content_unittests", "content-browsertests-extension",
+               "extensions_content_unittests", "content_browsertests-extension",
                "extensions_net_unittests", "extensions_unittests"]
     },
     {
