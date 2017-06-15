@@ -891,54 +891,54 @@
   ],
   "collections": [
     {
-      "name": "unit-idb",
+      "name": "tests-idb",
       "title": "Run all IndexedDB unit tests",
       "runs": ["env_chromium_unittests", "webkit_unit_tests-idb",
                "content_unittests-idb", "unit_tests-idb",
                "content_browsertests-idb", "browser_tests-idb"]
     },
     {
-      "name": "unit-bookmark",
+      "name": "tests-bookmark",
       "title": "Run all Bookmark unit tests",
       "runs": ["components_unittests-bookmark", "unit_tests-bookmark"]
     },
     {
-      "name": "unit-cookie",
+      "name": "tests-cookie",
       "title": "Run all Cookie unit tests",
       "runs": ["components_unittests-cookie", "unit_tests-cookie",
                "content_unittests-cookie", "content_browsertests-cookie",
                "net_unittests-cookie"]
     },
     {
-      "name": "unit-storage",
+      "name": "tests-storage",
       "title": "Run all storage unit tests",
       "runs": ["components_unittests-storage", "unit_tests-storage",
                "content_unittests-storage", "content-browsertests-storage",
                "net_unittests-storage", "webkit_unit_tests-storage"]
     },
     {
-      "name": "unit-extensions",
+      "name": "tests-extensions",
       "title": "Run all extensions unit tests",
       "runs": ["components_unittests-extensions", "unit_tests-extensions",
                "content_unittests-extensions", "content_browsertests-extension",
                "net_unittests-extensions", "unittests-extensions"]
     },
     {
-      "name": "unit-service-worker",
+      "name": "tests-service-worker",
       "title": "Run all service worker unit tests",
       "runs": ["content_unittests-service-worker",
                "content_browsertests-service-worker",
                "browser_tests-service-worker"]
     },
     {
-      "name": "unit-cs",
+      "name": "tests-cs",
       "title": "Run all cache storage unit tests",
       "runs": ["content_unittests-cs",
                "content_browsertests-cs",
                "browser_tests-cs"]
     },
     {
-      "name": "unit-crypto",
+      "name": "tests-crypto",
       "title": "Run all crypto unit tests",
       "runs": ["components_unittests-crypto", "crypto_unittests"]
     },
@@ -948,7 +948,7 @@
       "executables": ["chrome", "chrome_sandbox", "nacl_helper"]
     },
     {
-      "name": "unit-all",
+      "name": "tests-all",
       "title": "Run *all* unit tests",
       "executables": ["env_chromium_unittests", "webkit_unit_tests",
                "content_unittests", "unit_tests",
@@ -960,13 +960,12 @@
       "executables": ["performance_browser_tests"]
     },
     {
-      "name": "unit-leveldb",
+      "name": "tests-leveldb",
       "title": "Run all LevelDB tests",
       "executables": [
         "leveldb_arena_test",
         "leveldb_bloom_test",
         "leveldb_cache_test",
-        "leveldb_coding_test",
         "leveldb_corruption_test",
         "leveldb_crc32c_test",
         "leveldb_db_bench",
