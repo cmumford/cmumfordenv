@@ -293,7 +293,7 @@
     {
       "names": ["base_unittests", "net_unittests", "unit_tests",
                 "content_unittests", "components_unittests",
-                "extensions_unittests"],
+                "unittests-extensions", "crypto_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
@@ -473,6 +473,10 @@
       ]
     },
     {
+      "name": "crypto_unittests",
+      "title": "All crypto_unittests"
+    },
+    {
       "name": "content_unittests-one",
       "title": "Just one content_unittests",
       "executable": "content_unittests",
@@ -482,7 +486,7 @@
       ]
     },
     {
-      "name": "cookie_content_unittests",
+      "name": "content_unittests-cookie",
       "title": "The Cookie tests from content_unittests",
       "executable": "content_unittests",
       "args": [
@@ -507,7 +511,7 @@
       ]
     },
     {
-      "name": "storage_content_unittests",
+      "name": "content_unittests-storage",
       "title": "The Storage tests from content_unittests",
       "executable": "content_unittests",
       "args": [
@@ -515,7 +519,7 @@
       ]
     },
     {
-      "name": "extensions_content_unittests",
+      "name": "content_unittests-extensions",
       "title": "The extension tests from content_unittests",
       "executable": "content_unittests",
       "args": [
@@ -523,7 +527,7 @@
       ]
     },
     {
-      "name": "storage_net_unittests",
+      "name": "net_unittests-storage",
       "title": "The Storage tests from net_unittests",
       "executable": "net_unittests",
       "args": [
@@ -539,7 +543,7 @@
       ]
     },
     {
-      "name": "extensions_net_unittests",
+      "name": "net_unittests-extensions",
       "title": "The extension tests from net_unittests",
       "executable": "net_unittests",
       "args": [
@@ -547,7 +551,7 @@
       ]
     },
     {
-      "name": "bookmark_unit_tests",
+      "name": "unit_tests-bookmark",
       "title": "The Bookmark tests from unit_tests",
       "executable": "unit_tests",
       "args": [
@@ -571,7 +575,7 @@
       ]
     },
     {
-      "name": "bookmark_components_unittests",
+      "name": "components_unittests-bookmark",
       "title": "The Bookmark tests from components_unittests",
       "executable": "components_unittests",
       "args": [
@@ -579,7 +583,15 @@
       ]
     },
     {
-      "name": "cookie_unit_tests",
+      "name": "components_unittests-crypto",
+      "title": "The crypto tests from components_unittests",
+      "executable": "components_unittests",
+      "args": [
+        "--gtest_filter=':*Nigori*:'"
+      ]
+    },
+    {
+      "name": "unit_tests-cookie",
       "title": "The Bookmark tests from unit_tests",
       "executable": "unit_tests",
       "args": [
@@ -587,7 +599,7 @@
       ]
     },
     {
-      "name": "cookie_components_unittests",
+      "name": "components_unittests-cookie",
       "title": "The Bookmark tests from components_unittests",
       "executable": "components_unittests",
       "args": [
@@ -595,7 +607,7 @@
       ]
     },
     {
-      "name": "storage_unit_tests",
+      "name": "unit_tests-storage",
       "title": "The Storage tests from unit_tests",
       "executable": "unit_tests",
       "args": [
@@ -611,12 +623,12 @@
       ]
     },
     {
-      "name": "extensions_unittests",
+      "name": "unittests-extensions",
       "title": "The extensions unit tests",
-      "executable": "extensions_unittests"
+      "executable": "unittests-extensions"
     },
     {
-      "name": "storage_components_unittests",
+      "name": "components_unittests-storage",
       "title": "The Storage tests from components_unittests",
       "executable": "components_unittests",
       "args": [
@@ -624,7 +636,7 @@
       ]
     },
     {
-      "name": "extensions_components_unittests",
+      "name": "components_unittests-extensions",
       "title": "The Extensions tests from components_unittests",
       "executable": "components_unittests",
       "args": [
@@ -733,34 +745,23 @@
       ]
     },
     {
-      "name": "unit_tests-extensions-one",
-      "executable": "unit_tests",
+      "name": "unittests-extensions-one",
+      "executable": "unittests-extensions",
       "args": [
-        "--gtest_filter=':*ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseNoApproval*:*ExtensionServiceTestSupervised.UpdateWithPermissionIncreaseApprovalOldVersion:*'",
-        "--single-process-tests"
-      ],
-      "-commands": [
-        "--test-launcher-jobs=${jobs}"
-      ]
-    },
-    {
-      "name": "content_unittests-cs-one",
-      "executable": "content_unittests",
-      "args": [
-        "--gtest_filter=':*CacheStorageManagerTest.StorageReuseCacheName*:'",
-        "--single-process-tests"
-      ],
-      "-commands": [
-        "--test-launcher-jobs=${jobs}"
-      ]
-    },
-    {
-      "name": "extensions_unittests-extensions-one",
-      "executable": "extensions_unittests",
-      "args": [
-        "--gtest_filter=':*ProfileValueStoreFactoryTest*:'",
+        "--gtest_filter=':*BluetoothEventRouterTest*:'",
         "--test-launcher-jobs=1",
         "--single-process-tests"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
+      ]
+    },
+    {
+      "name": "unit_tests-one",
+      "executable": "unit_tests",
+      "args": [
+        "--single-process-tests",
+        "--gtest_filter=':*ToolbarActionsModelUnitTest.ActionsToolbarU*:*ExtensionServiceTest.LoadAllExtensionsFromDirectorySuccess*:'"
       ],
       "-commands": [
         "--test-launcher-jobs=${jobs}"
@@ -839,6 +840,17 @@
       ]
     },
     {
+      "name": "browser_tests-one",
+      "title": "One browser_tests test.",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*IndexedDBBrowserTest.BlobsCountAgainstQuota*:'"
+      ],
+      "-commands": [
+        "--test-launcher-jobs=${jobs}"
+      ]
+    },
+    {
       "name": "blink-layout-idb",
       "title": "The IndexedDB subset of the Blink layout tests",
       "executable": "blink-layout",
@@ -890,28 +902,28 @@
     {
       "name": "unit-bookmark",
       "title": "Run all Bookmark unit tests",
-      "runs": ["bookmark_components_unittests", "bookmark_unit_tests"]
+      "runs": ["components_unittests-bookmark", "unit_tests-bookmark"]
     },
     {
       "name": "unit-cookie",
       "title": "Run all Cookie unit tests",
-      "runs": ["cookie_components_unittests", "cookie_unit_tests",
-               "cookie_content_unittests", "content_browsertests-cookie",
+      "runs": ["components_unittests-cookie", "unit_tests-cookie",
+               "content_unittests-cookie", "content_browsertests-cookie",
                "net_unittests-cookie"]
     },
     {
       "name": "unit-storage",
       "title": "Run all storage unit tests",
-      "runs": ["storage_components_unittests", "storage_unit_tests",
-               "storage_content_unittests", "content-browsertests-storage",
-               "storage_net_unittests", "webkit_unit_tests-storage"]
+      "runs": ["components_unittests-storage", "unit_tests-storage",
+               "content_unittests-storage", "content-browsertests-storage",
+               "net_unittests-storage", "webkit_unit_tests-storage"]
     },
     {
       "name": "unit-extensions",
       "title": "Run all extensions unit tests",
-      "runs": ["extensions_components_unittests", "unit_tests-extensions",
-               "extensions_content_unittests", "content_browsertests-extension",
-               "extensions_net_unittests", "extensions_unittests"]
+      "runs": ["components_unittests-extensions", "unit_tests-extensions",
+               "content_unittests-extensions", "content_browsertests-extension",
+               "net_unittests-extensions", "unittests-extensions"]
     },
     {
       "name": "unit-service-worker",
@@ -926,6 +938,11 @@
       "runs": ["content_unittests-cs",
                "content_browsertests-cs",
                "browser_tests-cs"]
+    },
+    {
+      "name": "unit-crypto",
+      "title": "Run all crypto unit tests",
+      "runs": ["components_unittests-crypto", "crypto_unittests"]
     },
     {
       "name": "chromeos",
