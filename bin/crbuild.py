@@ -14,7 +14,9 @@ import subprocess
 import sys
 import time
 from argparse import RawTextHelpFormatter
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join("tools", "valgrind", "asan")))
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join("tools",
+                                                              "valgrind",
+                                                              "asan")))
 if cmd_subfolder not in sys.path:
   sys.path.insert(0, cmd_subfolder)
 from third_party import asan_symbolize
@@ -55,10 +57,24 @@ class BuildTarget(BuildTypeItem):
   def GetTargets(self):
     return [self]
 
+  def __str__(self):
+    val = self.name
+    if self.title:
+      val += ' "%s"' % self.title
+    if self.built_for:
+      val += '[%s]' % ', '.join(self.built_for)
+    return val
+
 class Commands(object):
   def __init__(self, args, name=''):
     self.args = args
     self.name = name
+
+  def __str__(self):
+    val = 'args: [%s]' % ', '.join(self.args)
+    if self.name:
+      val += ' name:%s' % self.name
+    return val
 
 class Executable(BuildTypeItem):
   def __init__(self, name, build_targets, commands, options):
@@ -69,6 +85,14 @@ class Executable(BuildTypeItem):
     self.commands = commands
     self.options = options
     self.type = 'normal'
+
+  def __str__(self):
+    val = 'exe: %s' % self.name
+    if self.title:
+      val += ' "%s"' % self.title
+    return val + ' targets:[%s], commands:[%s], type:%s' % \
+        (', '.join([str(t) for t in self.build_targets]),
+         ', '.join([str(c) for c in self.commands]), self.type)
 
   def PrintStep(self, cmd):
     if self.options.print_cmds:
@@ -83,45 +107,47 @@ class Executable(BuildTypeItem):
         return cmd
     return super(Executable, self).GetExePath()
 
-  def GetCommandToRun(self):
-    config_name = None
+  def GetCommandToRun(self, config_name):
+    cfg_name = None
     if self.options.buildopts.valgrind:
-      config_name = 'valgrind'
+      cfg_name = 'valgrind'
     elif self.options.debugger:
-      config_name = 'debug'
+      cfg_name = 'debug'
     elif self.options.asan:
-      config_name = 'asan'
+      cfg_name = 'asan'
+    if config_name:
+      cfg_name = config_name
 
     for cmd in self.commands:
-      if config_name:
-        if config_name == cmd.name:
+      if cfg_name:
+        if cfg_name == cmd.name:
           return cmd
       elif cmd.name == 'normal':
         return cmd
 
     if self.options.asan:
-      config_name = None
+      cfg_name = None
       for cmd in self.commands:
-        if config_name:
-          if config_name == cmd.name:
+        if cfg_name:
+          if cfg_name == cmd.name:
             return cmd
         elif cmd.name == 'normal':
           return cmd
 
-    if config_name:
-      print >> sys.stderr, "Couldn't find config %s for %s" % (config_name,
+    if cfg_name and cfg_name != 'normal':
+      print >> sys.stderr, "Couldn't find config %s for %s" % (cfg_name,
                                                                self.name)
       sys.exit(5)
     return self.commands[0]
 
-  def GetCommands(self, build_type, extra_args = None, no_run_commands = None):
+  def GetCommands(self, build_type, extra_args = None, no_run_commands = None,
+                  omit_xvfb = False, config_name = None):
     xvfb = ["python", "testing/xvfb.py"]
     # In chromium/3d074282ede build_dir was no longer a required arg.
     pass_out_dir = False
     if pass_out_dir:
       xvfb.append("${out_dir}/${Build_type}")
-    bt_lowercase = build_type.lower()
-    command = self.GetCommandToRun()
+    command = self.GetCommandToRun(config_name)
     cmd = copy.copy(command.args)
     if extra_args:
       cmd.extend(extra_args)
@@ -132,14 +158,15 @@ class Executable(BuildTypeItem):
     new_cmd = []
     for c in cmd:
       if c == '${xvfb}':
-        new_cmd.extend(xvfb)
+        if not omit_xvfb:
+          new_cmd.extend(xvfb)
       else:
         new_cmd.append(c)
     cmd = new_cmd
 
     for idx in range(len(cmd)):
       cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
-      cmd[idx] = cmd[idx].replace(r'${build_type}', bt_lowercase)
+      cmd[idx] = cmd[idx].replace(r'${build_type}', build_type.lower())
       cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
       cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
       cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
@@ -149,11 +176,34 @@ class Executable(BuildTypeItem):
     if self.options.run_args:
       args = [os.path.expandvars(arg) for arg in self.options.run_args]
       cmd.extend(args)
+    if self.options.gtest:
+      cmd.append("--gtest_filter='%s'" % self.options.gtest)
+
     return cmd
+
+  def IsGoogleTest(self, cmd):
+    return self.type == 'gtest'
 
   def Run(self, build_type, extra_args = None, no_run_commands = None):
 
+    # See if this is a google-test based executable.
+    add_single_process_tests = False
+    raw_cmd = self.GetCommands(build_type, extra_args, no_run_commands,
+                               omit_xvfb=True, config_name='normal')
+    if self.IsGoogleTest(raw_cmd):
+      tests = GoogleTest.GetAppTests(raw_cmd)
+      if not tests:
+        print '%sSkipping: %s (No matching tests)%s' % (bcolors.WARNING,
+                                                        self.name,
+                                                        bcolors.ENDC)
+        return []
+      if len(tests) == 1 and not '--single-process-tests' in raw_cmd:
+        add_single_process_tests = True
+
+    print 'Running "%s"...' % self.name
     cmd = self.GetCommands(build_type, extra_args, no_run_commands)
+    if add_single_process_tests:
+      cmd.append('--single-process-tests')
     self.PrintStep(cmd)
     run_errors = []
     try:
@@ -494,6 +544,27 @@ class GClient(object):
         print "Multiple target OS's: using the first"
       return self.contents['target_os'][0]
 
+class GoogleTest(object):
+  @staticmethod
+  def GetAppTests(cmd):
+    cmd.append('--gtest_list_tests')
+    current_class_name = None
+    class_re = re.compile(r'^([^\.]+\.).*$')
+    test_re = re.compile(r'^(\S+).*$')
+    test_names = []
+    for line in subprocess.check_output(cmd).splitlines():
+      line = line.strip()
+      if not len(line):
+        continue
+      m = class_re.match(line)
+      if m:
+        current_class_name = m.group(1)
+        continue
+      m = test_re.match(line)
+      if m:
+        test_names.append(current_class_name + m.group(1))
+    return test_names
+
 class Git(object):
   @staticmethod
   def Path():
@@ -734,6 +805,7 @@ class Options(object):
     self.profile = False
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
+    self.gtest = None
 
   def IsGomaRunning(self):
     if not os.path.exists(self.goma_path):
@@ -810,6 +882,34 @@ class Options(object):
       self.run_args = sys.argv[positional_start_idx+1:]
       sys.argv = sys.argv[:positional_start_idx]
 
+  @staticmethod
+  def FixupGoogleTestFilterArgs(val):
+    """Parse the --gtest options for --gtest_filter.
+    >>> Options.FixupGoogleTestFilterArgs(None) is None
+    True
+    >>> Options.FixupGoogleTestFilterArgs('') is None
+    True
+    >>> Options.FixupGoogleTestFilterArgs("foobar")
+    ':foobar:'
+    >>> Options.FixupGoogleTestFilterArgs(":foobar")
+    ':foobar:'
+    >>> Options.FixupGoogleTestFilterArgs(":foobar:")
+    ':foobar:'
+    """
+    # prefix/suffixing tests with ':' shouldn't be necessary according to
+    # https://github.com/google/googletest/blob/master/googletest/docs/V1_7_AdvancedGuide.md#running-a-subset-of-the-tests
+    # but experimentation indicates otherwise.
+    if val == None:
+      return None
+    if val.strip() == '':
+      return None
+    ret = val
+    if not ret.startswith(':'):
+      ret = ':' + ret
+    if not ret.endswith(':'):
+      ret = ret + ':'
+    return ret
+
   def Parse(self):
     desc = "A script to compile/test Chromium."
     parser = argparse.ArgumentParser(description=desc,
@@ -848,6 +948,8 @@ class Options(object):
                         help="Use the clang compiler (default %s)" % self.buildopts.use_clang)
     group.add_argument('--no-use-clang', action='store_true',
                         help="Use the clang compiler (default %s)" % (not self.buildopts.use_clang))
+    parser.add_argument('--gtest', type=str,
+                        help="The string to pass to the --gtest_filter parameter.")
     parser.add_argument('targets', metavar='TARGET', type=str, nargs='*',
                         help="""Target(s) to build/run. The target name can be one of the
 predefined target/executable/run/collection items defined in
@@ -942,6 +1044,7 @@ a target defined in the gyp files.""")
     if self.tsan and self.asan:
       print >> sys.stderr, "Can't do both TSan and ASan builds."
       sys.exit(1)
+    self.gtest = Options.FixupGoogleTestFilterArgs(args.gtest)
 
 class Builder:
   def __init__(self, options):
@@ -1224,7 +1327,6 @@ class Builder:
     for build_type in build_types:
       for item_name in self.options.active_items:
         item = collections.GetItemName(item_name)
-        print 'Running "%s"...' % item.name
         if isinstance(item, BuildTarget):
           continue
         if item.WasDoneFor(build_type):
