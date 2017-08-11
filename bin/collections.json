@@ -605,6 +605,14 @@
       ]
     },
     {
+      "name": "components_unittests-leveldb",
+      "title": "The leveldb tests from components_unittests",
+      "executable": "components_unittests",
+      "args": [
+        "--gtest_filter=':*ProtoDatabase*:'"
+      ]
+    },
+    {
       "name": "unit_tests-storage",
       "title": "The Storage tests from unit_tests",
       "executable": "unit_tests",
@@ -895,7 +903,8 @@
       "title": "Run all IndexedDB unit tests",
       "runs": ["env_chromium_unittests", "webkit_unit_tests-idb",
                "content_unittests-idb", "unit_tests-idb",
-               "content_browsertests-idb", "browser_tests-idb"]
+               "content_browsertests-idb", "browser_tests-idb",
+               "components_unittests-leveldb"]
     },
     {
       "name": "tests-bookmark",
