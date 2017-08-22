@@ -484,15 +484,6 @@
       "title": "All crypto_unittests"
     },
     {
-      "name": "content_unittests-one",
-      "title": "Just one content_unittests",
-      "executable": "content_unittests",
-      "args": [
-        "--gtest_filter=':*SQLitePersistentCookieStoreTest.TestAddThenDelete*:'",
-        "--single-process-tests"
-      ]
-    },
-    {
       "name": "content_unittests-cookie",
       "title": "The Cookie tests from content_unittests",
       "executable": "content_unittests",
@@ -506,15 +497,6 @@
       "executable": "net_unittests",
       "args": [
         "--gtest_filter=':*Cookie*:'"
-      ]
-    },
-    {
-      "name": "net_unittests-one",
-      "title": "A single test from net_unittests",
-      "executable": "net_unittests",
-      "args": [
-        "--gtest_filter=':*TestCookieDeletion*:'",
-        "--single-process-tests"
       ]
     },
     {
@@ -699,15 +681,6 @@
       ]
     },
     {
-      "name": "content_browsertests-one",
-      "title": "A subset of content_browsertests",
-      "executable": "content_browsertests",
-      "args": [
-        "--gtest_filter='*IndexedDBBrowserTest.CursorPrefetch*'",
-        "--single-process-tests"
-      ]
-    },
-    {
       "name": "content_browsertests-idb-single",
       "title": "The IndexedDB tests from content_browsertests (single process)",
       "executable": "content_browsertests",
@@ -725,14 +698,6 @@
       "executable": "content_browsertests_apk",
       "args": [
         "--gtest_filter=':*IndexedDB*:'"
-      ]
-    },
-    {
-      "name": "content_browsertests-idb-android-one",
-      "title": "The IndexedDB tests from content_browsertests on Android",
-      "executable": "content_browsertests_apk",
-      "args": [
-        "--gtest_filter=':*IndexedDBBrowserTestSingleProcess.RenderThreadShutdownTest*:'"
       ]
     },
     {
@@ -757,17 +722,6 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*CacheStorage*:'"
-      ]
-    },
-    {
-      "name": "unit_tests-one",
-      "executable": "unit_tests",
-      "args": [
-        "--single-process-tests",
-        "--gtest_filter=':*ToolbarActionsModelUnitTest.ActionsToolbarU*:*ExtensionServiceTest.LoadAllExtensionsFromDirectorySuccess*:'"
-      ],
-      "-commands": [
-        "--test-launcher-jobs=${jobs}"
       ]
     },
     {
@@ -840,17 +794,6 @@
       "executable": "browser_tests",
       "args": [
         "--gtest_filter=':*CacheStorage*:'"
-      ]
-    },
-    {
-      "name": "browser_tests-one",
-      "title": "One browser_tests test.",
-      "executable": "browser_tests",
-      "args": [
-        "--gtest_filter=':*IndexedDBBrowserTest.BlobsCountAgainstQuota*:'"
-      ],
-      "-commands": [
-        "--test-launcher-jobs=${jobs}"
       ]
     },
     {
