@@ -293,7 +293,7 @@
     {
       "names": ["base_unittests", "net_unittests", "unit_tests",
                 "content_unittests", "components_unittests",
-                "unittests-extensions", "crypto_unittests"],
+                "extensions_unittests", "crypto_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
@@ -629,9 +629,9 @@
       ]
     },
     {
-      "name": "unittests-extensions",
+      "name": "extensions_unittests",
       "title": "The extensions unit tests",
-      "executable": "unittests-extensions"
+      "executable": "extensions_unittests"
     },
     {
       "name": "components_unittests-storage",
@@ -748,18 +748,6 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*CacheStorage*:'"
-      ]
-    },
-    {
-      "name": "unittests-extensions-one",
-      "executable": "unittests-extensions",
-      "args": [
-        "--gtest_filter=':*BluetoothEventRouterTest*:'",
-        "--test-launcher-jobs=1",
-        "--single-process-tests"
-      ],
-      "-commands": [
-        "--test-launcher-jobs=${jobs}"
       ]
     },
     {
@@ -930,7 +918,7 @@
       "title": "Run all extensions unit tests",
       "runs": ["components_unittests-extensions", "unit_tests-extensions",
                "content_unittests-extensions", "content_browsertests-extension",
-               "net_unittests-extensions", "unittests-extensions"]
+               "net_unittests-extensions", "extensions_unittests"]
     },
     {
       "name": "tests-service-worker",
