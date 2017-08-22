@@ -293,7 +293,8 @@
     {
       "names": ["base_unittests", "net_unittests", "unit_tests",
                 "content_unittests", "components_unittests",
-                "extensions_unittests", "crypto_unittests"],
+                "extensions_unittests", "crypto_unittests",
+                "cc_unittests", "blink_platform_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
