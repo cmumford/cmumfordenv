@@ -464,6 +464,14 @@
       ]
     },
     {
+      "name": "webkit_unit_tests-cs",
+      "title": "The CacheStorage tests from webkit_unit_tests",
+      "executable": "webkit_unit_tests",
+      "args": [
+        "--gtest_filter=':*ServiceWorker*:*CacheStorage*:'"
+      ]
+    },
+    {
       "name": "content_unittests-idb",
       "title": "The IndexedDB tests from content_unittests",
       "executable": "content_unittests",
@@ -933,7 +941,8 @@
       "title": "Run all cache storage unit tests",
       "runs": ["content_unittests-cs",
                "content_browsertests-cs",
-               "browser_tests-cs"]
+               "browser_tests-cs",
+               "webkit_unit_tests-cs"]
     },
     {
       "name": "tests-crypto",
