@@ -294,7 +294,8 @@
       "names": ["base_unittests", "net_unittests", "unit_tests",
                 "content_unittests", "components_unittests",
                 "extensions_unittests", "crypto_unittests",
-                "cc_unittests", "blink_platform_unittests"],
+                "cc_unittests", "blink_platform_unittests",
+                "leveldb_service_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
@@ -482,6 +483,10 @@
     {
       "name": "crypto_unittests",
       "title": "All crypto_unittests"
+    },
+    {
+      "name": "leveldb_service_unittests",
+      "title": "The leveldb service unittests"
     },
     {
       "name": "content_unittests-cookie",
@@ -843,7 +848,7 @@
       "runs": ["env_chromium_unittests", "webkit_unit_tests-idb",
                "content_unittests-idb", "unit_tests-idb",
                "content_browsertests-idb", "browser_tests-idb",
-               "components_unittests-leveldb"]
+               "components_unittests-leveldb", "leveldb_service_unittests"]
     },
     {
       "name": "tests-bookmark",
