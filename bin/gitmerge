@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import errno
 import os
 import subprocess
 import sys
@@ -18,7 +19,16 @@ class Params:
 # Open up Meld with three tabs to more easily see what they (the *other* branch)
 # did, what we (the local/current branch), and Git's merged version.
 if sys.platform == 'win32':
-  meld_path = r"%s\Meld\meld\meld.exe" % os.environ['PROGRAMFILES(X86)']
+  meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld',
+                           'meld.exe')
+  if not os.path.exists(meld_path):
+    # At some version of Meld it changed it's install location.
+    meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld',
+                             'meld.exe')
+    if not os.path.exists(meld_path):
+      print 'Cannot find meld.exe in %s' % \
+              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld')
+      sys.exit(errno.ENOENT)
   cmd = [meld_path]
 else:
   cmd = ['meld']

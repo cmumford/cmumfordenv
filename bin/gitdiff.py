@@ -23,12 +23,16 @@ if sys.platform == 'darwin':
 else:
   # Use meld
   if sys.platform == 'win32':
-    meld_path = r"%s\Meld\meld\meld.exe" % os.environ['PROGRAMFILES(X86)']
+    meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld',
+                             'meld.exe')
     if not os.path.exists(meld_path):
-      meld_path = r"%s\Meld\meld.exe" % os.environ['PROGRAMFILES(X86)']
-    if not os.path.exists(meld_path):
-      print("Doesn't exist \"%s\"" % meld_path, file=sys.stderr);
-      sys.exit(1)
+      # At some version of Meld it changed it's install location.
+      meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld',
+                               'meld.exe')
+      if not os.path.exists(meld_path):
+        print('Cannot find meld.exe in %s' % \
+              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld'))
+        sys.exit(errno.ENOENT)
   else:
     meld_path = 'meld'
   cmd = [meld_path, sys.argv[Params.BASE_PATH], sys.argv[Params.LOCAL_PATH]]
