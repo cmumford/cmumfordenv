@@ -33,7 +33,7 @@
             "${out_dir}/${Build_type}/chrome",
             "--allow-file-access-from-files",
             "--disable-click-to-play",
-            "--disable-gpu",
+            "--disable-gpuXXX",
             "--disable-hang-monitor",
             "--disable-metrics",
             "--disable-popup-blocking",
@@ -52,7 +52,7 @@
             "--no-sandbox",
             "--use-fake-device-for-media-stream",
             "--use-fake-ui-for-media-stream",
-            "--use-gl=osmesa",
+            "--use-glXXX=osmesa",
             "--user-data-dir=${HOME}/.chrome_asan"
           ]
         },
@@ -73,7 +73,7 @@
             "${out_dir}/${Build_type}/chrome",
             "--no-sandbox",
             "--disable-hang-monitor",
-            "--single-process",
+            "--single-processXXX",
             "--user-data-dir=${HOME}/.chrome_dev"
           ]
         }
@@ -295,7 +295,7 @@
                 "content_unittests", "components_unittests",
                 "extensions_unittests", "crypto_unittests",
                 "cc_unittests", "blink_platform_unittests",
-                "leveldb_service_unittests"],
+                "leveldb_service_unittests", "url_unittests"],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
@@ -826,7 +826,13 @@
       "title": "The single CacheStorage Blink layout tests",
       "executable": "blink-layout",
       "args": [
-        "http/tests/cachestorage/serviceworker/cache-match.html"
+        "external/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html"
+      ],
+      "argsdebug": [
+        "https://127.0.0.1:8443/service-workers/service-worker/fetch-canvas-tainting-cache.https.html"
+      ],
+      "-commands": [
+        "--single-process"
       ]
     },
     {
@@ -904,9 +910,23 @@
     {
       "name": "tests-all",
       "title": "Run *all* unit tests",
-      "executables": ["env_chromium_unittests", "webkit_unit_tests",
-               "content_unittests", "unit_tests",
-               "content_browsertests", "browser_tests"]
+      "executables": [
+        "base_unittests",
+        "blink_platform_unittests",
+        "browser_tests",
+        "cc_unittests",
+        "components_unittests",
+        "content_browsertests",
+        "content_unittests",
+        "crypto_unittests",
+        "env_chromium_unittests",
+        "extensions_unittests",
+        "leveldb_service_unittests",
+        "net_unittests",
+        "unit_tests",
+        "url_unittests",
+        "webkit_unit_tests"
+      ]
     },
     {
       "name": "perf-idb",
