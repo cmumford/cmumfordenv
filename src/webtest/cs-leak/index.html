@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Cache Storage Leak</title>
+    <script>
+    const CACHE_NAME = 'test';
+    const url =
+    'http://media.npr.org/assets/img/2017/11/01/gettyimages-869094574_custom-33b55a342d0dd2b9bee6edc97765392f3bba2861-s800-c85.jpg';
+
+    function $(id) {
+      "use strict";
+      return document.getElementById(id);
+    }
+    function setStatus(msg) {
+      "use strict";
+      console.log(msg);
+      $('status').innerHTML = msg;
+    }
+    function addToCache() {
+      caches.open(CACHE_NAME).then(function(cache) {
+        var request = new Request(url, {mode: 'no-cors'});
+        fetch(request).then(function(response) {
+          cache.put(url, response).then(function() {
+            update();
+            setStatus('Successfully added to the cache');
+          });
+        });
+      });
+    }
+    function deleteFromCache() {
+      caches.open(CACHE_NAME).then(function(cache) {
+        cache.delete(url).then(function() {
+          update();
+          setStatus('Successfully deleted from cache');
+        });
+      });
+    }
+    function deleteCache() {
+      caches.delete(CACHE_NAME).then(function(success) {
+        if (success) {
+          setStatus('Cache successfully deleted');
+        } else {
+          setStatus('Error deleting cache');
+        }
+        update();
+      });
+    }
+    function getMemUsage(bytes) {
+      if (bytes > 1024*1024*1024) {
+        return (bytes/1024/1024/1024).toFixed(2) + ' GiB';
+      } else if (bytes > 1024*1024) {
+        return (bytes/1024/1024).toFixed(2) + ' MiB';
+      } else if (bytes > 1024) {
+        return (bytes/1024).toFixed(2) + ' KiB';
+      } else {
+        return bytes + ' B';
+      }
+    }
+    function update() {
+      navigator.storage.estimate().then(estimate => {
+        $('usage').innerHTML = 'Usage: ' + getMemUsage(estimate.usage) +
+          ', quota: ' + getMemUsage(estimate.quota);
+      });
+    }
+    function init() {
+      update();
+      setStatus('Ready.');
+    }
+    </script>
+  </head>
+
+  <body onload="init()">
+    <h1>Cache Storage Leak</h1>
+
+    <div class="output">
+      <p>CacheStorage leak: <strong id="status"></strong></p>
+      <p>Storage Usage: <strong id="usage"></strong></p>
+    </div>
+    <button id="add" type="button" onclick="addToCache()">Add To Cache</button><br />
+    <button id="delete" type="button" onclick="deleteFromCache()">Delete From Cache</button><br />
+    <button id="deleteCache" type="button" onclick="deleteCache()">Delete Cache</button><br />
+  </body>
+</html>
+
