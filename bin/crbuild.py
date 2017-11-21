@@ -834,8 +834,6 @@ class Options(object):
     return True
 
   def CanUseGoma(self):
-    if self.target_os == 'android':
-      return False
     return self.IsGomaRunning()
 
   @staticmethod
