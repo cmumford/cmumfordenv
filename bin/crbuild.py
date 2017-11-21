@@ -586,23 +586,33 @@ class GN(object):
     return os.path.join(build_dir, 'args.gn')
 
   @staticmethod
-  def GetArgs(build_dir, all_args=False):
+  def ArgsSupplemental():
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                        'api_keys.txt')
+
+  @staticmethod
+  def ReadFile(f):
     args = {}
+    for line in f.readlines():
+      line = line.strip()
+      if re.match('^#', line):
+        continue
+      vals = line.strip().split('=')
+      if len(vals) == 2:
+        args[vals[0].strip()] = vals[1].strip()
+    return args
+
+  @staticmethod
+  def GetArgs(build_dir, all_args=False):
     if all_args:
+      args = {}
       cmd = ['gn', 'args', build_dir, '--list', '--short']
       for line in subprocess.check_output(cmd).splitlines():
         vals = line.strip().split('=')
         if len(vals) == 2:
           args[vals[0].strip()] = vals[1].strip()
-    else:
-      for line in open(GN.ArgsFName(build_dir)):
-        line = line.strip()
-        if re.match('^#', line):
-          continue
-        vals = line.strip().split('=')
-        if len(vals) == 2:
-          args[vals[0].strip()] = vals[1].strip()
-    return args
+      return args
+    return GN.ReadFile(open(GN.ArgsFName(build_dir)))
 
   @staticmethod
   def BuildArgs(options):
@@ -620,6 +630,10 @@ class GN(object):
     args['enable_profiling'] = str(options.heap_profiling).lower()
     if options.fuzzer:
       args['enable_nacl'] = 'false'
+    if os.path.exists(GN.ArgsSupplemental()):
+      supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
+      for k in supplimental_args:
+        args[k] = supplimental_args[k]
     return args
 
   @staticmethod
