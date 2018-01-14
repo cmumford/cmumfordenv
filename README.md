@@ -16,16 +16,20 @@ I'm mostly a Zsh guy so the Bash configuration may have bit rotted just a bit - 
 
 ## Windows Installation
 
-First download ctags, and put it in your path.
-
+**In an elevated command prompt**
 **Note**: mklink requires elevated privileges.
 
-    mklink /J "%USERPROFILE%\.vim" %USERPROFILE%\cmumford\home\.vim
+    mklink /J "%USERPROFILE%\.vim" "%USERPROFILE%"\cmumford\home\.vim
     mklink _vimrc cmumford\home\.vimrc
+    mklink .gitconfig cmumford\home\.gitconfig
+    mklink bin cmumford\bin
+
+**In a standard command prompt**
+
+    git clone https://github.com/VundleVim/Vundle.vim.git .vim/bundle/Vundle.vim
     echo "" > .vimrc_work
-    git clone https://github.com/VundleVim/Vundle.vim.git ~/.vim/bundle/Vundle.vim
-	mklink .gitconfig cmumford\home\.gitconfig
-	mklink bin cmumford\bin
+
+Download ctags, and put it in your path (cmumford/bin).
 
 ## Installing Vundle Plugins
 
