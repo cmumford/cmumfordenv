@@ -87,14 +87,19 @@ set nocp
 " For Windows see https://github.com/gmarik/vundle/wiki/Vundle-for-Windows
 filetype off  " Required!
 set rtp+=~/.vim/bundle/Vundle.vim
-call vundle#rc()
-" Self-manage Vundle
-Bundle 'gmarik/vundle'
-Bundle 'scrooloose/syntastic'
-Bundle 'tpope/vim-unimpaired'
-Bundle 'tpope/vim-fugitive'
-Bundle 'FSwitch'
-Bundle 'mileszs/ack.vim'
+call vundle#begin()
+" alternatively, pass a path where Vundle should install plugins
+"call vundle#begin('~/some/path/here')
+
+" let Vundle manage Vundle, required
+Plugin 'VundleVim/Vundle.vim'
+Plugin 'scrooloose/syntastic'
+Plugin 'tpope/vim-unimpaired'
+Plugin 'tpope/vim-fugitive'
+Plugin 'FSwitch'
+Plugin 'mileszs/ack.vim'
+Plugin 'chromium/vim-codesearch'
+call vundle#end()            " required
 
 filetype plugin indent on
 
