@@ -68,7 +68,7 @@
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/chrome",
             "--no-sandbox",
@@ -114,7 +114,7 @@
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/content_shell",
             "--no-sandbox",
@@ -150,7 +150,7 @@
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/leveldb_endurance_test",
             "/tmp/leveldb-endurance"
@@ -267,16 +267,16 @@
           "command": [
             "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
-            "--test-launcher-jobs=${jobs}"
+            "--test-launcher-jobs=${testjobs}",
+            "--brave-new-test-launcher"
           ]
         },
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/${executable_name}",
-            "--single-process-tests"
+            "${out_dir}/${Build_type}/${executable_name}"
           ]
         },
         {
@@ -304,7 +304,7 @@
           "command": [
             "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
-            "--test-launcher-jobs=${jobs}"
+            "--test-launcher-jobs=${testjobs}"
           ]
         },
         {
@@ -312,7 +312,7 @@
           "command": [
             "${out_dir}/${Build_type}/${executable_name}",
             "--test-launcher-batch-limit=1",
-            "--test-launcher-jobs=${jobs}",
+            "--test-launcher-jobs=${testjobs}",
             "--test-launcher-print-test-stdio=always",
             "--no-sandbox"
           ]
@@ -320,7 +320,7 @@
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/${executable_name}",
             "--single-process-tests"
@@ -348,13 +348,13 @@
           "command": [
             "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
-            "--test-launcher-jobs=${jobs}"
+            "--test-launcher-jobs=${testjobs}"
           ]
         },
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/${executable_name}"
           ]
@@ -407,7 +407,7 @@
         {
           "name": "debug",
           "command": [
-            "cgdb",
+            "${debugger}",
             "--args",
             "${out_dir}/${Build_type}/content_shell",
             "--no-timeout",
@@ -694,7 +694,7 @@
         "--single-process"
       ],
       "-commands": [
-        "--test-launcher-jobs=${jobs}"
+        "--test-launcher-jobs=${testjobs}"
       ]
     },
     {
@@ -739,7 +739,6 @@
         "--test-launcher-jobs=1"
       ],
       "-commands": [
-        "--test-launcher-jobs=${jobs}XXXX",
         "${xvfb}"
       ]
     },
@@ -774,7 +773,7 @@
         "--gtest_filter=':*InternalsApiTest*:'"
       ],
       "-commands": [
-        "--test-launcher-jobs=${jobs}"
+        "--test-launcher-jobs=${testjobs}"
       ]
     },
     {

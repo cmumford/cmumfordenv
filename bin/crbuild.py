@@ -143,6 +143,10 @@ class Executable(BuildTypeItem):
   def GetCommands(self, build_type, extra_args = None, no_run_commands = None,
                   omit_xvfb = False, config_name = None):
     xvfb = ["python", "testing/xvfb.py"]
+    if False:
+      debugger = ['gdb', '--tui']
+    else:
+      debugger = ['cgdb']
     # In chromium/3d074282ede build_dir was no longer a required arg.
     pass_out_dir = False
     if pass_out_dir:
@@ -155,31 +159,34 @@ class Executable(BuildTypeItem):
       for arg in no_run_commands:
         if arg in cmd:
           cmd.remove(arg)
+
+    def FilterArg(arg):
+      if not options.test_jobs:
+        arg = arg.replace('--test-launcher-jobs=${testjobs}', '')
+      return arg.replace(r'${Build_type}', build_type) \
+                .replace(r'${build_type}', build_type.lower()) \
+                .replace(r'${jobs}', str(options.jobs)) \
+                .replace(r'${testjobs}', str(options.test_jobs)) \
+                .replace(r'${out_dir}', str(options.out_dir)) \
+                .replace(r'${root_dir}', str(options.root_dir)) \
+                .replace(r'${layout_dir}', str(options.layout_dir)) \
+                .replace(r'${user_data_img_dir}', str(options.user_data_img_dir))
+
     new_cmd = []
     for c in cmd:
-      if c == '${xvfb}':
+      if c == r'${xvfb}':
         if not omit_xvfb:
           new_cmd.extend(xvfb)
+      elif c == r'${debugger}':
+        new_cmd.extend(debugger)
       else:
-        new_cmd.append(c)
-    cmd = new_cmd
-
-    for idx in range(len(cmd)):
-      cmd[idx] = cmd[idx].replace(r'${Build_type}', build_type)
-      cmd[idx] = cmd[idx].replace(r'${build_type}', build_type.lower())
-      cmd[idx] = cmd[idx].replace(r'${jobs}', str(options.jobs))
-      cmd[idx] = cmd[idx].replace(r'${out_dir}', str(options.out_dir))
-      cmd[idx] = cmd[idx].replace(r'${root_dir}', str(options.root_dir))
-      cmd[idx] = cmd[idx].replace(r'${layout_dir}', str(options.layout_dir))
-      cmd[idx] = cmd[idx].replace(r'${user_data_img_dir}', str(options.user_data_img_dir))
-      cmd[idx] = os.path.expandvars(cmd[idx])
+        new_cmd.append(os.path.expandvars(FilterArg(c)))
     if self.options.run_args:
       args = [os.path.expandvars(arg) for arg in self.options.run_args]
-      cmd.extend(args)
+      new_cmd.extend(args)
     if self.options.gtest:
-      cmd.append("--gtest_filter='%s'" % self.options.gtest)
-
-    return cmd
+      new_cmd.append("--gtest_filter='%s'" % self.options.gtest)
+    return new_cmd
 
   def IsGoogleTest(self, cmd):
     return self.type == 'gtest'
@@ -203,6 +210,10 @@ class Executable(BuildTypeItem):
     print 'Running "%s"...' % self.name
     cmd = self.GetCommands(build_type, extra_args, no_run_commands)
     if add_single_process_tests:
+      cmd = [p for p in cmd if p.find('test-launcher-jobs') < 0]
+    add_single_process_tests = False
+    if add_single_process_tests:
+      cmd.append('--single-process')
       cmd.append('--single-process-tests')
     self.PrintStep(cmd)
     run_errors = []
@@ -448,7 +459,7 @@ class Collections(object):
 
     commands = [
         Commands(run_args, ''),
-        Commands(['cgdb', '--args'] + run_args, 'debug')
+        Commands(['{debugger}', '--args'] + run_args, 'debug')
     ]
 
     exe = Executable(exe_name, [self.target_names[exe_name]], commands, self.options)
@@ -816,6 +827,7 @@ class Options(object):
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
+    self.test_jobs = 8
     self.fuzzer = False
     self.asan = False
     self.tsan = False
