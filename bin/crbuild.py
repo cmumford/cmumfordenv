@@ -645,6 +645,12 @@ class GN(object):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
       for k in supplimental_args:
         args[k] = supplimental_args[k]
+    if options.cfi and not options.debug:
+      args['is_cfi'] = 'true'
+      args['use_cfi_cast'] = 'true'
+      args['use_thin_lto'] = 'true'
+      # additional
+      #args['use_cfi_diag'] = 'true'
     return args
 
   @staticmethod
@@ -838,6 +844,7 @@ class Options(object):
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
     self.gtest = None
+    self.cfi = False
 
   def IsGomaRunning(self):
     if not os.path.exists(self.goma_path):
@@ -961,6 +968,8 @@ class Options(object):
                         help="Do not run targets after building.")
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
+    parser.add_argument('--cfi', action='store_true',
+                        help="Do a CFI build (release only)")
     parser.add_argument('-t', '--tsan', action='store_true',
                         help="Do a TSan build")
     parser.add_argument('-l', '--lsan', action='store_true',
@@ -1033,6 +1042,8 @@ a target defined in the gyp files.""")
       self.lsan = True
     if args.msan:
       self.msan = True
+    if args.cfi:
+      self.cfi = True
     if args.tsan:
       self.tsan = True
       self.shared_libraries = False
@@ -1085,6 +1096,8 @@ a target defined in the gyp files.""")
     if self.tsan and self.asan:
       print >> sys.stderr, "Can't do both TSan and ASan builds."
       sys.exit(1)
+    if self.cfi and self.debug:
+      print 'CFI is for release-only builds'
     self.gtest = Options.FixupGoogleTestFilterArgs(args.gtest)
 
 class Builder:
