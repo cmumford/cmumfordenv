@@ -291,18 +291,29 @@
       ]
     },
     {
-      "names": ["base_unittests", "net_unittests", "unit_tests",
-                "content_unittests", "components_unittests",
-                "extensions_unittests", "crypto_unittests",
-                "cc_unittests", "blink_platform_unittests",
-                "leveldb_service_unittests", "url_unittests"],
+      "names": [
+        "base_unittests",
+        "blink_platform_unittests",
+        "cc_unittests",
+        "components_unittests",
+        "content_unittests",
+        "crypto_unittests",
+        "env_chromium_unittests",
+        "extensions_unittests",
+        "leveldb_service_unittests",
+        "mojo_public_system_unittests",
+        "net_unittests",
+        "performance_browser_tests",
+        "unit_tests",
+        "url_unittests",
+        "webkit_unit_tests"
+      ],
       "type": "gtest",
       "targets": ["(OS=='linux')xdisplaycheck", "${executable_name}"],
       "commands": [
         {
           "name": "normal",
           "command": [
-            "${xvfb}",
             "${out_dir}/${Build_type}/${executable_name}",
             "--test-launcher-jobs=${testjobs}"
           ]
@@ -324,39 +335,6 @@
             "--args",
             "${out_dir}/${Build_type}/${executable_name}",
             "--single-process-tests"
-          ]
-        },
-        {
-          "name": "valgrind",
-          "command": [
-            "tools/valgrind/chrome_tests.sh",
-            "--build-dir=${out_dir}/${Build_type}",
-            "-t",
-            "${executable_name}"
-          ]
-        }
-      ]
-    },
-    {
-      "names": ["env_chromium_unittests", "performance_browser_tests",
-              "webkit_unit_tests", "content_endurancetests"],
-      "type": "gtest",
-      "targets": ["${executable_name}"],
-      "commands": [
-        {
-          "name": "normal",
-          "command": [
-            "${xvfb}",
-            "${out_dir}/${Build_type}/${executable_name}",
-            "--test-launcher-jobs=${testjobs}"
-          ]
-        },
-        {
-          "name": "debug",
-          "command": [
-            "${debugger}",
-            "--args",
-            "${out_dir}/${Build_type}/${executable_name}"
           ]
         },
         {
@@ -727,19 +705,6 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*CacheStorage*:'"
-      ]
-    },
-    {
-      "name": "corrupt",
-      "title": "Run the new corruption (while open) test",
-      "executable": "content_browsertests",
-      "args": [
-        "--gtest_filter=':*CorruptedOpenDatabase/2*:'",
-        "--single-process-tests",
-        "--test-launcher-jobs=1"
-      ],
-      "-commands": [
-        "${xvfb}"
       ]
     },
     {

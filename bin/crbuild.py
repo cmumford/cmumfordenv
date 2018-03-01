@@ -208,7 +208,8 @@ class Executable(BuildTypeItem):
         add_single_process_tests = True
 
     print 'Running "%s"...' % self.name
-    cmd = self.GetCommands(build_type, extra_args, no_run_commands)
+    cmd = self.GetCommands(build_type, extra_args, no_run_commands,
+                           omit_xvfb=(not Options.ShouldUseXvfb()))
     if add_single_process_tests:
       cmd = [p for p in cmd if p.find('test-launcher-jobs') < 0]
     add_single_process_tests = False
@@ -833,7 +834,10 @@ class Options(object):
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
-    self.test_jobs = 8
+    if Options.ShouldUseXvfb():
+      self.test_jobs = min(8, self.jobs)
+    else:
+      self.test_jobs = self.jobs
     self.fuzzer = False
     self.asan = False
     self.tsan = False
@@ -854,6 +858,17 @@ class Options(object):
 
   def CanUseGoma(self):
     return self.IsGomaRunning()
+
+  @staticmethod
+  def CanDoGUI():
+    return 'DISPLAY' in os.environ
+
+  @staticmethod
+  def ShouldUseXvfb():
+    if Options.GetHostOS() != 'linux':
+      return False
+    return False
+    #return Options.CanDoGUI()
 
   @staticmethod
   def OutputColor():
