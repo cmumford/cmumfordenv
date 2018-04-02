@@ -640,7 +640,9 @@ class GN(object):
     args['is_lsan'] = str(options.lsan).lower()
     args['is_msan'] = str(options.msan).lower()
     args['enable_profiling'] = str(options.heap_profiling).lower()
-    if options.fuzzer:
+    if not options.debug:
+      args['dcheck_always_on'] = 'true'
+    if options.fuzzer or options.asan or options.lsan:
       args['enable_nacl'] = 'false'
     if os.path.exists(GN.ArgsSupplemental()):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
@@ -649,9 +651,9 @@ class GN(object):
     if options.cfi and not options.debug:
       args['is_cfi'] = 'true'
       args['use_cfi_cast'] = 'true'
+      args['use_cfi_diag'] = 'true'
       args['use_thin_lto'] = 'true'
-      # additional
-      #args['use_cfi_diag'] = 'true'
+      # args['strip_absolute_paths_from_debug_symbols'] = 'true'
     return args
 
   @staticmethod
@@ -835,6 +837,7 @@ class Options(object):
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     if Options.ShouldUseXvfb():
+      # limit to 8 cores until Rodette Xvfb bug is fixed.
       self.test_jobs = min(8, self.jobs)
     else:
       self.test_jobs = self.jobs
@@ -1055,10 +1058,12 @@ a target defined in the gyp files.""")
       args.asan = True
     if args.lsan:
       self.lsan = True
+      self.asan = True
     if args.msan:
       self.msan = True
     if args.cfi:
       self.cfi = True
+      self.shared_libraries = False
     if args.tsan:
       self.tsan = True
       self.shared_libraries = False
@@ -1113,6 +1118,7 @@ a target defined in the gyp files.""")
       sys.exit(1)
     if self.cfi and self.debug:
       print 'CFI is for release-only builds'
+      sys.exit(1)
     self.gtest = Options.FixupGoogleTestFilterArgs(args.gtest)
 
 class Builder:
