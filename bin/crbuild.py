@@ -998,7 +998,7 @@ class Options(object):
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
                         help="Num jobs when both building & running")
-    parser.add_argument('--fuzzer',
+    parser.add_argument('--fuzzer', action='store_true',
                         help="Do a fuzzer build (implies asan).")
     parser.add_argument('-V', '--valgrind', action='store_true',
                         help="Build for Valgrind (memcheck) (default: %s)" % self.buildopts.valgrind)
