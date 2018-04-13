@@ -631,7 +631,7 @@ class GN(object):
     args = {}
     args['target_os'] = '"%s"' % options.target_os
     args['is_debug'] = str(options.debug).lower()
-    args['is_component_build'] = str(options.shared_libraries).lower()
+    args['is_component_build'] = str(options.component_build).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
     args['use_goma'] = str(options.buildopts.use_goma).lower()
     args['use_libfuzzer'] = str(options.fuzzer).lower()
@@ -806,12 +806,12 @@ class Options(object):
     self.img_num_blocks = 50*1024*1024/self.img_block_size
     self.sudo_pwd = None
     self.chromeos_build = 'link'
-    self.shared_libraries = True
+    self.component_build = True
     self.buildopts.gyp_defines.add('disable_nacl=1')
     if self.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
     if (self.target_os == 'win' or self.target_os == 'linux') and \
-        self.shared_libraries:
+        self.component_build:
       # Should read in chromium.gyp_env and append to those values
       self.buildopts.gyp_defines.add('component=shared_library')
     self.verbosity = 0
@@ -1063,10 +1063,10 @@ a target defined in the gyp files.""")
       self.msan = True
     if args.cfi:
       self.cfi = True
-      self.shared_libraries = False
+      self.component_build = False
     if args.tsan:
       self.tsan = True
-      self.shared_libraries = False
+      self.component_build = False
       self.buildopts.use_goma = False
     if args.asan:
       self.asan = True
@@ -1094,7 +1094,7 @@ a target defined in the gyp files.""")
           self.buildopts.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
         self.buildopts.gyp_defines.add('asan=1')
-        if self.shared_libraries:
+        if self.component_build:
           self.buildopts.gyp_defines.add('component=shared_library')
       elif platform.system() == 'mac':
         self.buildopts.gyp_defines.add('asan=1')
