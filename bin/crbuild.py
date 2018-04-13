@@ -640,6 +640,8 @@ class GN(object):
     args['is_lsan'] = str(options.lsan).lower()
     args['is_msan'] = str(options.msan).lower()
     args['enable_profiling'] = str(options.heap_profiling).lower()
+    if options.buildopts.use_goma:
+      args['goma_dir'] = '"%s"' % options.goma_path
     if not options.debug:
       args['dcheck_always_on'] = 'true'
     if options.fuzzer or options.asan or options.lsan:
