@@ -634,11 +634,16 @@ class GN(object):
     args['is_component_build'] = str(options.component_build).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
     args['use_goma'] = str(options.buildopts.use_goma).lower()
-    args['use_libfuzzer'] = str(options.fuzzer).lower()
-    args['is_asan'] = str(options.asan).lower()
-    args['is_tsan'] = str(options.tsan).lower()
-    args['is_lsan'] = str(options.lsan).lower()
-    args['is_msan'] = str(options.msan).lower()
+    if options.fuzzer:
+      args['use_libfuzzer'] = str(options.fuzzer).lower()
+    if options.asan:
+      args['is_asan'] = str(options.asan).lower()
+    if options.tsan:
+      args['is_tsan'] = str(options.tsan).lower()
+    if options.lsan:
+      args['is_lsan'] = str(options.lsan).lower()
+    if options.msan:
+      args['is_msan'] = str(options.msan).lower()
     args['enable_profiling'] = str(options.heap_profiling).lower()
     if options.buildopts.use_goma:
       args['goma_dir'] = '"%s"' % options.goma_path
