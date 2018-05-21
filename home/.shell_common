@@ -59,6 +59,11 @@ function idlgrep()
 	grep -n --color=always --recursive --include="*.idl" $@ .
 }
 
+function mojomgrep()
+{
+	grep -n --color=always --recursive --include="*.mojom" $@ .
+}
+
 function cgrep()
 {
 	grep -n --color=always --recursive --include="*.c" --include="*.cc" --include="*.cpp" --include="*.cxx" --exclude-dir='.git' $@ .
