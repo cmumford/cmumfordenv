@@ -220,7 +220,7 @@ class Executable(BuildTypeItem):
     run_errors = []
     try:
       if not self.options.noop:
-        if self.options.asan:
+        if self.options.asan or self.options.tsan:
           asan_symbolize.demangle = True
           loop = asan_symbolize.SymbolizationLoop(binary_name_filter=asan_symbolize.fix_filename)
           p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
@@ -642,9 +642,14 @@ class GN(object):
     args['enable_profiling'] = str(options.heap_profiling).lower()
     if options.buildopts.use_goma:
       args['goma_dir'] = '"%s"' % options.goma_path
+    if options.asan or options.tsan:
+      args['symbol_level'] = '1'
+      if not options.tsan:
+        args['enable_full_stack_frames_for_profiling'] = 'true'
+      args['strip_absolute_paths_from_debug_symbols'] = 'true'
     if not options.debug:
       args['dcheck_always_on'] = 'true'
-    if options.fuzzer or options.asan or options.lsan:
+    if options.fuzzer or options.asan or options.lsan or options.tsan:
       args['enable_nacl'] = 'false'
     if os.path.exists(GN.ArgsSupplemental()):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
@@ -1069,6 +1074,8 @@ a target defined in the gyp files.""")
     if args.tsan:
       self.tsan = True
       self.component_build = False
+      # Apparently TSan supports goma now.
+      #self.buildopts.use_goma = False
     if args.asan:
       self.asan = True
       self.lsan = True
