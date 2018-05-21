@@ -1057,7 +1057,7 @@ a target defined in the gyp files.""")
       self.jobs = args.jobs
     if args.fuzzer:
       self.fuzzer = True
-      args.asan = True
+      self.asan = True
     if args.lsan:
       self.lsan = True
       self.asan = True
@@ -1069,9 +1069,11 @@ a target defined in the gyp files.""")
     if args.tsan:
       self.tsan = True
       self.component_build = False
-      self.buildopts.use_goma = False
     if args.asan:
       self.asan = True
+      self.lsan = True
+    if self.asan:
+      self.component_build = False
       if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
@@ -1186,6 +1188,8 @@ class Builder:
   def SetEnvVars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.buildopts.gyp_defines)
+    if self.options.asan:
+      os.environ['ASAN_OPTIONS'] = 'detect_leaks=1'
     os.environ['GYP_GENERATORS'] = self.options.buildopts.gyp_generators
     if self.options.buildopts.use_clang:
       os.environ['CC'] = 'clang'
