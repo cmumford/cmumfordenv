@@ -8,25 +8,6 @@ import thread
 
 stdout_lock=thread.allocate_lock()
 
-class Git:
-  @staticmethod
-  def CountCommits(branch):
-    cmd = ['git', 'rev-list', '--count', 'origin/master..%s' % branch]
-    return int(subprocess.check_output(cmd))
-
-  @staticmethod
-  def GetBranches(prefix):
-    cmd = ['git', '--no-pager', 'branch', '--all']
-    branches = []
-    for line in subprocess.check_output(cmd).splitlines():
-      line = line.strip()
-      if line.startswith(prefix):
-        branches.append(line)
-    return branches
-
-prefix = 'remotes/branch-heads/'
-prefix_len = len(prefix)
-
 def make_key(name):
   """Make a key out of a branch name (for sorting).
 
@@ -57,6 +38,25 @@ def make_key(name):
   except ValueError:
     bname = bname.lower()
     return float(ord(bname[0]) - ord('a')) / 26.0
+
+class Git:
+  @staticmethod
+  def CountCommits(branch):
+    cmd = ['git', 'rev-list', '--count', 'origin/master..%s' % branch]
+    return int(subprocess.check_output(cmd))
+
+  @staticmethod
+  def GetBranches(prefix):
+    cmd = ['git', '--no-pager', 'branch', '--all']
+    branches = []
+    for line in subprocess.check_output(cmd).splitlines():
+      line = line.strip()
+      if line.startswith(prefix) and make_key(line) >= 3000.0:
+        branches.append(line)
+    return branches
+
+prefix = 'remotes/branch-heads/'
+prefix_len = len(prefix)
 
 class ChromeGitInfo:
   @staticmethod
