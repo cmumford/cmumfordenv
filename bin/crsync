@@ -35,9 +35,10 @@ cd ${top_dir}
 if [[ "${fetch_only}" == "0" ]]; then
   #git rebase-update
   git fetch origin
-  #git rebaseall
+  git checkout -b master --track origin/master || true
   git checkout master
   git rebase origin/master
+  #git rebaseall
 fi
 
 echo ""
