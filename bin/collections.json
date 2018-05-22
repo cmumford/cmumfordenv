@@ -666,6 +666,14 @@
       ]
     },
     {
+      "name": "content_browsertests-site-per-process",
+      "title": "site per-process content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--site-per-process"
+      ]
+    },
+    {
       "name": "content_browsertests-idb",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
