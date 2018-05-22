@@ -293,6 +293,7 @@
     {
       "names": [
         "base_unittests",
+        "blink_heap_unittests",
         "blink_platform_unittests",
         "cc_unittests",
         "components_unittests",
@@ -300,10 +301,12 @@
         "crypto_unittests",
         "env_chromium_unittests",
         "extensions_unittests",
+        "headless_browsertests",
         "leveldb_service_unittests",
-        "mojo_public_system_unittests",
         "net_unittests",
         "performance_browser_tests",
+        "services_unittests",
+        "storage_unittests",
         "unit_tests",
         "url_unittests",
         "webkit_unit_tests"
@@ -887,6 +890,7 @@
         "extensions_unittests",
         "leveldb_service_unittests",
         "net_unittests",
+        "storage_unittests",
         "unit_tests",
         "url_unittests",
         "webkit_unit_tests"
