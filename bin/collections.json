@@ -479,6 +479,13 @@
       ]
     },
     {
+      "name": "blink_heap_unittests-cookie",
+      "executable": "blink_heap_unittests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
       "name": "net_unittests-cookie",
       "title": "The Cookie tests from net_unittests",
       "executable": "net_unittests",
@@ -575,6 +582,13 @@
       ]
     },
     {
+      "name": "browser_tests-cookie",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
       "name": "components_unittests-cookie",
       "title": "The Bookmark tests from components_unittests",
       "executable": "components_unittests",
@@ -647,6 +661,20 @@
       "name": "content_browsertests-cookie",
       "title": "The Cookie tests from content_browsertests",
       "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "storage_unittests-cookie",
+      "executable": "storage_unittests",
+      "args": [
+        "--gtest_filter=':*Cookie*:'"
+      ]
+    },
+    {
+      "name": "services_unittests-cookie",
+      "executable": "services_unittests",
       "args": [
         "--gtest_filter=':*Cookie*:'"
       ]
@@ -831,10 +859,18 @@
     },
     {
       "name": "tests-cookie",
-      "title": "Run all Cookie unit tests",
-      "runs": ["components_unittests-cookie", "unit_tests-cookie",
-               "content_unittests-cookie", "content_browsertests-cookie",
-               "net_unittests-cookie"]
+      "title": "Run all Cookie tests",
+      "runs": [
+        "blink_heap_unittests-cookie",
+        "browser_tests-cookie",
+        "components_unittests-cookie",
+        "content_browsertests-cookie",
+        "content_unittests-cookie",
+        "net_unittests-cookie",
+        "services_unittests-cookie",
+        "storage_unittests-cookie",
+        "unit_tests-cookie"
+      ]
     },
     {
       "name": "tests-storage",
