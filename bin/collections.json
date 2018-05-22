@@ -830,6 +830,14 @@
       ]
     },
     {
+      "name": "browser_tests-extension",
+      "title": "The extension tests from browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter=':*Extension*:*ContentVerifierTest*:'"
+      ]
+    },
+    {
       "name": "blink-layout-idb",
       "title": "The IndexedDB subset of the Blink layout tests",
       "executable": "blink-layout",
