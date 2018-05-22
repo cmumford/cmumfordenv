@@ -510,6 +510,14 @@
       ]
     },
     {
+      "name": "network_service_browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--enable-features=NetworkService",
+        "--test-launcher-filter-file=testing/buildbot/filters/mojo.fyi.network_browser_tests.filter"
+      ]
+    },
+    {
       "name": "net_unittests-storage",
       "title": "The Storage tests from net_unittests",
       "executable": "net_unittests",
