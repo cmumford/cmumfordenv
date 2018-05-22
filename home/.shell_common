@@ -26,81 +26,81 @@ alias logcat=$HOME/src/adb-logcat-color/adb-logcat-color.rb
 
 function jgrep()
 {
-	grep -n --color=always --recursive --include="*.java" $@ .
+  grep -n --color=always --recursive --include="*.java" $@ .
 }
 
 function pygrep()
 {
-	grep -n --color=always --recursive --include="*.py" $@ .
+  grep -n --color=always --recursive --include="*.py" $@ .
 }
 
 function jsgrep()
 {
-	grep -n --color=always --recursive --include="*.js" $@ .
+  grep -n --color=always --recursive --include="*.js" $@ .
 }
 
 function jsongrep()
 {
-	grep -n --color=always --recursive --include="*.json" $@ .
+  grep -n --color=always --recursive --include="*.json" $@ .
 }
 
 function gypgrep()
 {
-	grep -n --color=always --recursive --include="*.gyp" --include="*.gypi" $@ .
+  grep -n --color=always --recursive --include="*.gyp" --include="*.gypi" $@ .
 }
 
 function gngrep()
 {
-	grep -n --color=always --recursive --include="*.gn" --include="*.gni" $@ .
+  grep -n --color=always --recursive --include="*.gn" --include="*.gni" $@ .
 }
 
 function idlgrep()
 {
-	grep -n --color=always --recursive --include="*.idl" $@ .
+  grep -n --color=always --recursive --include="*.idl" $@ .
 }
 
 function mojomgrep()
 {
-	grep -n --color=always --recursive --include="*.mojom" $@ .
+  grep -n --color=always --recursive --include="*.mojom" $@ .
 }
 
 function cgrep()
 {
-	grep -n --color=always --recursive --include="*.c" --include="*.cc" --include="*.cpp" --include="*.cxx" --exclude-dir='.git' $@ .
+  grep -n --color=always --recursive --include="*.c" --include="*.cc" --include="*.cpp" --include="*.cxx" --exclude-dir='.git' $@ .
 }
 
 function chgrep()
 {
-	grep -n --color=always --recursive --include="*.c" --include="*.cc" --include="*.cpp" --include="*.cxx" --include="*.h" --include="*.hpp" $@ .
+  grep -n --color=always --recursive --include="*.c" --include="*.cc" --include="*.cpp" --include="*.cxx" --include="*.h" --include="*.hpp" $@ .
 }
 
 function hgrep()
 {
-	grep -n --color=always --recursive --include="*.h" $@ .
+  grep -n --color=always --recursive --include="*.h" $@ .
 }
 
 function xmlgrep()
 {
-	grep -n --color=always --recursive --include="*.xml" $@ .
+  grep -n --color=always --recursive --include="*.xml" $@ .
 }
 
 function xslgrep()
 {
-	grep -n --color=always --recursive --include="*.xsl" $@ .
+  grep -n --color=always --recursive --include="*.xsl" $@ .
 }
 
 function htmlgrep()
 {
-	grep -n --color=always --recursive --include="*.html" $@ .
+  grep -n --color=always --recursive --include="*.html" $@ .
 }
 
 function cssgrep()
 {
-	grep -n --color=always --recursive --include="*.css" $@ .
+  grep -n --color=always --recursive --include="*.css" $@ .
 }
 
 function g
 {
-	GDPATH="$(~/bin/go.py $*)"
-	cd "$GDPATH"
+  GDPATH="$(~/bin/go.py $*)"
+  cd "$GDPATH"
 }
