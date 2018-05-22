@@ -376,7 +376,8 @@
           "name": "normal",
           "command": [
             "${xvfb}",
-            "third_party/WebKit/Tools/Scripts/run-webkit-tests",
+            "python",
+            "third_party/blink/tools/run_web_tests.py",
             "--no-show-results",
             "--${build_type}",
             "--nocheck-sys-deps",
