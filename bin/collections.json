@@ -510,6 +510,14 @@
       ]
     },
     {
+      "name": "browser_tests-filesystem",
+      "executable": "browser_tests",
+      "args": [
+        "--gtest_filter='SBNavigationObserverBrowserTest.DownloadViaHTML5FileApi:ProcessManagerBrowserTest.NestedURLNavigationsToExtensionBlocked:ProcessManagerBrowserTest.NestedURLNavigationsToExtensionAllowed'",
+        "--enable-features=NetworkService"
+      ]
+    },
+    {
       "name": "network_service_browser_tests",
       "executable": "browser_tests",
       "args": [
@@ -701,6 +709,14 @@
       "executable": "content_browsertests",
       "args": [
         "--gtest_filter=':*Extension*:'"
+      ]
+    },
+    {
+      "name": "content_browsertests-filesystem",
+      "executable": "content_browsertests",
+      "args": [
+        "--gtest_filter=':*FileSystem*:'",
+        "--enable-features=NetworkService"
       ]
     },
     {
@@ -913,6 +929,11 @@
       "name": "tests-crypto",
       "title": "Run all crypto unit tests",
       "runs": ["components_unittests-crypto", "crypto_unittests"]
+    },
+    {
+      "name": "tests-filesystem",
+      "title": "Run all FileSystem tests under the network service",
+      "runs": ["browser_tests-filesystem", "content_browsertests-filesystem"]
     },
     {
       "name": "chromeos",
