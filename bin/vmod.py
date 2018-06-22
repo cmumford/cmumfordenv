@@ -158,7 +158,8 @@ class Git:
   @staticmethod
   def GetModifiedFilesInBranch(branch, print_cmds, maxCommits):
     assert(branch.parent)
-    cmd = [Git.Path(), '--no-pager', 'diff', '--name-only', branch.name, branch.parent]
+    cmd = [Git.Path(), '--no-pager', 'diff', '--find-renames', '--name-only',
+           branch.parent, branch.name]
     files = set()
     if print_cmds:
       print ' '.join(cmd)
