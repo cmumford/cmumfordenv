@@ -634,6 +634,9 @@ class GN(object):
     args['is_component_build'] = str(options.component_build).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
     args['use_goma'] = str(options.buildopts.use_goma).lower()
+    if platform.system() == 'Windows':
+      args['is_win_fastlink'] = str(options.buildopts.use_goma).lower()
+      args['symbol_level'] = '2' if options.debug else '1'
     if options.fuzzer:
       args['use_libfuzzer'] = str(options.fuzzer).lower()
     if options.asan:
