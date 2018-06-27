@@ -163,6 +163,8 @@ class Executable(BuildTypeItem):
     def FilterArg(arg):
       if not options.test_jobs:
         arg = arg.replace('--test-launcher-jobs=${testjobs}', '')
+      if platform.system() == 'Windows':
+        arg = arg.replace('${HOME}', '${USERPROFILE}')
       return arg.replace(r'${Build_type}', build_type) \
                 .replace(r'${build_type}', build_type.lower()) \
                 .replace(r'${jobs}', str(options.jobs)) \
