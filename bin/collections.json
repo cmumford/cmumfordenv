@@ -676,6 +676,20 @@
       ]
     },
     {
+      "name": "viz_content_browsertests",
+      "executable": "content_browsertests",
+      "args": [
+        "--enable-features=VizDisplayCompositor"
+      ]
+    },
+    {
+      "name": "viz_browser_tests",
+      "executable": "browser_tests",
+      "args": [
+        "--enable-features=VizDisplayCompositor"
+      ]
+    },
+    {
       "name": "content_browsertests-idb",
       "title": "The IndexedDB tests from content_browsertests",
       "executable": "content_browsertests",
