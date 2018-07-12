@@ -726,7 +726,8 @@ class GN(object):
       Options.OutputCommand(' '.join(cmd))
     if options.noop:
       return
-    subprocess.check_call(cmd)
+    # If build_dir doesn't exist then Windows fails with default shell=False
+    subprocess.check_call(cmd, shell=True)
 
 ##
 # Values in this class affect how build_gyp generates makefiles.
