@@ -76,6 +76,10 @@ class Commands(object):
       val += ' name:%s' % self.name
     return val
 
+  def IsBlinkLayoutTest(self):
+    return 'third_party/blink/tools/run_web_tests.py' in self.args
+
+
 class Executable(BuildTypeItem):
   def __init__(self, name, build_targets, commands, options):
     super(Executable, self).__init__()
@@ -159,6 +163,11 @@ class Executable(BuildTypeItem):
       for arg in no_run_commands:
         if arg in cmd:
           cmd.remove(arg)
+    if options.enable_network_service:
+      if command.IsBlinkLayoutTest():
+        cmd.append('--additional-driver-flag=--enable-features=NetworkService')
+      else:
+        cmd.append('--enable-features=NetworkService')
 
     def FilterArg(arg):
       if not options.test_jobs:
@@ -822,6 +831,7 @@ class Options(object):
     self.img_block_size = 512
     self.img_num_blocks = 50*1024*1024/self.img_block_size
     self.sudo_pwd = None
+    self.enable_network_service = False
     self.chromeos_build = 'link'
     self.component_build = True
     self.buildopts.gyp_defines.add('disable_nacl=1')
@@ -999,6 +1009,8 @@ class Options(object):
                         help='Delete out dir before building')
     parser.add_argument('-n', '--noop', action='store_true',
                         help="Don't do anything, print what would be done")
+    parser.add_argument('-N', '--s13n', action='store_true',
+                        help="Enable the network service")
     parser.add_argument('-R', '--no-run', action='store_true',
                         help="Do not run targets after building.")
     parser.add_argument('-A', '--asan', action='store_true',
@@ -1076,6 +1088,8 @@ a target defined in the gyp files.""")
     if args.lsan:
       self.lsan = True
       self.asan = True
+    if args.s13n:
+      self.enable_network_service = True
     if args.msan:
       self.msan = True
     if args.cfi:
