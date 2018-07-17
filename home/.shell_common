@@ -20,7 +20,8 @@ fi
 alias svndiff='svn diff --diff-cmd=$HOME/bin/svn-merge-meld'
 alias gitdiff='git diff --no-ext-diff'
 alias wgethtml='wget -E -H -k -K -p -nd -o logwget.txt'
-alias dos2unix="tr -d '\r'"
+# sudo apt-get install dos2unix
+#alias dos2unix="tr -d '\r'"
 alias mac2unix="tr '\r' '\n'"
 alias logcat=$HOME/src/adb-logcat-color/adb-logcat-color.rb
 # Runs a web server rooted at PWD for test purposes. http://localhost:8000
