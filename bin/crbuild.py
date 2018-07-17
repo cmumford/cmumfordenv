@@ -678,6 +678,8 @@ class GN(object):
     if options.msan:
       args['is_msan'] = str(options.msan).lower()
     args['enable_profiling'] = str(options.heap_profiling).lower()
+    if options.enable_callgrind:
+      args['enable_callgrind'] = str(options.enable_callgrind).lower()
     if options.buildopts.use_goma:
       args['goma_dir'] = '"%s"' % options.goma_path
     if options.asan or options.tsan:
@@ -893,7 +895,9 @@ class Options(object):
     self.lsan = False
     self.msan = False
     self.profile = False
+    # https://chromium.googlesource.com/chromium/src/+/master/docs/profiling.md
     self.heap_profiling = False
+    self.enable_callgrind = False
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
     self.gtest = None
