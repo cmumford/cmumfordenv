@@ -881,8 +881,10 @@ class Options(object):
     else:
       self.out_dir = 'out'
     self.run_args = None
-    self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit', 'LayoutTests')
-    self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir, '.GYP_STATE'))
+    self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit',
+                                   'LayoutTests')
+    self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir,
+                                                       '.GYP_STATE'))
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
     if Options.ShouldUseXvfb():
       # limit to 8 cores until Rodette Xvfb bug is fixed.
@@ -943,7 +945,8 @@ class Options(object):
       print str_cmd
 
   def PromptForPassword(self):
-    self.sudo_pwd = getpass.getpass('Please enter your sudo password (for mount): ')
+    self.sudo_pwd = getpass.getpass('Please enter your sudo'
+                                    ' password (for mount): ')
 
   def GetActiveTargets(self):
     targets = set()
@@ -1136,7 +1139,8 @@ a target defined in the gyp files.""")
         self.buildopts.gyp_defines.add('clang=1')
         self.buildopts.gyp_defines.add('use_allocator=none')
         self.buildopts.gyp_defines.add('enable_ipc_fuzzer=1')
-        self.buildopts.gyp_defines.add('release_extra_cflags="-g -O1 -fno-inline-functions -fno-inline"')
+        self.buildopts.gyp_defines.add('release_extra_cflags="-g -O1 '
+                                       '-fno-inline-functions -fno-inline"')
         self.buildopts.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
       elif self.target_os == 'win':
         self.buildopts.gyp_defines.add('syzyasan=1')
