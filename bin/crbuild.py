@@ -14,14 +14,33 @@ import subprocess
 import sys
 import time
 from argparse import RawTextHelpFormatter
-cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join("tools",
-                                                              "valgrind",
-                                                              "asan")))
+
+def GetSourceRoot(dir_in_source_root):
+  """Returns the absolute path to the chromium source root given a directory
+  inside of that root."""
+  candidate = dir_in_source_root
+  fingerprints = ['chrome', 'net', 'v8', 'build', 'skia']
+  while candidate and not all(
+      [os.path.isdir(os.path.join(candidate, fp)) for fp in fingerprints]):
+    candidate = os.path.dirname(candidate)
+    if candidate == os.sep:
+      sys.exit(1)
+  return candidate
+
+src_root_dir = GetSourceRoot(os.getcwd())
+cmd_subfolder = os.path.realpath(os.path.abspath(os.path.join(src_root_dir,
+                                                              'tools',
+                                                              'valgrind',
+                                                              'asan')))
 if cmd_subfolder not in sys.path:
   sys.path.insert(0, cmd_subfolder)
 from third_party import asan_symbolize
 from fsmounter import Mounter
 from fsimage import Image
+
+# This allows us to run crbuild from any subdirectory within the chromium
+# source directory. Necessary when building in a Vim terminal.
+os.chdir(src_root_dir)
 
 # python -m doctest -v crbuild.py
 
@@ -801,7 +820,7 @@ class BuildSettings(object):
 
 class Options(object):
   def __init__(self):
-    self.root_dir = os.path.abspath('.')
+    self.root_dir = src_root_dir
     try:
       self.gclient = GClient(self.GetGClientPath())
     except:
