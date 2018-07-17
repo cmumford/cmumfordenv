@@ -1349,7 +1349,7 @@ class Builder:
     print "Building %s..." % build_type
     assert build_type in ['Debug', 'Release', 'asan', 'tsan', 'lsan', 'msan']
     build_dir = os.path.join(self.options.out_dir, build_type)
-    cmd = ['ninja', '-C', build_dir]
+    cmd = ['ninja', '-C', build_dir, '-l', '40']
     if self.options.noop:
       cmd.insert(1, '-n')
     if self.options.verbosity > 1:
@@ -1358,7 +1358,7 @@ class Builder:
       if self.options.target_os == 'mac':
         cmd[1:1] = ['-j', '100']
       else:
-        cmd[1:1] = ['-j', '1024']
+        cmd[1:1] = ['-j', '4096']
     if self.options.keep_going:
       cmd[1:1] = ['-k', '50000']
     if self.options.asan:
