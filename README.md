@@ -22,7 +22,7 @@ I'm mostly a Zsh guy so the Bash configuration may have bit rotted just a bit - 
     mklink /J "%USERPROFILE%\.vim" "%USERPROFILE%"\cmumford\home\.vim
     mklink _vimrc cmumford\home\.vimrc
     mklink .gitconfig cmumford\home\.gitconfig
-    mklink bin cmumford\bin
+    mklink /J "%USERPROFILE%\Documents\WindowsPowerShell" cmumford\WindowsPowerShell
 
 **In a standard command prompt**
 
