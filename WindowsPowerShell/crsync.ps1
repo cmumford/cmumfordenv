@@ -37,9 +37,8 @@ function GclientSync([string] $topdir) {
 }
 
 function UpdateChrome {
-  $topdir = "D:\"
+  $topdir = "D:\src\chromium\"
   $srcdir = "${topdir}src"
-  UpdateProject("$srcdir\third_party\WebKit")
   UpdateProject($srcdir)
   GClientSync($topdir)
 }
