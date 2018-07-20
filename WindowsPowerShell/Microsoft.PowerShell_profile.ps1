@@ -44,7 +44,11 @@ function Invoke-CmdScript( [string] $script, [string] $parameters )
 	Remove-Item $tempFile
 }
 
-Invoke-CmdScript "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
+$pf86 = ${env:ProgramFiles(x86)}
+# There's no env var to refer to Program Files
+$pf = "$env:HOMEDRIVE\Program Files"
+
+Invoke-CmdScript "$pf86\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvarsall.bat" x86
 
 Set-PSDebug -strict
 
@@ -52,19 +56,11 @@ Set-PSDebug -strict
 # General utility
 # Add-PSSnapin PSCX
 
-$pf86 = ${env:ProgramFiles(x86)}
-# There's no env var to refer to Program Files
-$pf = "$env:HOMEDRIVE\Program Files"
-
-Set-alias editplus "$pf86\EditPlus 2\editplus.exe"
 Set-alias msbuild "C:\Windows\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe"
 set-alias installutil $env:windir\Microsoft.NET\Framework\v2.0.50727\installutil
-Set-alias wilogutl "$pf\Microsoft SDKs\Windows\v6.0\Bin\WiLogUtl.exe"
-Set-alias gitl "git log --graph --decorate --pretty=oneline --abbrev-commit"
-Set-alias gitlog "git log --graph --decorate --pretty=medium --abbrev-commit"
-Set-alias gitdiff "git diff --no-ext-diff"
-set-alias meld "$pf86\Meld\meld\meld.exe"
-Set-alias python3 "C:\Users\cmumford\AppData\Local\Programs\Python\Python35-32\python.exe"
+Set-alias wilogutl "$pf86\Windows Kits\10\bin\10.0.17134.0\x86\WiLogUtl.exe"
+set-alias meld "$pf86\Meld\meld.exe"
+Set-alias python3 "$env:USERPROFILE\AppData\Local\Programs\Python\Python36-32\python.exe"
 
 function xp       { explorer "$pwd" }
 function ss       { . $profile }
