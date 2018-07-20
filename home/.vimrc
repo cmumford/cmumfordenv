@@ -57,9 +57,13 @@ set smartindent
 set tags+=tags;/
 
 if has("win32") || has("win16")
-set tags+=~/vimfiles/tags/python.ctags
+  set tags+=~/vimfiles/tags/python.ctags
+  set shell=cmd.exe
+  set rtp+=~/.vim/bundle/Vundle.vim
 else
-set tags+=~/.vim/tags/python.ctags
+  set tags+=~/.vim/tags/python.ctags
+  set shell=/bin/zsh
+  set rtp+=~/.vim/bundle/Vundle.vim
 endif
 
 
@@ -81,15 +85,18 @@ let tlist_ant_settings = 'ant;p:Project;r:Property;t:Target'
 
 nmap <silent> <F5> :FSHere<cr>
 
+" Required by Project plugin
+set nocompatible
+
+" Required for chromium/vim-codesearch plugin.
+set hidden
+
 set nocp
 " https://github.com/gmarik/vundle#readme
 " git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 " For Windows see https://github.com/gmarik/vundle/wiki/Vundle-for-Windows
 filetype off  " Required!
-set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
-" alternatively, pass a path where Vundle should install plugins
-"call vundle#begin('~/some/path/here')
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
@@ -102,9 +109,6 @@ Plugin 'chromium/vim-codesearch'
 call vundle#end()            " required
 
 filetype plugin indent on
-
-" Required by Project plugin
-set nocompatible
 
 let g:load_doxygen_syntax=1
 
@@ -165,8 +169,6 @@ au BufNewFile,BufRead Makefile.v8.inc set filetype=make
 " For tab completion at bottom of screen (like for tabs)
 set wildmenu
 set wildmode=list:longest,full
-
-set shell=/bin/zsh
 
 " For python syntax checking.
 autocmd BufRead *.py set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\" 
