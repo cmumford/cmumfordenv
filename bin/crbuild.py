@@ -176,6 +176,8 @@ class Executable(BuildTypeItem):
       xvfb.append("${out_dir}/${Build_type}")
     command = self.GetCommandToRun(config_name)
     cmd = copy.copy(command.args)
+    if self.options.use_rr:
+      cmd = ['rr', 'record', '-n'] + cmd
     if extra_args:
       cmd.extend(extra_args)
     if no_run_commands:
@@ -881,6 +883,7 @@ class Options(object):
       self.out_dir = 'out_%s' % self.chromeos_build
     else:
       self.out_dir = 'out'
+    self.use_rr = False
     self.run_args = None
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit',
                                    'LayoutTests')
@@ -1054,6 +1057,8 @@ class Options(object):
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
                         help="Num jobs when both building & running")
+    parser.add_argument('--rr', action='store_true',
+                        help="Record app using rr (https://rr-project.org/)")
     parser.add_argument('--fuzzer', action='store_true',
                         help="Do a fuzzer build (implies asan).")
     parser.add_argument('-V', '--valgrind', action='store_true',
@@ -1119,6 +1124,8 @@ a target defined in the gyp files.""")
       self.enable_network_service = True
     if args.msan:
       self.msan = True
+    if args.rr:
+      self.use_rr = True
     if args.cfi:
       self.cfi = True
       self.component_build = False
