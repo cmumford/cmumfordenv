@@ -593,11 +593,12 @@ class GoogleTest(object):
   def GetAppTests(cmd):
     cmd.append('--gtest_list_tests')
     current_class_name = None
-    class_re = re.compile(r'^([^\.]+\.).*$')
-    test_re = re.compile(r'^(\S+).*$')
+    class_re = re.compile(r'^([^\.\s]+\.).*$')
+    test_re = re.compile(r'^\s+(\S+).*$')
     test_names = []
+    #Options.OutputCommand("$ %s" % ' '.join(cmd))
     for line in subprocess.check_output(cmd).splitlines():
-      line = line.strip()
+      line = line.rstrip()
       if not len(line):
         continue
       m = class_re.match(line)
