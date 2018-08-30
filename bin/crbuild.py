@@ -570,6 +570,10 @@ class Collections(object):
 class GClient(object):
   def __init__(self, gclient_path):
     self.contents = GClient.Read(gclient_path)
+    if 'target_os' not in self.contents:
+      raise 'No target_os in %s' % gclient_path
+    self.target_os = self.contents['target_os']
+    self.default_target_os = self.target_os[0]
 
   @staticmethod
   def Read(gclient_path):
@@ -581,12 +585,6 @@ class GClient(object):
         e.filename = os.path.abspath(gclient_path)
         raise
     return result
-
-  def GetTargetOS(self):
-    if 'target_os' in self.contents:
-      if len(self.contents['target_os']) > 1:
-        print "Multiple target OS's: using the first"
-      return self.contents['target_os'][0]
 
 class GoogleTest(object):
   @staticmethod
@@ -834,15 +832,8 @@ class Options(object):
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
     self.buildopts = BuildSettings(self.GetGypEnvPath(), Git.CurrentBranch())
-    self.target_os = self.buildopts.target_os
-    if not self.target_os:
-      # Not specified in chromium.gyp_env file (which is OK) so see if it's
-      # in the .gclient file
-      self.target_os = self.gclient.GetTargetOS()
-      if not self.target_os:
-        # Not in .gcient either (also OK), so default to the host OS
-        self.target_os = Options.GetHostOS()
-      self.buildopts.SetDefaultGypGenerator(self.target_os)
+    self.target_os = self.gclient.default_target_os
+    self.buildopts.SetDefaultGypGenerator(self.target_os)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = True
@@ -857,15 +848,8 @@ class Options(object):
     self.img_num_blocks = 50*1024*1024/self.img_block_size
     self.sudo_pwd = None
     self.enable_network_service = False
-    self.chromeos_build = 'link'
     self.component_build = True
     self.buildopts.gyp_defines.add('disable_nacl=1')
-    if self.target_os == 'linux':
-      self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
-    if (self.target_os == 'win' or self.target_os == 'linux') and \
-        self.component_build:
-      # Should read in chromium.gyp_env and append to those values
-      self.buildopts.gyp_defines.add('component=shared_library')
     self.verbosity = 0
     self.print_cmds = True
     self.noop = False
@@ -880,10 +864,7 @@ class Options(object):
     self.clobber = False
     self.active_items = []
     self.debugger = False
-    if self.target_os == 'chromeos':
-      self.out_dir = 'out_%s' % self.chromeos_build
-    else:
-      self.out_dir = 'out'
+    self.out_dir = 'out'
     self.use_rr = False
     self.run_args = None
     self.layout_dir = os.path.join(self.root_dir, 'third_party', 'WebKit',
@@ -1054,6 +1035,7 @@ class Options(object):
                         help="Do a LSan build")
     parser.add_argument('-m', '--msan', action='store_true',
                         help="Do a MSan build")
+    parser.add_argument('--os', type=str, nargs=1, help='The target OS')
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
@@ -1130,6 +1112,17 @@ a target defined in the gyp files.""")
     if args.cfi:
       self.cfi = True
       self.component_build = False
+    if args.os:
+      self.target_os = args.os[0]
+      if self.target_os not in self.gclient.target_os:
+        print >> sys.stderr, '%s must be one of %s' % \
+            (self.target_os, self.gclient.target_os)
+    if self.target_os == 'linux':
+      self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
+    if (self.target_os == 'win' or self.target_os == 'linux') and \
+        self.component_build:
+      # Should read in chromium.gyp_env and append to those values
+      self.buildopts.gyp_defines.add('component=shared_library')
     if args.tsan:
       self.tsan = True
       self.component_build = False
@@ -1351,13 +1344,12 @@ class Builder:
     if os.path.exists(self.options.gyp_state_path):
       os.remove(self.options.gyp_state_path)
     self.DeleteDir(os.path.join(self.options.out_dir, 'gypfiles'))
-    self.DeleteDir(os.path.join(self.options.out_dir, build_type))
+    self.DeleteDir(os.path.join(self.GetBuildDir(build_type)))
     self.DeleteDir(os.path.join(self.options.out_dir, '%s_x64' % build_type))
 
   def Build(self, build_type, target_names):
     print "Building %s..." % build_type
-    assert build_type in ['Debug', 'Release', 'asan', 'tsan', 'lsan', 'msan']
-    build_dir = os.path.join(self.options.out_dir, build_type)
+    build_dir = self.GetBuildDir(build_type)
     cmd = ['ninja', '-C', build_dir, '-l', '40']
     if self.options.noop:
       cmd.insert(1, '-n')
@@ -1372,8 +1364,7 @@ class Builder:
       cmd[1:1] = ['-k', '50000']
     if self.options.asan:
       platform_dir = os.path.join(self.options.root_dir,
-                                  self.options.out_dir,
-                                  build_type)
+                                  self.GetBuildDir(build_type))
       os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
                                                         'chrome_sandbox')
     cmd.extend(target_names)
@@ -1404,7 +1395,13 @@ class Builder:
     return build_types
 
   def GetBuildDir(self, build_type):
-    return os.path.join(self.options.out_dir, build_type)
+    """Return the relative path to the build dir - e.g. out/Debug."""
+    assert build_type in ['Debug', 'Release', 'asan', 'tsan', 'lsan', 'msan']
+    if self.options.target_os == self.options.gclient.default_target_os:
+      return os.path.join(self.options.out_dir, build_type)
+    else:
+      return os.path.join(self.options.out_dir, '%s-%s' % \
+                          (build_type, self.options.target_os))
 
   def NeedToReGyp(self):
     if self.options.use_gn:
