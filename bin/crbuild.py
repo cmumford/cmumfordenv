@@ -125,7 +125,7 @@ class Executable(BuildTypeItem):
     # An executable "command" is just a list of parameters to pass to
     # launch the process. Which one is the "executable" is a little nebulous.
     # Our heuristic is the one that exists on disk, and is in the out dir.
-    for cmd in self.GetCommands(build_type):
+    for cmd in self.GetCommands(build_type, self.GetBuildDir(build_type)):
       if os.path.exists(cmd) and options.out_dir in cmd:
         return cmd
     return super(Executable, self).GetExePath()
@@ -163,8 +163,9 @@ class Executable(BuildTypeItem):
       sys.exit(5)
     return self.commands[0]
 
-  def GetCommands(self, build_type, extra_args = None, no_run_commands = None,
-                  omit_xvfb = False, config_name = None):
+  def GetCommands(self, build_type, build_dir, extra_args = None,
+                  no_run_commands = None, omit_xvfb = False,
+                  config_name = None):
     xvfb = ["python", "testing/xvfb.py"]
     if False:
       debugger = ['gdb', '--tui']
@@ -200,6 +201,7 @@ class Executable(BuildTypeItem):
                 .replace(r'${jobs}', str(options.jobs)) \
                 .replace(r'${testjobs}', str(options.test_jobs)) \
                 .replace(r'${out_dir}', str(options.out_dir)) \
+                .replace(r'${Build_dir}', build_dir) \
                 .replace(r'${root_dir}', str(options.root_dir)) \
                 .replace(r'${layout_dir}', str(options.layout_dir)) \
                 .replace(r'${user_data_img_dir}', str(options.user_data_img_dir))
@@ -223,12 +225,14 @@ class Executable(BuildTypeItem):
   def IsGoogleTest(self, cmd):
     return self.type == 'gtest'
 
-  def Run(self, build_type, extra_args = None, no_run_commands = None):
+  def Run(self, build_type, build_dir, extra_args = None,
+          no_run_commands = None):
 
     # See if this is a google-test based executable.
     add_single_process_tests = False
-    raw_cmd = self.GetCommands(build_type, extra_args, no_run_commands,
-                               omit_xvfb=True, config_name='normal')
+    raw_cmd = self.GetCommands(build_type, build_dir, extra_args,
+                               no_run_commands, omit_xvfb=True,
+                               config_name='normal')
     if self.IsGoogleTest(raw_cmd):
       tests = GoogleTest.GetAppTests(raw_cmd)
       if not tests:
@@ -240,7 +244,8 @@ class Executable(BuildTypeItem):
         add_single_process_tests = True
 
     print 'Running "%s"...' % self.name
-    cmd = self.GetCommands(build_type, extra_args, no_run_commands,
+    cmd = self.GetCommands(build_type, build_dir,
+                           extra_args, no_run_commands,
                            omit_xvfb=(not Options.ShouldUseXvfb()))
     if add_single_process_tests:
       cmd = [p for p in cmd if p.find('test-launcher-jobs') < 0]
@@ -287,7 +292,8 @@ class Run(BuildTypeItem):
 
   def Run(self, build_type):
     self.MarkDoneFor(build_type)
-    return self.executable.Run(build_type, self.args, self.no_run_commands)
+    return self.executable.Run(build_type, self.GetBuildDir(build_type),
+                               self.args, self.no_run_commands)
 
   def GetTargets(self):
     if len(self.targets):
@@ -310,7 +316,7 @@ class Collection(BuildTypeItem):
       if item.WasDoneFor(build_type):
         print 'Skipping "%s": already run' % item.name
       else:
-        errors.extend(item.Run(build_type))
+        errors.extend(item.Run(build_type, self.GetBuildDir(build_type)))
     self.MarkDoneFor(build_type)
     return errors
 
@@ -1481,7 +1487,7 @@ class Builder:
         if item.WasDoneFor(build_type):
           print 'Skipping "%s": already run' % item_name
         else:
-          errors.extend(item.Run(build_type))
+          errors.extend(item.Run(build_type, self.GetBuildDir(build_type)))
           if self.options.profile:
             print 'View profile results via "pprof --gv %s %s"' % \
                 (item.GetExePath(build_type), self.options.profile_file)

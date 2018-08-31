@@ -22,7 +22,7 @@
         {
           "name": "normal",
           "command": [
-            "${out_dir}/${Build_type}/chrome",
+            "${Build_dir}/chrome",
             "--user-data-dir=${HOME}/.chrome_dev",
             "--allow-file-access"
           ]
@@ -30,7 +30,7 @@
         {
           "name": "asan",
           "command": [
-            "${out_dir}/${Build_type}/chrome",
+            "${Build_dir}/chrome",
             "--allow-file-access-from-files",
             "--disable-click-to-play",
             "--disable-gpuXXX",
@@ -61,7 +61,7 @@
           "command": [
             "pprof",
             "-gv",
-            "${out_dir}/${Build_type}/chrome",
+            "${Build_dir}/chrome",
             "/tmp/cpuprofile"
           ]
         },
@@ -70,7 +70,7 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/chrome",
+            "${Build_dir}/chrome",
             "--no-sandbox",
             "--disable-hang-monitor",
             "--single-processXXX",
@@ -87,15 +87,15 @@
         {
           "name": "normal",
           "command": [
-            "${out_dir}/${Build_type}/content_shell",
-            "--crash-dumps-dir=${out_dir}/${Build_type}/content_shell_crashes",
+            "${Build_dir}/content_shell",
+            "--crash-dumps-dir=${Build_dir}/content_shell_crashes",
             "--data-path=${HOME}/.content_shell_dev"
           ]
         },
         {
           "name": "asan",
           "command": [
-            "${out_dir}/${Build_type}/content_shell",
+            "${Build_dir}/content_shell",
             "--allow-file-access-from-files",
             "--disable-gl-drawing-for-tests",
             "--disable-hang-monitor",
@@ -116,7 +116,7 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/content_shell",
+            "${Build_dir}/content_shell",
             "--no-sandbox",
             "--disable-hang-monitor",
             "--data-path=${HOME}/.content_shell_dev"
@@ -143,7 +143,7 @@
         {
           "name": "normal",
           "command": [
-            "${out_dir}/${Build_type}/leveldb_endurance_test",
+            "${Build_dir}/leveldb_endurance_test",
             "/tmp/leveldb-endurance"
           ]
         },
@@ -152,7 +152,7 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/leveldb_endurance_test",
+            "${Build_dir}/leveldb_endurance_test",
             "/tmp/leveldb-endurance"
           ]
         }
@@ -266,9 +266,8 @@
           "name": "normal",
           "command": [
             "${xvfb}",
-            "${out_dir}/${Build_type}/${executable_name}",
-            "--test-launcher-jobs=${testjobs}",
-            "--brave-new-test-launcher"
+            "${Build_dir}/${executable_name}",
+            "--test-launcher-jobs=${testjobs}"
           ]
         },
         {
@@ -276,14 +275,14 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/${executable_name}"
+            "${Build_dir}/${executable_name}"
           ]
         },
         {
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=${out_dir}/${Build_type}",
+            "--build-dir=${Build_dir}",
             "-t",
             "${executable_name}"
           ]
@@ -319,14 +318,16 @@
         {
           "name": "normal",
           "command": [
-            "${out_dir}/${Build_type}/${executable_name}",
+            "${xvfb}",
+            "${Build_dir}/${executable_name}",
+            "--brave-new-test-launcher",
             "--test-launcher-jobs=${testjobs}"
           ]
         },
         {
           "name": "asan",
           "command": [
-            "${out_dir}/${Build_type}/${executable_name}",
+            "${Build_dir}/${executable_name}",
             "--test-launcher-batch-limit=1",
             "--test-launcher-jobs=${testjobs}",
             "--test-launcher-print-test-stdio=always",
@@ -338,7 +339,7 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/${executable_name}",
+            "${Build_dir}/${executable_name}",
             "--single-process-tests"
           ]
         },
@@ -346,7 +347,7 @@
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=${out_dir}/${Build_type}",
+            "--build-dir=${Build_dir}",
             "-t",
             "${executable_name}"
           ]
@@ -393,7 +394,7 @@
           "command": [
             "${debugger}",
             "--args",
-            "${out_dir}/${Build_type}/content_shell",
+            "${Build_dir}/content_shell",
             "--no-timeout",
             "--no-sandbox",
             "--single-process"
@@ -402,7 +403,7 @@
         {
           "name": "asan",
           "command": [
-            "${out_dir}/${Build_type}/content_shell",
+            "${Build_dir}/content_shell",
             "--no-timeout",
             "--no-sandbox"
           ]
@@ -411,7 +412,7 @@
           "name": "valgrind",
           "command": [
             "tools/valgrind/chrome_tests.sh",
-            "--build-dir=${out_dir}/${Build_type}",
+            "--build-dir=${Build_dir}",
             "-t",
             "webkit"
           ]
