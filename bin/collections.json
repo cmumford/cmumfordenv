@@ -989,6 +989,7 @@
         "extensions_unittests",
         "leveldb_service_unittests",
         "net_unittests",
+        "services_unittests",
         "storage_unittests",
         "unit_tests",
         "url_unittests",
