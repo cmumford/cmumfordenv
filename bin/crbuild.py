@@ -609,6 +609,8 @@ class GoogleTest(object):
       if m:
         current_class_name = m.group(1)
         continue
+      if not current_class_name:
+        continue
       m = test_re.match(line)
       if m:
         test_names.append(current_class_name + m.group(1))
