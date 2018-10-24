@@ -290,9 +290,9 @@ class Run(BuildTypeItem):
     self.args = args
     self.no_run_commands = no_run_commands
 
-  def Run(self, build_type):
+  def Run(self, build_type, build_dir):
     self.MarkDoneFor(build_type)
-    return self.executable.Run(build_type, self.GetBuildDir(build_type),
+    return self.executable.Run(build_type, build_dir,
                                self.args, self.no_run_commands)
 
   def GetTargets(self):
@@ -308,7 +308,7 @@ class Collection(BuildTypeItem):
     self.title = ''
     self.items = items
 
-  def Run(self, build_type):
+  def Run(self, build_type, build_dir):
     errors = []
     for item in self.items:
       if isinstance(item, BuildTarget):
@@ -316,7 +316,7 @@ class Collection(BuildTypeItem):
       if item.WasDoneFor(build_type):
         print 'Skipping "%s": already run' % item.name
       else:
-        errors.extend(item.Run(build_type, self.GetBuildDir(build_type)))
+        errors.extend(item.Run(build_type, build_dir))
     self.MarkDoneFor(build_type)
     return errors
 
@@ -668,8 +668,10 @@ class GN(object):
     args = {}
     args['target_os'] = '"%s"' % options.target_os
     args['is_debug'] = str(options.debug).lower()
-    args['is_component_build'] = str(options.component_build).lower()
+    args['is_chrome_branded'] = str(options.buildopts.is_chrome_branded).lower()
+    args['is_component_build'] = str(options.buildopts.is_component_build).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
+    args['is_official_build'] = str(options.buildopts.is_official_build).lower()
     args['use_goma'] = str(options.buildopts.use_goma).lower()
     if platform.system() == 'Windows':
       args['is_win_fastlink'] = str(options.buildopts.use_goma).lower()
@@ -694,7 +696,7 @@ class GN(object):
       if not options.tsan:
         args['enable_full_stack_frames_for_profiling'] = 'true'
       args['strip_absolute_paths_from_debug_symbols'] = 'true'
-    if not options.debug:
+    if not options.debug and not options.buildopts.is_official_build:
       args['dcheck_always_on'] = 'true'
     if options.fuzzer or options.asan or options.lsan or options.tsan:
       args['enable_nacl'] = 'false'
@@ -745,6 +747,9 @@ class BuildSettings(object):
     gyp_env = BuildSettings.ReadGypEnv(gyp_env_path)
     self.target_os = BuildSettings.GetTargetOS(gyp_env)
     self.SetDefaultGypGenerator(self.target_os)
+    self.is_chrome_branded = True
+    self.is_component_build = True
+    self.is_official_build = False
     self.use_clang = True
     self.use_goma = True
     self.valgrind = False
@@ -816,6 +821,10 @@ class BuildSettings(object):
       return True
     if self.valgrind != other.valgrind:
       return True
+    if self.is_official_build != other.is_official_build:
+      return True
+    if self.is_chrome_branded != other.is_chrome_branded:
+      return True
     if hasattr(other, 'branch'):
       other_branch = other.branch
     else:
@@ -854,7 +863,6 @@ class Options(object):
     self.img_num_blocks = 50*1024*1024/self.img_block_size
     self.sudo_pwd = None
     self.enable_network_service = False
-    self.component_build = True
     self.buildopts.gyp_defines.add('disable_nacl=1')
     self.verbosity = 0
     self.print_cmds = True
@@ -867,6 +875,7 @@ class Options(object):
                                                   'Release+Asserts', 'bin'))
     if not os.path.exists(self.llvm_path):
       self.buildopts.use_clang = False
+    self.is_chrome_branded = True
     self.clobber = False
     self.active_items = []
     self.debugger = False
@@ -1117,7 +1126,7 @@ a target defined in the gyp files.""")
       self.use_rr = True
     if args.cfi:
       self.cfi = True
-      self.component_build = False
+      self.buildopts.is_component_build = False
     if args.os:
       self.target_os = args.os[0]
       if self.target_os not in self.gclient.target_os:
@@ -1126,19 +1135,19 @@ a target defined in the gyp files.""")
     if self.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
     if (self.target_os == 'win' or self.target_os == 'linux') and \
-        self.component_build:
+        self.buildopts.is_component_build:
       # Should read in chromium.gyp_env and append to those values
       self.buildopts.gyp_defines.add('component=shared_library')
     if args.tsan:
       self.tsan = True
-      self.component_build = False
+      self.buildopts.is_component_build = False
       # Apparently TSan supports goma now.
       #self.buildopts.use_goma = False
     if args.asan:
       self.asan = True
       self.lsan = True
     if self.asan:
-      self.component_build = False
+      self.buildopts.is_component_build = False
       if self.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
@@ -1164,7 +1173,7 @@ a target defined in the gyp files.""")
           self.buildopts.gyp_defines.remove('disable_nacl=1')
       elif self.target_os == 'android':
         self.buildopts.gyp_defines.add('asan=1')
-        if self.component_build:
+        if self.buildopts.is_component_build:
           self.buildopts.gyp_defines.add('component=shared_library')
       elif platform.system() == 'mac':
         self.buildopts.gyp_defines.add('asan=1')
@@ -1282,6 +1291,7 @@ class Builder:
       else:
         print "Target OS: %s" % self.options.target_os
         print "Host OS: %s" % Options.GetHostOS()
+        print "Official: %s" % str(self.options.buildopts.is_official_build)
         print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
         print "GYP_GENERATORS: %s" % os.environ['GYP_GENERATORS']
         print "PATH: %s" % os.environ['PATH']
@@ -1400,14 +1410,19 @@ class Builder:
         build_types.append('Release')
     return build_types
 
-  def GetBuildDir(self, build_type):
+  def GetBaseBuildDir(self, build_type):
     """Return the relative path to the build dir - e.g. out/Debug."""
     assert build_type in ['Debug', 'Release', 'asan', 'tsan', 'lsan', 'msan']
-    if self.options.target_os == self.options.gclient.default_target_os:
-      return os.path.join(self.options.out_dir, build_type)
-    else:
-      return os.path.join(self.options.out_dir, '%s-%s' % \
-                          (build_type, self.options.target_os))
+    dir_name = build_type
+    if self.options.target_os != self.options.gclient.default_target_os:
+      dir_name += '-%s' % self.options.target_os
+    if self.options.buildopts.is_official_build:
+      dir_name = 'Official-' + dir_name
+    return dir_name
+
+  def GetBuildDir(self, build_type):
+    """Return the full path to the build dir - e.g. src/dir/out/Debug."""
+    return os.path.join(self.options.out_dir, self.GetBaseBuildDir(build_type))
 
   def NeedToReGyp(self):
     if self.options.use_gn:
