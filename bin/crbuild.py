@@ -136,7 +136,7 @@ class Executable(BuildTypeItem):
       cfg_name = 'valgrind'
     elif self.options.debugger:
       cfg_name = 'debug'
-    elif self.options.asan:
+    elif self.options.buildopts.is_asan:
       cfg_name = 'asan'
     if config_name:
       cfg_name = config_name
@@ -148,7 +148,7 @@ class Executable(BuildTypeItem):
       elif cmd.name == 'normal':
         return cmd
 
-    if self.options.asan:
+    if self.options.buildopts.is_asan:
       cfg_name = None
       for cmd in self.commands:
         if cfg_name:
@@ -257,7 +257,7 @@ class Executable(BuildTypeItem):
     run_errors = []
     try:
       if not self.options.noop:
-        if self.options.asan or self.options.tsan:
+        if self.options.buildopts.is_asan or self.options.buildopts.is_tsan:
           asan_symbolize.demangle = True
           loop = asan_symbolize.SymbolizationLoop(binary_name_filter=asan_symbolize.fix_filename)
           p = subprocess.Popen(cmd, stderr=subprocess.PIPE)
@@ -668,45 +668,48 @@ class GN(object):
   @staticmethod
   def BuildArgs(options):
     args = {}
-    args['target_os'] = '"%s"' % options.target_os
-    args['is_debug'] = str(options.debug).lower()
+    args['dcheck_always_on'] = str(options.buildopts.dcheck_always_on).lower()
+    if options.buildopts.is_asan:
+      args['is_asan'] = str(options.buildopts.is_asan).lower()
     args['is_chrome_branded'] = str(options.buildopts.is_chrome_branded).lower()
-    args['is_component_build'] = str(options.buildopts.is_component_build).lower()
     args['is_clang'] = str(options.buildopts.use_clang).lower()
+    args['is_component_build'] = str(options.buildopts.is_component_build).lower()
+    args['is_debug'] = str(options.buildopts.is_debug).lower()
+    if options.buildopts.is_lsan:
+      args['is_lsan'] = str(options.buildopts.is_lsan).lower()
+    if options.buildopts.is_msan:
+      args['is_msan'] = str(options.buildopts.is_msan).lower()
     args['is_official_build'] = str(options.buildopts.is_official_build).lower()
+    if options.buildopts.is_tsan:
+      args['is_tsan'] = str(options.buildopts.is_tsan).lower()
+    args['target_os'] = '"%s"' % options.target_os
     args['use_goma'] = str(options.buildopts.use_goma).lower()
+    if options.buildopts.use_libfuzzer:
+      args['use_libfuzzer'] = str(options.buildopts.use_libfuzzer).lower()
     if platform.system() == 'Windows':
       args['is_win_fastlink'] = str(options.buildopts.use_goma).lower()
-      args['symbol_level'] = '2' if options.debug else '1'
-    if options.fuzzer:
-      args['use_libfuzzer'] = str(options.fuzzer).lower()
-    if options.asan:
-      args['is_asan'] = str(options.asan).lower()
-    if options.tsan:
-      args['is_tsan'] = str(options.tsan).lower()
-    if options.lsan:
-      args['is_lsan'] = str(options.lsan).lower()
-    if options.msan:
-      args['is_msan'] = str(options.msan).lower()
-    args['enable_profiling'] = str(options.heap_profiling).lower()
-    if options.enable_callgrind:
-      args['enable_callgrind'] = str(options.enable_callgrind).lower()
+      args['symbol_level'] = '2' if options.buildopts.is_official_build else '1'
+    if options.buildopts.enable_profiling:
+      args['enable_profiling'] = 'true'
+    if options.buildopts.enable_callgrind:
+      args['enable_callgrind'] = 'true'
     if options.buildopts.use_goma:
       args['goma_dir'] = '"%s"' % options.goma_path
-    if options.asan or options.tsan:
+    if options.buildopts.is_asan or options.buildopts.is_tsan:
       args['symbol_level'] = '1'
-      if not options.tsan:
+      if not options.buildopts.is_tsan:
         args['enable_full_stack_frames_for_profiling'] = 'true'
       args['strip_absolute_paths_from_debug_symbols'] = 'true'
-    if not options.debug and not options.buildopts.is_official_build:
-      args['dcheck_always_on'] = 'true'
-    if options.fuzzer or options.asan or options.lsan or options.tsan:
+    if (options.buildopts.use_libfuzzer or
+        options.buildopts.is_asan or
+        options.buildopts.is_tsan or
+        options.buildopts.is_tsan):
       args['enable_nacl'] = 'false'
     if os.path.exists(GN.ArgsSupplemental()):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
       for k in supplimental_args:
         args[k] = supplimental_args[k]
-    if options.cfi and not options.debug:
+    if options.cfi and not options.buildopts.is_official_build:
       args['is_cfi'] = 'true'
       args['use_cfi_cast'] = 'true'
       args['use_cfi_diag'] = 'true'
@@ -749,13 +752,22 @@ class BuildSettings(object):
     gyp_env = BuildSettings.ReadGypEnv(gyp_env_path)
     self.target_os = BuildSettings.GetTargetOS(gyp_env)
     self.SetDefaultGypGenerator(self.target_os)
-    self.is_chrome_branded = True
+    self.branch = branch
+    self.dcheck_always_on = True
+    self.enable_callgrind = False
+    self.enable_profiling = False
+    self.is_asan = False
+    self.is_chrome_branded = False
     self.is_component_build = True
+    self.is_debug = True
+    self.is_lsan = False
+    self.is_msan = False
     self.is_official_build = False
+    self.is_tsan = False
     self.use_clang = True
     self.use_goma = True
+    self.use_libfuzzer = False
     self.valgrind = False
-    self.branch = branch
 
   def SetDefaultGypGenerator(self, target_os):
     self.gyp_generators = 'ninja'
@@ -811,6 +823,28 @@ class BuildSettings(object):
       return pickle.load(f)
 
   def __ne__(self, other):
+    if self.dcheck_always_on != other.dcheck_always_on:
+      return True
+    if self.is_asan != other.is_asan:
+      return True
+    if self.is_chrome_branded != other.is_chrome_branded:
+      return True
+    if self.is_component_build != other.is_component_build:
+      return True
+    if self.is_debug != other.is_debug:
+      return True
+    if self.enable_callgrind != other.enable_callgrind:
+      return True
+    if self.enable_profiling != other.enable_profiling:
+      return True
+    if self.is_lsan != other.is_lsan:
+      return True
+    if self.is_msan != other.is_msan:
+      return True
+    if self.is_official_build != other.is_official_build:
+      return True
+    if self.is_tsan != other.is_tsan:
+      return True
     if self.gyp_generator_flags != other.gyp_generator_flags:
       return True
     if self.gyp_defines != other.gyp_defines:
@@ -821,11 +855,9 @@ class BuildSettings(object):
       return True
     if self.use_goma != other.use_goma:
       return True
+    if self.use_libfuzzer != other.use_libfuzzer:
+      return True
     if self.valgrind != other.valgrind:
-      return True
-    if self.is_official_build != other.is_official_build:
-      return True
-    if self.is_chrome_branded != other.is_chrome_branded:
       return True
     if hasattr(other, 'branch'):
       other_branch = other.branch
@@ -855,8 +887,6 @@ class Options(object):
     self.collections.LoadDataFile()
     self.use_gn = True
     self.keep_going = False
-    self.debug = False
-    self.release = False
     self.user_data_in_image = False
     self.desired_root_path = os.path.join(os.path.expanduser('~'),
                                           'chrome_img_dir')
@@ -877,7 +907,6 @@ class Options(object):
                                                   'Release+Asserts', 'bin'))
     if not os.path.exists(self.llvm_path):
       self.buildopts.use_clang = False
-    self.is_chrome_branded = True
     self.clobber = False
     self.active_items = []
     self.debugger = False
@@ -894,15 +923,9 @@ class Options(object):
       self.test_jobs = min(8, self.jobs)
     else:
       self.test_jobs = self.jobs
-    self.fuzzer = False
-    self.asan = False
-    self.tsan = False
-    self.lsan = False
-    self.msan = False
     self.profile = False
     # https://chromium.googlesource.com/chromium/src/+/master/docs/profiling.md
     self.heap_profiling = False
-    self.enable_callgrind = False
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
     self.gtest = None
@@ -994,6 +1017,14 @@ class Options(object):
       sys.argv = sys.argv[:positional_start_idx]
 
   @staticmethod
+  def str2bool(v):
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+      return True
+    if v.lower() in ('no', 'false', 'f', 'n', '0'):
+      return False
+    raise argparse.ArgumentTypeError('Boolean value expected.')
+
+  @staticmethod
   def FixupGoogleTestFilterArgs(val):
     """Parse the --gtest options for --gtest_filter.
     >>> Options.FixupGoogleTestFilterArgs(None) is None
@@ -1052,6 +1083,26 @@ class Options(object):
                         help="Do a LSan build")
     parser.add_argument('-m', '--msan', action='store_true',
                         help="Do a MSan build")
+    parser.add_argument('-C', '--component',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.is_component_build,
+                        help="Do a component build (default: %s)." % \
+                        self.buildopts.is_component_build)
+    parser.add_argument('--dcheck',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.dcheck_always_on,
+                        help="Always enable DCHECK (default: %s)." % \
+                        self.buildopts.dcheck_always_on)
+    parser.add_argument('--official',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.is_official_build,
+                        help="Do an official (default: %s)." % \
+                        self.buildopts.is_official_build)
+    parser.add_argument('--branded',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.is_chrome_branded,
+                        help="Do a Chrome branded build (default: %s)." % \
+                        self.buildopts.is_chrome_branded)
     parser.add_argument('--os', type=str, nargs=1, help='The target OS')
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
@@ -1080,15 +1131,22 @@ a target defined in the gyp files.""")
 
     self.StripRunPositionalArgs()
     args = parser.parse_args()
-    self.debug = args.debug
-    self.release = args.release
-    if not self.debug and not self.release:
-      self.debug = True
+    if args.debug and args.release:
+      print >> sys.stderr, "Can only do debug OR release, not both."
+      sys.exit(1)
+    if args.debug:
+      self.buildopts.is_debug = True
+    elif args.release:
+      self.buildopts.is_debug = False
     self.regyp = args.gyp
     self.clobber = args.clobber
     if self.clobber:
       self.regyp = True
     self.verbosity = args.verbose
+    self.buildopts.dcheck_always_on = args.dcheck
+    self.buildopts.is_chrome_branded = args.branded
+    self.buildopts.is_component_build = args.component
+    self.buildopts.is_official_build = args.official
     if args.noop:
       self.noop = True
     if args.no_run:
@@ -1115,15 +1173,15 @@ a target defined in the gyp files.""")
     if args.jobs:
       self.jobs = args.jobs
     if args.fuzzer:
-      self.fuzzer = True
-      self.asan = True
+      self.buildopts.use_libfuzzer = True
+      self.buildopts.is_asan = True
     if args.lsan:
-      self.lsan = True
-      self.asan = True
+      self.buildopts.is_tsan = True
+      self.buildopts.is_asan = True
     if args.s13n:
       self.enable_network_service = True
     if args.msan:
-      self.msan = True
+      self.buildopts.is_msan = True
     if args.rr:
       self.use_rr = True
     if args.cfi:
@@ -1141,14 +1199,14 @@ a target defined in the gyp files.""")
       # Should read in chromium.gyp_env and append to those values
       self.buildopts.gyp_defines.add('component=shared_library')
     if args.tsan:
-      self.tsan = True
+      self.buildopts.is_tsan = True
       self.buildopts.is_component_build = False
       # Apparently TSan supports goma now.
       #self.buildopts.use_goma = False
     if args.asan:
-      self.asan = True
-      self.lsan = True
-    if self.asan:
+      self.buildopts.is_asan = True
+      self.buildopts.is_tsan = True
+    if self.buildopts.is_asan:
       self.buildopts.is_component_build = False
       if self.target_os == 'linux':
         if args.no_use_clang:
@@ -1182,22 +1240,28 @@ a target defined in the gyp files.""")
         self.buildopts.gyp_defines.add('target_arch=x64')
         self.buildopts.gyp_defines.add('host_arch=x64')
     self.buildopts.gyp_defines.add('OS=%s' % self.target_os)
+    if options.heap_profiling:
+      if not self.buildopts.is_debug:
+        print >> sys.stderr, 'Heap profiling requires a debug build.'
+        sys.exit(1)
+      self.buildopts.enable_profiling = True
+      self.buildopts.enable_callgrind = True
     if args.profile:
       self.profile = True
       self.buildopts.gyp_defines.add('profiling=1')
-    if self.asan and self.debug:
+    if self.buildopts.is_asan and self.buildopts.is_debug:
       print >> sys.stderr, "ASan only works on a release build."
       sys.exit(1)
-    if self.msan and self.debug:
+    if self.buildopts.is_msan and self.buildopts.is_debug:
       print >> sys.stderr, "MSan only works on a release build."
       sys.exit(1)
-    if self.tsan and self.debug:
+    if self.buildopts.is_tsan and self.buildopts.is_debug:
       print >> sys.stderr, "TSan only works on a release build."
       sys.exit(1)
-    if self.tsan and self.asan:
+    if self.buildopts.is_tsan and self.buildopts.is_asan:
       print >> sys.stderr, "Can't do both TSan and ASan builds."
       sys.exit(1)
-    if self.cfi and self.debug:
+    if self.cfi and self.buildopts.is_debug:
       print 'CFI is for release-only builds'
       sys.exit(1)
     self.gtest = Options.FixupGoogleTestFilterArgs(args.gtest)
@@ -1265,7 +1329,7 @@ class Builder:
   def SetEnvVars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.buildopts.gyp_defines)
-    if self.options.asan:
+    if self.options.buildopts.is_asan:
       os.environ['ASAN_OPTIONS'] = 'detect_leaks=1'
     os.environ['GYP_GENERATORS'] = self.options.buildopts.gyp_generators
     if self.options.buildopts.use_clang:
@@ -1380,7 +1444,7 @@ class Builder:
         cmd[1:1] = ['-j', '4096']
     if self.options.keep_going:
       cmd[1:1] = ['-k', '50000']
-    if self.options.asan:
+    if self.options.buildopts.is_asan:
       platform_dir = os.path.join(self.options.root_dir,
                                   self.GetBuildDir(build_type))
       os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
@@ -1389,7 +1453,7 @@ class Builder:
     self.PrintStep(cmd)
     try:
       subprocess.check_call(cmd)
-      if self.options.asan and self.options.target_os == 'win':
+      if self.options.buildopts.is_asan and self.options.target_os == 'win':
         self.Instrument_SyzyASan(build_dir)
       return []
     except subprocess.CalledProcessError as e:
@@ -1397,16 +1461,16 @@ class Builder:
 
   def GetBuildTypes(self):
     build_types = []
-    if self.options.debug:
+    if self.options.buildopts.is_debug:
       build_types.append('Debug')
-    if self.options.release:
-      if self.options.asan:
+    else:
+      if self.options.buildopts.is_asan:
         build_types.append('asan')
-      elif self.options.tsan:
+      elif self.options.buildopts.is_tsan:
         build_types.append('tsan')
-      elif self.options.lsan:
+      elif self.options.buildopts.is_tsan:
         build_types.append('lsan')
-      elif self.options.msan:
+      elif self.options.buildopts.is_msan:
         build_types.append('msan')
       else:
         build_types.append('Release')
