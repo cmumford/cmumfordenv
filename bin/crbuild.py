@@ -388,9 +388,9 @@ class Collections(object):
     assert(m)
     op = m.group(1)
     os_name = m.group(2)
-    if op == '==' and os_name == self.options.target_os:
+    if op == '==' and os_name == self.options.buildopts.target_os:
       return True
-    if op == '!=' and os_name != self.options.target_os:
+    if op == '!=' and os_name != self.options.buildopts.target_os:
       return True
     return False
 
@@ -682,7 +682,7 @@ class GN(object):
     args['is_official_build'] = str(options.buildopts.is_official_build).lower()
     if options.buildopts.is_tsan:
       args['is_tsan'] = str(options.buildopts.is_tsan).lower()
-    args['target_os'] = '"%s"' % options.target_os
+    args['target_os'] = '"%s"' % options.buildopts.target_os
     args['use_goma'] = str(options.buildopts.use_goma).lower()
     if options.buildopts.use_libfuzzer:
       args['use_libfuzzer'] = str(options.buildopts.use_libfuzzer).lower()
@@ -709,7 +709,7 @@ class GN(object):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
       for k in supplimental_args:
         args[k] = supplimental_args[k]
-    if options.cfi and not options.buildopts.is_official_build:
+    if options.buildopts.is_cfi and not options.buildopts.is_official_build:
       args['is_cfi'] = 'true'
       args['use_cfi_cast'] = 'true'
       args['use_cfi_diag'] = 'true'
@@ -746,17 +746,18 @@ class GN(object):
 ##
 # Values in this class affect how build_gyp generates makefiles.
 class BuildSettings(object):
-  def __init__(self, gyp_env_path, branch):
+  def __init__(self, gyp_env_path, branch, target_os):
     self.gyp_generator_flags = set()
     self.gyp_defines = set()
     gyp_env = BuildSettings.ReadGypEnv(gyp_env_path)
-    self.target_os = BuildSettings.GetTargetOS(gyp_env)
+    self.target_os = target_os
     self.SetDefaultGypGenerator(self.target_os)
     self.branch = branch
     self.dcheck_always_on = True
     self.enable_callgrind = False
     self.enable_profiling = False
     self.is_asan = False
+    self.is_cfi = False
     self.is_chrome_branded = False
     self.is_component_build = True
     self.is_debug = True
@@ -837,6 +838,8 @@ class BuildSettings(object):
       return True
     if self.enable_profiling != other.enable_profiling:
       return True
+    if self.is_cfi != other.is_cfi:
+      return True
     if self.is_lsan != other.is_lsan:
       return True
     if self.is_msan != other.is_msan:
@@ -856,6 +859,8 @@ class BuildSettings(object):
     if self.use_goma != other.use_goma:
       return True
     if self.use_libfuzzer != other.use_libfuzzer:
+      return True
+    if self.target_os != other.target_os:
       return True
     if self.valgrind != other.valgrind:
       return True
@@ -880,9 +885,8 @@ class Options(object):
       print >> sys.stderr, "ERROR: %s" % self.GetGClientPath()
       print >> sys.stderr, "Are you running from the chrome/src dir?"
       sys.exit(8)
-    self.buildopts = BuildSettings(self.GetGypEnvPath(), Git.CurrentBranch())
-    self.target_os = self.gclient.default_target_os
-    self.buildopts.SetDefaultGypGenerator(self.target_os)
+    self.buildopts = BuildSettings(self.GetGypEnvPath(), Git.CurrentBranch(),
+                                   self.gclient.default_target_os)
     self.collections = Collections(self)
     self.collections.LoadDataFile()
     self.use_gn = True
@@ -929,7 +933,6 @@ class Options(object):
     self.profile_file = "/tmp/cpuprofile"
     self.run_targets = True
     self.gtest = None
-    self.cfi = False
 
   def IsGomaRunning(self):
     if not os.path.exists(self.goma_path):
@@ -1073,8 +1076,11 @@ class Options(object):
                         help="Enable the network service")
     parser.add_argument('-R', '--no-run', action='store_true',
                         help="Do not run targets after building.")
-    parser.add_argument('--cfi', action='store_true',
-                        help="Do a CFI build (release only)")
+    parser.add_argument('--cfi',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.is_cfi,
+                        help="Do a CFI build (release only) (default: %s)." % \
+                        self.buildopts.is_cfi)
     parser.add_argument('-A', '--asan', action='store_true',
                         help="Do a SyzyASan build")
     parser.add_argument('-t', '--tsan', action='store_true',
@@ -1193,18 +1199,24 @@ a target defined in the gyp files.""")
       self.buildopts.is_msan = True
     if args.rr:
       self.use_rr = True
-    if args.cfi:
-      self.cfi = True
-      self.buildopts.is_component_build = False
+    self.buildopts.is_cfi = args.cfi
+    if self.buildopts.is_cfi:
+      if self.buildopts.is_debug:
+        print >> sys.stderr, 'CFI build is release build only.'
+        sys.exit(1)
+      if self.buildopts.is_component_build:
+        print >> sys.stderr, 'CFI build is static build only.'
+        sys.exit(1)
     if args.os:
-      self.target_os = args.os[0]
-      if self.target_os not in self.gclient.target_os:
+      self.buildopts.target_os = args.os[0]
+      if self.buildopts.target_os not in self.gclient.target_os:
         print >> sys.stderr, '%s must be one of %s' % \
-            (self.target_os, self.gclient.target_os)
-    if self.target_os == 'linux':
+            (self.buildopts.target_os, self.gclient.target_os)
+    if self.buildopts.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
-    if (self.target_os == 'win' or self.target_os == 'linux') and \
-        self.buildopts.is_component_build:
+    if ((self.buildopts.target_os == 'win' or
+         self.buildopts.target_os == 'linux') and
+        self.buildopts.is_component_build):
       # Should read in chromium.gyp_env and append to those values
       self.buildopts.gyp_defines.add('component=shared_library')
     if args.tsan:
@@ -1217,7 +1229,7 @@ a target defined in the gyp files.""")
       self.buildopts.is_tsan = True
     if self.buildopts.is_asan:
       self.buildopts.is_component_build = False
-      if self.target_os == 'linux':
+      if self.buildopts.target_os == 'linux':
         if args.no_use_clang:
           print >> sys.stderr, "ASan *is* clang to don't tell me not to use it."
         self.buildopts.gyp_defines.add('asan=1')
@@ -1228,7 +1240,7 @@ a target defined in the gyp files.""")
         self.buildopts.gyp_defines.add('release_extra_cflags="-g -O1 '
                                        '-fno-inline-functions -fno-inline"')
         self.buildopts.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
-      elif self.target_os == 'win':
+      elif self.buildopts.target_os == 'win':
         self.buildopts.gyp_defines.add('syzyasan=1')
         self.buildopts.gyp_defines.add('win_z7=1')
         self.buildopts.gyp_defines.add('chromium_win_pch=0')
@@ -1240,7 +1252,7 @@ a target defined in the gyp files.""")
         self.buildopts.gyp_defines.add('component=static_library')
         if 'disable_nacl=1' in self.buildopts.gyp_defines:
           self.buildopts.gyp_defines.remove('disable_nacl=1')
-      elif self.target_os == 'android':
+      elif self.buildopts.target_os == 'android':
         self.buildopts.gyp_defines.add('asan=1')
         if self.buildopts.is_component_build:
           self.buildopts.gyp_defines.add('component=shared_library')
@@ -1248,7 +1260,7 @@ a target defined in the gyp files.""")
         self.buildopts.gyp_defines.add('asan=1')
         self.buildopts.gyp_defines.add('target_arch=x64')
         self.buildopts.gyp_defines.add('host_arch=x64')
-    self.buildopts.gyp_defines.add('OS=%s' % self.target_os)
+    self.buildopts.gyp_defines.add('OS=%s' % self.buildopts.target_os)
     if options.heap_profiling:
       if not self.buildopts.is_debug:
         print >> sys.stderr, 'Heap profiling requires a debug build.'
@@ -1270,9 +1282,6 @@ a target defined in the gyp files.""")
     if self.buildopts.is_tsan and self.buildopts.is_asan:
       print >> sys.stderr, "Can't do both TSan and ASan builds."
       sys.exit(1)
-    if self.cfi and self.buildopts.is_debug:
-      print 'CFI is for release-only builds'
-      sys.exit(1)
     self.gtest = Options.FixupGoogleTestFilterArgs(args.gtest)
 
 class Builder:
@@ -1285,7 +1294,7 @@ class Builder:
   # This is caused by the Microsoft PDB Server running out of virtual address
   # space. Killing this service fixes this problem.
   def KillPdbServer(self):
-    assert self.options.target_os == 'win'
+    assert self.options.buildopts.target_os == 'win'
     cmd = "taskkill /F /im mspdbsrv.exe"
     if self.options.print_cmds:
       Options.OutputCommand(cmd)
@@ -1364,7 +1373,7 @@ class Builder:
       if self.options.verbosity > 2:
         Builder.PrintAllEnvVars()
       else:
-        print "Target OS: %s" % self.options.target_os
+        print "Target OS: %s" % self.options.buildopts.target_os
         print "Host OS: %s" % Options.GetHostOS()
         print "Official: %s" % str(self.options.buildopts.is_official_build)
         print "GYP_DEFINES: %s" % os.environ['GYP_DEFINES']
@@ -1410,7 +1419,7 @@ class Builder:
 
   def Gyp(self):
     print "Gyp'ing..."
-    if self.options.target_os == 'android' or self.options.target_os == 'chromeos':
+    if self.options.buildopts.target_os in ('android', 'chromeos'):
       cmd = ['gclient', 'runhooks']
     else:
       cmd = ['python', os.path.join('build', 'gyp_chromium')]
@@ -1447,7 +1456,7 @@ class Builder:
     if self.options.verbosity > 1:
       cmd.insert(1, '-v')
     if self.options.buildopts.use_goma:
-      if self.options.target_os == 'mac':
+      if self.options.buildopts.target_os == 'mac':
         cmd[1:1] = ['-j', '100']
       else:
         cmd[1:1] = ['-j', '4096']
@@ -1462,7 +1471,8 @@ class Builder:
     self.PrintStep(cmd)
     try:
       subprocess.check_call(cmd)
-      if self.options.buildopts.is_asan and self.options.target_os == 'win':
+      if (self.options.buildopts.is_asan and
+          self.options.buildopts.target_os == 'win'):
         self.Instrument_SyzyASan(build_dir)
       return []
     except subprocess.CalledProcessError as e:
@@ -1489,8 +1499,8 @@ class Builder:
     """Return the relative path to the build dir - e.g. out/Debug."""
     assert build_type in ['Debug', 'Release', 'asan', 'tsan', 'lsan', 'msan']
     dir_name = build_type
-    if self.options.target_os != self.options.gclient.default_target_os:
-      dir_name += '-%s' % self.options.target_os
+    if self.options.buildopts.target_os != self.options.gclient.default_target_os:
+      dir_name += '-%s' % self.options.buildopts.target_os
     if self.options.buildopts.is_official_build:
       dir_name = 'Official-' + dir_name
     return dir_name
@@ -1534,7 +1544,7 @@ class Builder:
   def DoBuild(self):
     build_types = self.GetBuildTypes()
 
-    if self.options.target_os == 'win':
+    if self.options.buildopts.target_os == 'win':
       self.KillPdbServer()
 
     if self.options.clobber:
