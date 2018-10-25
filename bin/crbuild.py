@@ -1073,10 +1073,10 @@ class Options(object):
                         help="Enable the network service")
     parser.add_argument('-R', '--no-run', action='store_true',
                         help="Do not run targets after building.")
-    parser.add_argument('-A', '--asan', action='store_true',
-                        help="Do a SyzyASan build")
     parser.add_argument('--cfi', action='store_true',
                         help="Do a CFI build (release only)")
+    parser.add_argument('-A', '--asan', action='store_true',
+                        help="Do a SyzyASan build")
     parser.add_argument('-t', '--tsan', action='store_true',
                         help="Do a TSan build")
     parser.add_argument('-l', '--lsan', action='store_true',
@@ -1103,6 +1103,11 @@ class Options(object):
                         const=True, default=self.buildopts.is_chrome_branded,
                         help="Do a Chrome branded build (default: %s)." % \
                         self.buildopts.is_chrome_branded)
+    parser.add_argument('--goma',
+                        type=Options.str2bool, nargs='?',
+                        const=True, default=self.buildopts.use_goma,
+                        help="Use goma for building (default: %s)." % \
+                        self.buildopts.use_goma)
     parser.add_argument('--os', type=str, nargs=1, help='The target OS')
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
@@ -1147,6 +1152,10 @@ a target defined in the gyp files.""")
     self.buildopts.is_chrome_branded = args.branded
     self.buildopts.is_component_build = args.component
     self.buildopts.is_official_build = args.official
+    self.buildopts.use_goma = args.goma
+    if self.buildopts.is_official_build and self.buildopts.is_component_build:
+      print >> sys.stderr, 'Official builds cannot be component builds.'
+      sys.exit(1)
     if args.noop:
       self.noop = True
     if args.no_run:
