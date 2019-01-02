@@ -7,6 +7,7 @@ import sys
 import time
 import thread
 import go
+import os
 
 stdout_lock=thread.allocate_lock()
 
@@ -67,13 +68,14 @@ def task_runner(task):
   return task
 
 if __name__ == '__main__':
-  go = go.Go()
+  cwd = os.path.abspath(os.getcwd())
+  go = go.Go(cwd)
   pool_size = 4
   pool = ThreadPool(pool_size)
   tasks = []
   scan_dirs = {
-    'c': '*third_party/[a-z]*',
-    'level': None
+    'c': {'exclude':'*third_party/[a-z]*', 'include':'third_party/blink'},
+    'level': {'exclude':None, 'include':None}
   }
   if platform.system() == 'Darwin':
     ctags = 'ctags'
@@ -86,8 +88,9 @@ if __name__ == '__main__':
            '--recurse=yes',
            '--exclude=*.pyc',
            '--links=no']
-    if scan_dirs[shortcut]:
-      cmd.append('--exclude=%s' % scan_dirs[shortcut])
+    item = scan_dirs[shortcut]
+    if item['exclude']:
+      cmd.append('--exclude=%s' % item['exclude'])
     tasks.append(Task(cmd, go.getval(shortcut)))
   results = pool.map(task_runner, tasks)
   failures = []

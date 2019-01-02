@@ -104,6 +104,8 @@ function cssgrep()
 
 function g
 {
-  GDPATH="$(~/bin/go.py $*)"
-  cd "$GDPATH"
+  GDPATH="$(~/bin/go.py $*)"; retVal=$?
+  if [ $retVal -eq 0 ]; then
+    cd "$GDPATH"
+  fi
 }

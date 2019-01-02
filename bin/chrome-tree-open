@@ -4,10 +4,11 @@ import go
 import os
 import sys
 
-cmd_subfolder = os.path.join(go.Go().getval('t'))
-if cmd_subfolder not in sys.path:
-  sys.path.insert(0, cmd_subfolder)
-from chromite.cbuildbot import tree_status
+cwd = os.path.abspath(os.getcwd())
+third_party_dir = go.Go(cwd).getval('t')
+if third_party_dir not in sys.path:
+  sys.path.insert(0, third_party_dir)
+from chromite.lib import tree_status
 
 if tree_status.IsTreeOpen(throttled_ok=True):
   sys.exit(0)
