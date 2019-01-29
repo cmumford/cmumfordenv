@@ -106,6 +106,7 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'FSwitch'
 Plugin 'mileszs/ack.vim'
 Plugin 'chromium/vim-codesearch'
+Plugin 'fatih/vim-go'
 call vundle#end()            " required
 
 filetype plugin indent on
