@@ -215,10 +215,10 @@ if has("gui_macvim")
   if &background == "dark"
     set transparency=8
   endif
-endif
-
-if has("gui_win32") || has("gui_win16")
+elseif has("gui_win32") || has("gui_win16")
   set guifont=Consolas:h11
+elseif has("gui_running")
+  set guifont=Monospace\ 9
 endif
 
 " Match whitespace except when typing at end of line
