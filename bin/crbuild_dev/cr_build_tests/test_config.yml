@@ -1,0 +1,352 @@
+chrome:
+    title: The Chromium web browser
+
+all:
+    title: All build targets
+
+chrome_sandbox:
+    title: Helper app for Chrome OS
+
+devchrome:
+    title: Chromium browser with user-data-dir
+    targets:
+        - chrome_sandbox:
+            condition: OS==chromeos
+        - chrome
+    configs:
+        default:
+            cmd: ${Build_dir}/chrome
+            args:
+                - --user-data-dir=${HOME}/.chrome_dev
+        debug:
+            cmd: ${debugger}
+            args:
+                - --args
+                - ${Build_dir}/chrome
+                - --no-sandbox
+                - --disable-hang-monitor
+                - --user-data-dir=${HOME}/.chrome_dev
+        asan:
+            env:
+                name: ASAN_OPTIONS
+                delim: ':'
+                value:
+                - alloc_dealloc_mismatch=0
+                - allocator_may_return_null=0
+                - allow_user_segv_handler=0
+            cmd: ${Build_dir}/chrome
+            args:
+                - --allow-file-access-from-files
+                - --disable-click-to-play
+                - --disable-hang-monitor
+                - --disable-metrics
+                - --disable-popup-blocking
+                - --disable-prompt-on-repost
+                - --enable-experimental-extension-apis
+                - --user-data-dir=${HOME}/.chrome_asan
+        profile:
+            cmd: pprof
+            args:
+                - -gv
+                - ${Build_dir}/chrome
+                - /tmp/cpuprofile
+
+content_shell:
+    title: The Chromium Content Shell (test app)
+    configs:
+        default:
+            cmd:
+                - ${Build_dir}/content_shell
+            args:
+                - --crash-dumps-dir=${Build_dir}/content_shell_crashes
+                - --data-path=${HOME}/.content_shell_dev
+        debug:
+            cmd:
+                - ${debugger}
+            args:
+                - --args
+                - ${Build_dir}/content_shell
+                - --no-sandbox
+                - --disable-hang-monitor
+                - --data-path=${HOME}/.content_shell_dev
+        asan:
+            cmd:
+                - ${Build_dir}/content_shell
+            args:
+                - --allow-file-access-from-files
+                - --disable-gl-drawing-for-tests
+                - --disable-hang-monitor
+                - --disable-metrics
+                - --disable-popup-blocking
+                - --disable-prompt-on-repost
+                - --enable-experimental-extension-apis
+                - --enable-extension-apps
+                - --enable-extension-timeline-api
+                - --js-flags="--expose-gc --verify-heap"
+                - --no-sandbox
+                - --use-gl=osmesa
+                - --user-data-dir=${HOME}/.chrome_asan
+
+content_browsertests_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd:
+                - python
+            args:
+                - build/android/test_runner.py
+                - gtest
+                - -s"
+                - content_browsertests"
+                - --verbose"
+                - --${build_type}"
+                - --num_retries=1"
+
+unit_tests_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd:
+                - python
+            args:
+                - build/android/test_runner.py
+                - gtest
+                - -s
+                - unit_tests
+                - --verbose
+                - --${build_type}
+                - --num_retries=1
+
+content_shell_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd: python
+            args:
+                - build/android/adb_install_apk.py,
+                - --apk,
+                - ContentShell.apk,
+                - --${build_type}"
+
+chrome_public_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd: python
+            args:
+                - build/android/adb_install_apk.py
+                - --apk
+                - ChromePublic.apk
+                - --${build_type}
+
+env_chromium_unittests_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd: python
+            args:
+                - build/android/test_runner.py
+                - gtest
+                - -s
+                - env_chromium_unittests
+                - --verbose
+                - --${build_type}
+                - --num_retries=1
+
+ui_tests_:
+    executable_names:
+        - content_browsertests
+        - browser_tests
+        - interactive_ui_tests
+    type: gtest
+    configs:
+        default:
+            cmd:
+                - ${xvfb}
+                - ${Build_dir}/${executable_name}
+            args:
+                - --test-launcher-jobs=${testjobs
+        debug:
+            cmd:
+                - ${debugger}
+            args:
+                - -- args
+                - ${Build_dir}/${executable_name}
+        valgrind:
+            cmd:
+                - tools/valgrind/chrome_tests.sh
+            args:
+                - --build-dir=${Build_dir}
+                - -t
+                - ${executable_name}
+
+unit_tests_:
+    executable_names:
+        - base_unittests
+        - blink_heap_unittests
+        - blink_platform_unittests
+        - cc_unittests
+        - chromeos_services_unittests
+        - components_unittests
+        - content_unittests
+        - crypto_unittests
+        - env_chromium_unittests
+        - extensions_unittests
+        - google_apis_unittests
+        - headless_browsertests
+        - leveldb_service_unittests
+        - net_unittests
+        - performance_browser_tests
+        - services_unittests
+        - sql_unittests
+        - storage_unittests
+        - unit_tests
+        - url_unittests
+        - webkit_unit_tests
+    type: gtest
+    targets:
+        - xdisplaycheck:
+            condition: OS==linux
+        - ${self}
+    configs:
+        default:
+            cmd:
+                - ${Build_dir}/${executable_name}
+            args:
+                - --brave-new-test-launcher
+                - --test-launcher-jobs=${testjobs}
+        asan:
+            cmd:
+                - ${Build_dir}/${executable_name}
+            args:
+                - --test-launcher-batch-limit=1
+                - --test-launcher-jobs=${testjobs}
+                - --test-launcher-print-test-stdio=always
+                - --no-sandbox
+        debug:
+            cmd:
+                - ${debugger}
+            args:
+                - --args
+                - ${Build_dir}/${executable_name}
+                - --single-process-tests
+        valgrind:
+            cmd: tools/valgrind/chrome_tests.sh
+            args:
+                - --build-dir=${Build_dir}
+                - -t
+                - ${executable_name}
+
+clusterfuzz:
+    title: Runs an ASAN-ified build
+    targets:
+        - chrome
+        - ipc_fuzzer_replay
+    configs:
+        asan:
+            cmd: tools/ipc_fuzzer/play_testcase.py
+            args:
+              - --build-type=${Build_type}
+              - --out-dir=${out_dir}
+              - /path/to/fuzz-force-closed-minimized.ipcdump
+
+blink-layout:
+    title: The Blink layout tests
+    targets: blink_tests
+    configs:
+        default:
+            cmd:
+                - ${xvfb}
+                - python
+            args:
+                - third_party/blink/tools/run_web_tests.py
+                - --no-show-results
+                - --${build_type}
+                - --nocheck-sys-deps
+                - --clobber-old-results
+                - --no-retry-failures
+                - --child-processes=${jobs}
+        debug:
+            cmd: ${debugger}
+            args:
+                - --args
+                - ${Build_dir}/content_shell
+                - --no-timeout
+                - --no-sandbox
+                - --single-process
+        asan:
+            cmd: ${Build_dir}/content_shell
+            args:
+                - --no-timeout
+                - --no-sandbox
+        valgrind:
+            cmd: tools/valgrind/chrome_tests.sh
+            args:
+                - --build-dir=${Build_dir}
+                - -t
+                - webkit
+
+webkit_unit_tests-idb:
+    title: The IndexedDB tests from webkit_unit_tests
+    targets: webkit_unit_tests
+    configs:
+        default:
+            args:
+              - '--gtest_filter=:*IDB*:'
+
+monochrome_apk:
+    configs:
+        default:
+          - cmd: ${Build_dir}/bin/monochrome_apk
+            args: install
+          - cmd: ${Build_dir}/bin/monochrome_apk
+            args: set-webview-provider
+
+system_webview_apk:
+    configs:
+        default:
+          - cmd: ${Build_dir}/bin/system_webview_apk
+            args: install
+          - cmd: ${Build_dir}/bin/system_webview_apk
+            args: set-webview-provider
+
+system_webview_uninstall:
+    title: Uninstall the system WebView package.
+    targets:
+        - system_webview_apk:
+            build_only
+    configs:
+        default:
+            cmd: ${Build_dir}/bin/system_webview_apk
+            args: uninstall
+
+tests-all:
+    title: Run *all* tests
+    targets:
+      - base_unittests
+      - blink_platform_unittests
+      - browser_tests
+      - cc_unittests
+      - components_unittests
+      - content_browsertests
+      - content_unittests
+      - crypto_unittests
+      - env_chromium_unittests
+      - extensions_unittests
+      - interactive_ui_tests
+      - leveldb_service_unittests
+      - net_unittests
+      - services_unittests
+      - storage_unittests
+      - unit_tests
+      - url_unittests

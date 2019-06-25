@@ -1,0 +1,17 @@
+#!/usr/bin/env python
+
+solutions = [
+    {
+        'managed': False,
+        'name': u'src',
+        'url': u'https://chromium.googlesource.com/chromium/src.git',
+        "custom_deps" : {
+          "src/third_party/valgrind":
+          "https://chromium.googlesource.com/chromium/deps/valgrind/binaries.git",
+        },
+        "custom_vars" : {
+          "checkout_src_internal": True,
+        },
+    }
+]
+target_os = ["linux", "chromeos", "android"]

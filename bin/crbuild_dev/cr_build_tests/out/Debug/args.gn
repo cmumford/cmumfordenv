@@ -1,0 +1,14 @@
+# Build arguments go here. Examples:
+#   is_component_build = true
+#   is_debug = false
+# See "gn args <out_dir> --list" for available build arguments.
+
+dcheck_always_on = true
+goma_dir = "/test/goma/dir"
+is_chrome_branded = false
+is_clang = true
+is_component_build = true
+is_debug = true
+is_official_build = false
+target_os = "linux"
+use_goma = true
