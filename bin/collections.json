@@ -993,7 +993,7 @@
     },
     {
       "name": "tests-all",
-      "title": "Run *all* unit tests",
+      "title": "Run *all* tests",
       "executables": [
         "base_unittests",
         "blink_platform_unittests",
@@ -1011,8 +1011,27 @@
         "services_unittests",
         "storage_unittests",
         "unit_tests",
-        "url_unittests",
-        "webkit_unit_tests"
+        "url_unittests"
+      ]
+    },
+    {
+      "name": "tests-android-all",
+      "title": "Run *all* Android tests",
+      "executables": [
+        "base_unittests",
+        "blink_platform_unittests",
+        "browser_tests",
+        "cc_unittests",
+        "components_unittests",
+        "content_browsertests",
+        "content_unittests",
+        "crypto_unittests",
+        "leveldb_service_unittests",
+        "net_unittests",
+        "services_unittests",
+        "storage_unittests",
+        "unit_tests",
+        "url_unittests"
       ]
     },
     {
