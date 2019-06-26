@@ -692,6 +692,8 @@ class GN(object):
       args['symbol_level'] = '2' if options.buildopts.is_official_build else '1'
     if options.buildopts.enable_profiling:
       args['enable_profiling'] = 'true'
+    if options.buildopts.enable_cros_assistant:
+      args['enable_cros_assistant'] = 'true'
     if options.buildopts.enable_callgrind:
       args['enable_callgrind'] = 'true'
     if options.buildopts.use_goma:
@@ -757,6 +759,7 @@ class BuildSettings(object):
     self.dcheck_always_on = True
     self.enable_callgrind = False
     self.enable_profiling = False
+    self.enable_cros_assistant = False
     self.is_asan = False
     self.is_cfi = False
     self.is_chrome_branded = False
