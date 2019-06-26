@@ -278,7 +278,7 @@
       ]
     },
     {
-      "names": ["content_browsertests", "browser_tests"],
+      "names": ["content_browsertests", "browser_tests", "interactive_ui_tests"],
       "type": "gtest",
       "commands": [
         {
@@ -1006,6 +1006,7 @@
         "crypto_unittests",
         "env_chromium_unittests",
         "extensions_unittests",
+        "interactive_ui_tests",
         "leveldb_service_unittests",
         "net_unittests",
         "services_unittests",
