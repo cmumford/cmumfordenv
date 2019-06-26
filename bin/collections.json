@@ -347,6 +347,7 @@
         {
           "name": "asan",
           "command": [
+            "${xvfb}",
             "${Build_dir}/${executable_name}",
             "--test-launcher-batch-limit=1",
             "--test-launcher-jobs=${testjobs}",
