@@ -23,8 +23,7 @@
           "name": "normal",
           "command": [
             "${Build_dir}/chrome",
-            "--user-data-dir=${HOME}/.chrome_dev",
-            "--allow-file-access"
+            "--user-data-dir=${HOME}/.chrome_dev"
           ]
         },
         {
@@ -815,7 +814,6 @@
       "executable": "devchrome",
       "args": [
         "--disable-web-security",
-        "--allow-file-access",
         "file://${root_dir}/content/test/data/indexeddb_endurance_test.html"
       ]
     },
@@ -825,7 +823,6 @@
       "executable": "devchrome",
       "args": [
         "--disable-web-security",
-        "--allow-file-access",
         "--js-flags=\"--expose_gc --verify-heap\"",
         "--no-first-run",
         "--use-gl=osmesa",
