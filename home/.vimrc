@@ -198,8 +198,6 @@ if version >= 700
    highlight SpellLocal term=underline cterm=underline
 endif
 
-call pathogen#infect()
-
 " To make vimdiff more readable
 highlight DiffAdd term=reverse cterm=bold ctermbg=green ctermfg=black
 highlight DiffChange term=reverse cterm=bold ctermbg=cyan ctermfg=black
