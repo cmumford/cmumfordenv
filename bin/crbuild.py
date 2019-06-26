@@ -231,7 +231,7 @@ class Executable(BuildTypeItem):
     # See if this is a google-test based executable.
     add_single_process_tests = False
     raw_cmd = self.GetCommands(build_type, build_dir, extra_args,
-                               no_run_commands, omit_xvfb=True,
+                               no_run_commands, omit_xvfb=False,
                                config_name='normal')
     if self.IsGoogleTest(raw_cmd):
       tests = GoogleTest.GetAppTests(raw_cmd)
@@ -244,9 +244,10 @@ class Executable(BuildTypeItem):
         add_single_process_tests = True
 
     print 'Running "%s"...' % self.name
+    omit_xvfb = not Options.ShouldUseXvfb()
     cmd = self.GetCommands(build_type, build_dir,
                            extra_args, no_run_commands,
-                           omit_xvfb=(not Options.ShouldUseXvfb()))
+                           omit_xvfb=omit_xvfb)
     if add_single_process_tests:
       cmd = [p for p in cmd if p.find('test-launcher-jobs') < 0]
     add_single_process_tests = False
@@ -922,11 +923,7 @@ class Options(object):
     self.gyp_state_path = os.path.abspath(os.path.join(self.root_dir,
                                                        '.GYP_STATE'))
     self.jobs = int(multiprocessing.cpu_count() * 120 / 100)
-    if Options.ShouldUseXvfb():
-      # limit to 8 cores until Rodette Xvfb bug is fixed.
-      self.test_jobs = min(8, self.jobs)
-    else:
-      self.test_jobs = self.jobs
+    self.test_jobs = self.jobs
     self.profile = False
     # https://chromium.googlesource.com/chromium/src/+/master/docs/profiling.md
     self.heap_profiling = False
@@ -949,10 +946,7 @@ class Options(object):
 
   @staticmethod
   def ShouldUseXvfb():
-    if Options.GetHostOS() != 'linux':
-      return False
-    return False
-    #return Options.CanDoGUI()
+    return Options.GetHostOS() == 'linux'
 
   @staticmethod
   def OutputColor():
