@@ -208,6 +208,25 @@
       ]
     },
     {
+      "name": "chrome_public_test_apk",
+      "targets": ["chrome_public_test_apk", "forwarder2"],
+      "commands": [
+        {
+          "name": "normal",
+          "command": [
+            "python",
+            "build/android/test_runner.py",
+            "gtest",
+            "-s",
+            "chrome_public_tests",
+            "--verbose",
+            "--${build_type}",
+            "--num_retries=1"
+          ]
+        }
+      ]
+    },
+    {
       "name": "content_shell_apk",
       "targets": ["content_shell_apk", "forwarder2"],
       "commands": [
