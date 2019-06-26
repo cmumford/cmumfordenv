@@ -19,10 +19,6 @@ done
 
 shift $((OPTIND-1))
 
-if [[ "${force}" == "0" ]]; then
-  chrome-tree-open
-fi
-
 top_dir=`pwd`
 
 # Update depot tools
