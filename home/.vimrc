@@ -220,7 +220,7 @@ if has("gui_macvim")
 elseif has("gui_win32") || has("gui_win16")
   set guifont=Consolas:h11
 elseif has("gui_running")
-  set guifont=Monospace\ 9
+  set guifont=Monospace\ 11
 endif
 
 " Match whitespace except when typing at end of line
