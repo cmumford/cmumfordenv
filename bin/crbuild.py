@@ -708,6 +708,9 @@ class GN(object):
         options.buildopts.is_tsan or
         options.buildopts.is_tsan):
       args['enable_nacl'] = 'false'
+    # All of a sudden all nacl builds started failing, so just disabled for
+    # all platforms (5/4/2019).
+    args['enable_nacl'] = 'false'
     if os.path.exists(GN.ArgsSupplemental()):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
       for k in supplimental_args:
