@@ -40,6 +40,9 @@ def make_key(name):
     return float(ord(bname[0]) - ord('a')) / 26.0
 
 class Git:
+  # The script takes long to run.
+  min_branch_key = 3000.0
+
   @staticmethod
   def CountCommits(branch):
     cmd = ['git', 'rev-list', '--count', 'origin/master..%s' % branch]
@@ -51,7 +54,7 @@ class Git:
     branches = []
     for line in subprocess.check_output(cmd).splitlines():
       line = line.strip()
-      if line.startswith(prefix) and make_key(line) >= 3000.0:
+      if line.startswith(prefix) and make_key(line) >= Git.min_branch_key:
         branches.append(line)
     return branches
 
