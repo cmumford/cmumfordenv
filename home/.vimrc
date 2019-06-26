@@ -247,7 +247,9 @@ set statusline=%<%f\ %h%m%r%{fugitive#statusline()}%=%-14.(%l,%c%V%)\ %P
 :function g:EditProjectFile(file, projAlias)
   let @d = system("python ${HOME}/bin/go.py " . a:projAlias)
   let dir = substitute(@d,"[\n\r]$","","g")
-  let path = expand(dir) . "/" . a:file
+  let lTrimmedFile = substitute(a:file,"^[│/\.]*","","g")
+  let trimmedFile = substitute(lTrimmedFile, "[0-9:]*$","","g")
+  let path = expand(dir) . "/" . trimmedFile
   exec ":e ".expand(path)
 :endfunction
 :command -nargs=1 NN call g:EditProjectFile("<args>", "c")
