@@ -102,10 +102,12 @@ call vundle#begin()
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'scrooloose/syntastic'
-Plugin 'tpope/vim-unimpaired'
+Plugin 'tpope/vim-dispatch'
 Plugin 'tpope/vim-fugitive'
+Plugin 'tpope/vim-unimpaired'
 Plugin 'FSwitch'
 Plugin 'mileszs/ack.vim'
+" https://github.com/chromium/vim-codesearch
 Plugin 'chromium/vim-codesearch'
 Plugin 'junegunn/fzf.vim'
 Plugin 'fatih/vim-go'
