@@ -1195,8 +1195,8 @@ a target defined in the gyp files.""")
     if args.fuzzer:
       self.buildopts.use_libfuzzer = True
       self.buildopts.is_asan = True
-    if args.lsan:
-      self.buildopts.is_tsan = True
+    if args.lsan or args.asan:
+      self.buildopts.is_lsan = True
       self.buildopts.is_asan = True
     if args.s13n:
       self.enable_network_service = True
@@ -1237,9 +1237,6 @@ a target defined in the gyp files.""")
       self.buildopts.is_component_build = False
       # Apparently TSan supports goma now.
       #self.buildopts.use_goma = False
-    if args.asan:
-      self.buildopts.is_asan = True
-      self.buildopts.is_tsan = True
     if self.buildopts.is_asan:
       self.buildopts.is_component_build = False
       if self.buildopts.target_os == 'linux':
@@ -1360,7 +1357,7 @@ class Builder:
   def SetEnvVars(self):
     # Copy so as to not modify options
     gyp_defines = copy.copy(self.options.buildopts.gyp_defines)
-    if self.options.buildopts.is_asan:
+    if False and self.options.buildopts.is_asan:
       os.environ['ASAN_OPTIONS'] = 'detect_leaks=1'
     os.environ['GYP_GENERATORS'] = self.options.buildopts.gyp_generators
     if self.options.buildopts.use_clang:
@@ -1500,7 +1497,7 @@ class Builder:
         build_types.append('asan')
       elif self.options.buildopts.is_tsan:
         build_types.append('tsan')
-      elif self.options.buildopts.is_tsan:
+      elif self.options.buildopts.is_lsan:
         build_types.append('lsan')
       elif self.options.buildopts.is_msan:
         build_types.append('msan')
