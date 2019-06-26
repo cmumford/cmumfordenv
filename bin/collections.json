@@ -778,22 +778,6 @@
       ]
     },
     {
-      "name": "content_browsertests-idb-android",
-      "title": "The IndexedDB tests from content_browsertests on Android",
-      "executable": "content_browsertests_apk",
-      "args": [
-        "--gtest_filter=':*IndexedDB*:'"
-      ]
-    },
-    {
-      "name": "content_browsertests-idb-android-hang",
-      "title": "The hanging IndexedDB tests from content_browsertests on Android",
-      "executable": "content_browsertests_apk",
-      "args": [
-        "--gtest_filter=':*NullKeyPathPersistence*:'"
-      ]
-    },
-    {
       "name": "content_browsertests-service-worker",
       "title": "The ServiceWorker tests from content_browsertests",
       "executable": "content_browsertests",
