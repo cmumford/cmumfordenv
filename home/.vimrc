@@ -45,11 +45,6 @@ set number
 
 set nowrap
 
-if has("gui_running")
-    colorscheme wombat
-"    set noantialias
-endif
-
 set autoindent
 set smartindent
 
@@ -111,9 +106,15 @@ Plugin 'mileszs/ack.vim'
 Plugin 'chromium/vim-codesearch'
 Plugin 'junegunn/fzf.vim'
 Plugin 'fatih/vim-go'
+Plugin 'Wombat'
 call vundle#end()            " required
 
 filetype plugin indent on
+
+if has("gui_running")
+    colorscheme wombat
+"    set noantialias
+endif
 
 let g:load_doxygen_syntax=1
 
