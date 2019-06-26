@@ -773,6 +773,7 @@ class BuildSettings(object):
     self.use_goma = True
     self.use_libfuzzer = False
     self.valgrind = False
+    self.target_cpu = None
 
   def SetDefaultGypGenerator(self, target_os):
     self.gyp_generators = 'ninja'
@@ -865,6 +866,8 @@ class BuildSettings(object):
     if self.use_libfuzzer != other.use_libfuzzer:
       return True
     if self.target_os != other.target_os:
+      return True
+    if self.target_cpu != other.target_cpu:
       return True
     if self.valgrind != other.valgrind:
       return True
@@ -1112,6 +1115,8 @@ class Options(object):
                         help="Use goma for building (default: %s)." % \
                         self.buildopts.use_goma)
     parser.add_argument('--os', type=str, nargs=1, help='The target OS')
+    parser.add_argument('--cpu', type=str, nargs=1, help='The target CPU '
+                                                         'architecture')
     parser.add_argument('-p', '--profile', action='store_true',
                         help="Profile the executable")
     parser.add_argument('-j', '--jobs',
@@ -1206,9 +1211,17 @@ a target defined in the gyp files.""")
         sys.exit(1)
     if args.os:
       self.buildopts.target_os = args.os[0]
+      print "Target OS is now", self.buildopts.target_os
       if self.buildopts.target_os not in self.gclient.target_os:
         print >> sys.stderr, '%s must be one of %s' % \
             (self.buildopts.target_os, self.gclient.target_os)
+    if args.cpu:
+      self.buildopts.target_cpu = args.cpu[0]
+      valid_cpus = ('x86', 'x64', 'arm', 'arm64', 'mipsel', 'mips64el')
+      if not self.buildopts.target_cpu in valid_cpus:
+        print >> sys.stderr, '"%s" is not a valid CPU. Must be one of %s' \
+            % (self.buildopts.target_cpu, valid_cpus)
+        sys.exit(1)
     if self.buildopts.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
     if ((self.buildopts.target_os == 'win' or
@@ -1500,6 +1513,9 @@ class Builder:
       dir_name += '-%s' % self.options.buildopts.target_os
     if self.options.buildopts.is_official_build:
       dir_name = 'Official-' + dir_name
+    if self.options.buildopts.target_cpu:
+      dir_name += '-' + self.options.buildopts.target_cpu
+
     return dir_name
 
   def GetBuildDir(self, build_type):
