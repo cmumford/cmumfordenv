@@ -96,16 +96,24 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
+" https://github.com/chromium/vim-codesearch
+Plugin 'chromium/vim-codesearch'
+Plugin 'corntrace/bufexplorer'
+Plugin 'junegunn/fzf.vim'
+Plugin 'fatih/vim-go'
+Plugin 'fs111/pydoc.vim'
+Plugin 'FSwitch'
+Plugin 'grep.vim'
+Plugin 'info.vim'
+Plugin 'mileszs/ack.vim'
+Plugin 'screen.vim'
+Plugin 'scrooloose/nerdtree'
 Plugin 'scrooloose/syntastic'
+Plugin 'taglist.vim'
+Plugin 'tmhedberg/matchit'
 Plugin 'tpope/vim-dispatch'
 Plugin 'tpope/vim-fugitive'
 Plugin 'tpope/vim-unimpaired'
-Plugin 'FSwitch'
-Plugin 'mileszs/ack.vim'
-" https://github.com/chromium/vim-codesearch
-Plugin 'chromium/vim-codesearch'
-Plugin 'junegunn/fzf.vim'
-Plugin 'fatih/vim-go'
 Plugin 'Wombat'
 call vundle#end()            " required
 
