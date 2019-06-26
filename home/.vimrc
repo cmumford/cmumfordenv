@@ -96,6 +96,7 @@ set nocp
 " git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
 " For Windows see https://github.com/gmarik/vundle/wiki/Vundle-for-Windows
 filetype off  " Required!
+set rtp+=~/.fzf
 call vundle#begin()
 
 " let Vundle manage Vundle, required
@@ -106,6 +107,7 @@ Plugin 'tpope/vim-fugitive'
 Plugin 'FSwitch'
 Plugin 'mileszs/ack.vim'
 Plugin 'chromium/vim-codesearch'
+Plugin 'junegunn/fzf.vim'
 Plugin 'fatih/vim-go'
 call vundle#end()            " required
 
