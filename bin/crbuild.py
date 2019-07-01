@@ -684,6 +684,9 @@ class GN(object):
     if options.buildopts.is_tsan:
       args['is_tsan'] = str(options.buildopts.is_tsan).lower()
     args['target_os'] = '"%s"' % options.buildopts.target_os
+    if options.buildopts.target_os == 'android':
+      # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#setting-up-the-build
+      args['system_webview_package_name'] = '"com.google.android.apps.chrome"'
     args['use_goma'] = str(options.buildopts.use_goma).lower()
     if options.buildopts.use_libfuzzer:
       args['use_libfuzzer'] = str(options.buildopts.use_libfuzzer).lower()
