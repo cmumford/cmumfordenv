@@ -714,6 +714,8 @@ class GN(object):
     # All of a sudden all nacl builds started failing, so just disabled for
     # all platforms (5/4/2019).
     args['enable_nacl'] = 'false'
+    if options.buildopts.target_cpu:
+      args['target_cpu'] = '"%s"' % options.buildopts.target_cpu
     if os.path.exists(GN.ArgsSupplemental()):
       supplimental_args = GN.ReadFile(open(GN.ArgsSupplemental()))
       for k in supplimental_args:
