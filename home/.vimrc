@@ -238,8 +238,9 @@ match ExtraWhitespace /\s\+\%#\@<!$/
 au InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
 au InsertLeave * match ExtraWhitespace /\s\+$/
 
-" A vertical line at 80 columns
+" Draw a vertical line at the max char width.
 au FileType python,c,cpp set colorcolumn=80
+au FileType java set colorcolumn=100
 au BufWinLeave * set colorcolumn=0
 
 set bg=dark
