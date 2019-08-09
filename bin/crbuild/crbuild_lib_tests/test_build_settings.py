@@ -11,7 +11,7 @@ def GetAbsPathRelativeToThisFilesDir(rel_path):
 
 sys.path.append(GetAbsPathRelativeToThisFilesDir('..'))
 
-from cr_build import (build_settings)
+from crbuild_lib import (build_settings)
 
 class TestBuildSettings(unittest.TestCase):
 

@@ -10,11 +10,11 @@ def GetAbsPathRelativeToThisFileDir(rel_path):
 
 sys.path.append(GetAbsPathRelativeToThisFileDir('..'))
 
-from cr_build.env import Env
-from cr_build.gn import GN
-from cr_build.models import Configuration
-from cr_build.options import Options
-from cr_build.variable_expander import VariableExpander
+from crbuild_lib.env import Env
+from crbuild_lib.gn import GN
+from crbuild_lib.models import Configuration
+from crbuild_lib.options import Options
+from crbuild_lib.variable_expander import VariableExpander
 
 class TestGN(unittest.TestCase):
 

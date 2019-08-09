@@ -6,7 +6,7 @@ else
     export NUMCPUS=4
 fi
 
-export PATH=$HOME/bin:$PATH
+export PATH=$HOME/bin/crbuild:$HOME/bin:$PATH
 if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
     export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 fi

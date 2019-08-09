@@ -4,7 +4,7 @@ import os
 import sys
 import time
 
-from cr_build import (Builder, Cmd, ConfigReader, Env, Options)
+from crbuild_lib import (Builder, Cmd, ConfigReader, Env, Options)
 
 def get_config_file_path():
   """Return the path to this application's configuration file."""
