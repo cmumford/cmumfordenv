@@ -60,7 +60,8 @@ Set-alias msbuild "C:\Windows\Microsoft.NET\Framework\v2.0.50727\MSBuild.exe"
 set-alias installutil $env:windir\Microsoft.NET\Framework\v2.0.50727\installutil
 Set-alias wilogutl "$pf86\Windows Kits\10\bin\10.0.17134.0\x86\WiLogUtl.exe"
 set-alias meld "$pf86\Meld\meld.exe"
-Set-alias python3 "$env:USERPROFILE\AppData\Local\Programs\Python\Python36-32\python.exe"
+Set-alias python3 "$env:USERPROFILE\AppData\Local\Programs\Python\Python37\python.exe"
+Set-alias make-tags "python $env:USERPROFILE\cmumford\bin\make-chrome-tags"
 
 function xp       { explorer "$pwd" }
 function ss       { . $profile }
