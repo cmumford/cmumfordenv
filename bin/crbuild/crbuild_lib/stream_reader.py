@@ -34,10 +34,8 @@ class StreamReader:
         if not line:
           return
         if symbolize:
-          print(''.join(loop.process_line(line.decode('utf-8'))),
-                file=out_stream)
-        else:
-          print(line, file=out_stream)
+          line = ''.join(loop.process_line(line.decode('utf-8')))
+        print(line.rstrip().decode('utf-8'), file=out_stream)
 
     self._thread = Thread(target=_run, args=(in_stream, out_stream, symbolize))
     self._thread.daemon = True
