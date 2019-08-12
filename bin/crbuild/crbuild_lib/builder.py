@@ -162,7 +162,10 @@ class Builder(object):
       if self.options.run_args:
         cmd.extend(self.options.run_args)
       if self.options.print_cmds:
-        Cmd.print_ok(cmd, run_command.env_var.cmd_line_str())
+        if run_command.env_var:
+          Cmd.print_ok(cmd, run_command.env_var.cmd_line_str())
+        else:
+          Cmd.print_ok(cmd, None)
 
       symbolize = self.options.buildopts.is_asan or \
           self.options.buildopts.is_tsan
