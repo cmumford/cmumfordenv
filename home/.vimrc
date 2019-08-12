@@ -119,9 +119,14 @@ call vundle#end()            " required
 
 filetype plugin indent on
 
+
 if has("gui_running")
     colorscheme wombat
-"    set noantialias
+elseif exists('+termguicolors')
+    let &t_8f = "\<Esc>[38;2;%lu;%lu;%lum"
+    let &t_8b = "\<Esc>[48;2;%lu;%lu;%lum"
+    set termguicolors
+    colorscheme wombat
 endif
 
 let g:load_doxygen_syntax=1
