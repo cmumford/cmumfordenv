@@ -335,18 +335,3 @@ tests-all:
     targets:
       - base_unittests
       - blink_platform_unittests
-      - browser_tests
-      - cc_unittests
-      - components_unittests
-      - content_browsertests
-      - content_unittests
-      - crypto_unittests
-      - env_chromium_unittests
-      - extensions_unittests
-      - interactive_ui_tests
-      - leveldb_service_unittests
-      - net_unittests
-      - services_unittests
-      - storage_unittests
-      - unit_tests
-      - url_unittests

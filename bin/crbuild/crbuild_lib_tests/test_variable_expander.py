@@ -15,10 +15,10 @@ from crbuild_lib import (env, models, options, variable_expander)
 
 class TestVariableExpander(unittest.TestCase):
 
-  def __create_opts(self):
+  def __create_opts(self, build_platform='linux'):
     environ = env.Env(os.getcwd(),
                       GetAbsPathRelativeToThisFileDir('gclient.txt'))
-    environ.build_platform = 'linux'
+    environ.build_platform = build_platform
     return options.Options(environ, models.Configuration())
 
   def test_default_options(self):
@@ -117,6 +117,28 @@ class TestVariableExpander(unittest.TestCase):
     self.assertEqual(exp.expand_variables('${Build_type}'), 'Debug')
     self.assertEqual(exp.expand_variables('${Build_type}:${build_type}'),
                      'Debug:debug')
+
+  def test_xvfb(self):
+    opts = self.__create_opts('linux')
+    exp = variable_expander.VariableExpander(opts)
+    self.assertListEqual(exp.get_value('xvfb'), ['python', 'testing/xvfb.py'])
+
+    opts = self.__create_opts('win')
+    exp = variable_expander.VariableExpander(opts)
+    self.assertEqual(exp.get_value('xvfb'), None)
+
+    opts = self.__create_opts('linux')
+    exp = variable_expander.VariableExpander(opts)
+    self.assertListEqual(exp.expand_variables(['${xvfb}']),
+                         ['python', 'testing/xvfb.py'])
+    self.assertListEqual(exp.expand_variables(['${xvfb}', 'one', 'two']),
+                         ['python', 'testing/xvfb.py', 'one', 'two'])
+
+    opts = self.__create_opts('win')
+    exp = variable_expander.VariableExpander(opts)
+    #self.assertEqual(exp.expand_variables(['${xvfb}']), None)
+    self.assertListEqual(exp.expand_variables(['${xvfb}', 'one', 'two']),
+                         ['one', 'two'])
 
 if __name__ == '__main__':
     unittest.main()

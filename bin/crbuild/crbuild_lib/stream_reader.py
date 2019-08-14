@@ -31,11 +31,14 @@ class StreamReader:
             binary_name_filter=asan_symbolize.fix_filename)
       while self._continue:
         line = in_stream.readline()
-        if not line:
+        if line == None:
           return
+        line = line.rstrip()
+        if not isinstance(line, str):
+          line = line.decode('utf-8')
         if symbolize:
-          line = ''.join(loop.process_line(line.decode('utf-8')))
-        print(line.rstrip().decode('utf-8'), file=out_stream)
+          line = ''.join(loop.process_line(line))
+        print(line, file=out_stream)
 
     self._thread = Thread(target=_run, args=(in_stream, out_stream, symbolize))
     self._thread.daemon = True

@@ -39,6 +39,8 @@ class VariableExpander(object):
   def get_value(self, variable_name):
     '''Given a variable name return the variable value.
 
+    The returned value will be either a string, or list of strings.
+
     Raise UnknownVariable exception for unknown variable name.'''
     if variable_name == 'out':
       return self.options.out_dir
@@ -60,6 +62,11 @@ class VariableExpander(object):
       return self.options.layout_dir
     if variable_name == 'HOME':
       return os.path.expanduser('~')
+    if variable_name == 'xvfb':
+      if self.options.env.build_platform == 'linux':
+        return ['python', 'testing/xvfb.py']
+      else:
+        return None
     raise UnknownVariable(variable_name)
 
   def expand_variables(self, value):
@@ -70,10 +77,29 @@ class VariableExpander(object):
     if isinstance(value, str):
       m = VariableExpander.var_re.search(value)
       while m:
-        value = re.sub(VariableExpander.var_re, self.get_value(m.group(1)),
-                       value, count=1)
+        val = self.get_value(m.group(1))
+        if isinstance(val, str):
+          value = re.sub(VariableExpander.var_re, val, value, count=1)
+        elif val is None:
+          return None
+        elif isinstance(val, list):
+          # We can't handle a string like "${xvfb} foo" because that would
+          # expand to "['python', 'testing/xvfb.py'] foo", nor is it correct
+          # to expand ${xvfb} to "python testing/xvfb.py". This asserts that
+          # the input is not a compound statement.
+          assert(value == '${xvfb}')
+          return val
         m = VariableExpander.var_re.search(value)
       return value
     assert(isinstance(value, list))
-    return [self.expand_variables(item) for item in value]
+    expanded = []
+    for item in value:
+      e = self.expand_variables(item)
+      if e is None:
+        continue
+      if isinstance(e, list):
+        expanded.extend(e)
+      else:
+        expanded.append(e)
+    return expanded
 

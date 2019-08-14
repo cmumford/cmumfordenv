@@ -29,6 +29,26 @@ class TestLoader(unittest.TestCase):
     target = config.get_target('tests-all')
     self.assertEqual(target.name, 'tests-all')
 
+  def test_get_target_meta_gtest(self):
+    opts = self.__create_options()
+    opts.buildopts.target_os = 'linux'
+    opts.gtest = options.Options.fixup_google_test_filter_args('TestClass.Test')
+    config = TestLoader.__read_config()
+
+    actual_cmd = [cmd.cmd_line() for cmd in
+                  config.get_run_commands('tests-all', opts)]
+    expected_cmd = [['${Build_dir}/base_unittests',
+                     '--brave-new-test-launcher',
+                     '--test-launcher-jobs=${testjobs}',
+                     '--gtest_filter=%s' % opts.gtest],
+                    ['${Build_dir}/blink_platform_unittests',
+                     '--brave-new-test-launcher',
+                     '--test-launcher-jobs=${testjobs}',
+                     '--gtest_filter=%s' % opts.gtest]]
+
+    self.assertListEqual(expected_cmd, actual_cmd)
+
+
   def test_get_target_list_expand(self):
     '''Get a target expanded from a target list.
 
@@ -101,21 +121,6 @@ class TestLoader(unittest.TestCase):
     expected_targets = set((
       'base_unittests',
       'blink_platform_unittests',
-      'browser_tests',
-      'cc_unittests',
-      'components_unittests',
-      'content_browsertests',
-      'content_unittests',
-      'crypto_unittests',
-      'env_chromium_unittests',
-      'extensions_unittests',
-      'interactive_ui_tests',
-      'leveldb_service_unittests',
-      'net_unittests',
-      'services_unittests',
-      'storage_unittests',
-      'unit_tests',
-      'url_unittests',
       'xdisplaycheck',
     ))
     self.assertSetEqual(build_targets, expected_targets,

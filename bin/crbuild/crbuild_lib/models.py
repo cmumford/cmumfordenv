@@ -142,7 +142,13 @@ class Target(object):
       # Not an error, not all targets are runnable.
       return []
 
+    if options.gtest:
+      for run_command in run_commands:
+        run_command.args.append('--gtest_filter=%s' % options.gtest)
+
     if run_commands:
+      if not self.run_commands:
+        return run_commands
       try:
         # Add add the supplemental arguments to each run command.
         supplemental_run_commands = self.__get_run_commands(options)
