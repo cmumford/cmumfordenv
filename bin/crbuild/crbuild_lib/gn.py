@@ -148,7 +148,7 @@ class GN(object):
   def gen(self, options):
     cmd = ['gn', 'gen', self.__variable_expander.get_build_dir()]
     if options.print_cmds:
-      Cmd.print_ok(cmd, None)
+      Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     if options.noop:
       return
     # If build_dir doesn't exist then Windows fails with default shell=False

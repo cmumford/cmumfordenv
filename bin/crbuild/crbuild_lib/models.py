@@ -54,6 +54,7 @@ class RunCommand(object):
     self.commands = []
     self.args = []
     self.env_var = None
+    self.shell = False
 
   def cmd_line(self):
     if self.commands:
@@ -97,6 +98,7 @@ class Target(object):
     self.explicit = None          # True if explicitly defined in config file.
     self.reference_self = True
     self.executable_names = None
+    self.run_only = False
 
   def get_build_targets(self, options):
     '''Given a Target.name return an array of GN build targets.

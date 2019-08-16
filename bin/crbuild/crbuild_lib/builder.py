@@ -32,7 +32,7 @@ class Builder(object):
     assert self.options.buildopts.target_os == 'win'
     cmd = "taskkill /F /im mspdbsrv.exe"
     if self.options.print_cmds:
-      Cmd.print_ok(cmd, None)
+      Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     if not self.options.noop:
       os.system(cmd)
 
@@ -99,7 +99,7 @@ class Builder(object):
            '--output-image=%s' % output_chrome_dll,
            '--debug-friendly']
     if self.options.print_cmds:
-      Cmd.print_ok(cmd, None)
+      Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     if not self.options.noop:
       if os.path.exists(output_chrome_dll):
         in_time = os.path.getmtime(input_chrome_dll)
@@ -115,7 +115,7 @@ class Builder(object):
   def __delete_dir(self, dir_path):
     if os.path.exists(dir_path):
       if self.options.print_cmds:
-        Cmd.print_ok("Deleting %s" % dir_path, None)
+        Cmd.print_ok("Deleting %s" % dir_path, env_vars=None, add_quotes=True)
       if not self.options.noop:
         shutil.rmtree(dir_path)
 
@@ -125,9 +125,12 @@ class Builder(object):
       os.remove(self.options.gyp_state_path)
     self.__delete_dir(self.__build_dir())
 
+  def __is_run_only(self, target_name):
+    target = self.config.get_target(target_name)
+    return target.run_only
+
   def __build(self, target_names):
     '''Build the specified GN target names.'''
-    print('Building %s...' % target_names)
     build_dir = self.__build_dir()
     cmd = ['ninja', '-C', build_dir, '-l', '40']
     if self.options.noop:
@@ -145,8 +148,13 @@ class Builder(object):
       platform_dir = self.__build_dir()
       os.environ['CHROME_DEVEL_SANDBOX'] = os.path.join(platform_dir,
                                                         'chrome_sandbox')
-    cmd.extend(target_names)
-    Cmd.print_ok(cmd, None)
+    target_names_to_build = list(
+        filter(lambda name: not self.__is_run_only(name), target_names))
+    if not target_names_to_build:
+      return []
+    print('Building %s...' % target_names_to_build)
+    cmd.extend(target_names_to_build)
+    Cmd.print_ok(cmd, env_vars=None, add_quotes=True)
     try:
       subprocess.check_call(cmd)
       if (self.options.buildopts.is_asan and
@@ -162,10 +170,12 @@ class Builder(object):
       if self.options.run_args:
         cmd.extend(self.options.run_args)
       if self.options.print_cmds:
+        add_quotes = not run_command.shell
         if run_command.env_var:
-          Cmd.print_ok(cmd, run_command.env_var.cmd_line_str())
+          Cmd.print_ok(cmd, env_vars=run_command.env_var.cmd_line_str(),
+                       add_quotes=add_quotes)
         else:
-          Cmd.print_ok(cmd, None)
+          Cmd.print_ok(cmd, env_vars=None, add_quotes=add_quotes)
 
       symbolize = self.options.buildopts.is_asan or \
           self.options.buildopts.is_tsan
@@ -173,7 +183,7 @@ class Builder(object):
       if run_command.env_var:
         my_env[run_command.env_var.name] = run_command.env_var.values_str()
       p = subprocess.Popen(cmd, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
+                           stderr=subprocess.PIPE, shell=run_command.shell)
       stderr_symbolizer = StreamReader(p.stderr, sys.stderr,
                                        self.options.env.src_root_dir,
                                        symbolize)
@@ -221,9 +231,10 @@ class Builder(object):
     # TODO: Support multiple build targets and none (default) target.
     build_targets = self.config.get_build_targets(
         self.options.active_targets[0], self.options)
-    exceptions.extend(self.__build(build_targets))
-    if exceptions:
-      return exceptions
+    if build_targets:
+      exceptions.extend(self.__build(build_targets))
+      if exceptions:
+        return exceptions
 
     if not self.options.run_targets:
       return exceptions

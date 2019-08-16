@@ -46,6 +46,12 @@ class ConfigReader(object):
         run_command.commands = [config['cmd']]
       else:
         run_command.commands = config['cmd']
+    if 'shell_cmd' in config:
+      if isinstance(config['shell_cmd'], str):
+        run_command.commands = [config['shell_cmd']]
+      else:
+        run_command.commands = config['shell_cmd']
+      run_command.shell = True
     if 'args' in config:
       if isinstance(config['args'], str):
         run_command.args = [config['args']]
@@ -121,6 +127,13 @@ class ConfigReader(object):
         target.explicit = True
         if 'title' in target_params:
           target.title = target_params['title']
+
+        if 'options' in target_params:
+          options = target_params['options']
+          if isinstance(options, str) and options == 'run_only':
+            target.run_only = True
+          elif isinstance(options, list) and options[0] == 'run_only':
+            target.run_only = True
 
         if 'targets' in target_params:
           target.reference_self = False

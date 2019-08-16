@@ -200,6 +200,21 @@ class TestLoader(unittest.TestCase):
     ]
     self.assertListEqual(expected_cmds, actual_cmds)
 
+  def test_run_only(self):
+    config = TestLoader.__read_config()
+    opts = self.__create_options()
+    opts.buildopts.target_os = 'linux'
+    run_commands = config.get_run_commands('adb-list-packages', opts)
+    self.assertEqual(1, len(run_commands))
+    self.assertEqual(True, run_commands[0].shell)
+    self.assertEqual(
+        "adb shell 'pm list packages -f' | sed -e 's/.*=//' | sort",
+        run_commands[0].cmd_line()[0])
+
+    target = config.get_target('adb-list-packages')
+    self.assertEqual(True, target.run_only)
+
+
   def test_env_vars(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()

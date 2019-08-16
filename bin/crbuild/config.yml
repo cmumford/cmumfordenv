@@ -385,6 +385,13 @@ webview-tests-all:
       - webview_unittests
       - system_webview_shell_layout_test
 
+adb-list-packages:
+    title: List installed packages on Android device.
+    options: run_only
+    configs:
+        default:
+            shell_cmd: adb shell 'pm list packages -f' | sed -e 's/.*=//' | sort
+
 tests-all:
     title: Run *all* tests
     targets:

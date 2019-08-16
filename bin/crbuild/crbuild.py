@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     # Print errors and exit.
     for e in errors:
-      Cmd.print_error(e.cmd, None)
+      Cmd.print_error(e.cmd, env_vars=None, add_quotes=False)
 
     sys.exit(errors[0].returncode)
   except Exception as e:

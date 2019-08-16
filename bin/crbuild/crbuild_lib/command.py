@@ -16,30 +16,33 @@ class Cmd(object):
 
 
   @staticmethod
-  def __item_to_string(item, quote_flags):
+  def __item_to_string(item, add_quotes, quote_flags):
     assert(isinstance(item, str))
     vals = item.split('=')
     if len(vals) > 2:
       raise Exception('Too many equals: ' + item)
     if len(vals) == 2:
-      return '%s=%s' % (Cmd.__item_to_string(vals[0], False),
-                        Cmd.__item_to_string(vals[1], True))
+      return '%s=%s' % (Cmd.__item_to_string(vals[0], add_quotes, False),
+                        Cmd.__item_to_string(vals[1], add_quotes, True))
+    if not add_quotes:
+      return item
     if ' ' in item or '*' in item or (quote_flags and '--' in item):
       return '"%s"' % item
     return item
 
   @staticmethod
-  def list_to_string(cmd):
+  def list_to_string(cmd, add_quotes):
     assert(isinstance(cmd, list))
-    return ' '.join([Cmd.__item_to_string(i, False) for i in cmd])
+    return ' '.join([Cmd.__item_to_string(i, add_quotes=add_quotes,
+                                          quote_flags=False) for i in cmd])
 
   @staticmethod
-  def __print(cmd, env_vars, color):
+  def __print(cmd, env_vars, color, add_quotes):
     '''Print the command to stdout in the specified color (if able to).
 
     May supply a string of list of strings.'''
     if (isinstance(cmd, list)):
-      str_cmd = Cmd.list_to_string(cmd)
+      str_cmd = Cmd.list_to_string(cmd, add_quotes)
     else:
       assert isinstance(cmd, str) or isinstance(cmd, unicode)
       str_cmd = cmd
@@ -51,14 +54,14 @@ class Cmd(object):
       print(str_cmd)
 
   @staticmethod
-  def print_ok(cmd, env_vars):
+  def print_ok(cmd, env_vars, add_quotes):
     '''Print the OK command to stdout.
 
     May supply a string of list of strings.'''
-    Cmd.__print(cmd, env_vars, bcolors.OKBLUE)
+    Cmd.__print(cmd, env_vars, bcolors.OKBLUE, add_quotes)
 
   @staticmethod
-  def print_error(cmd, env_vars):
+  def print_error(cmd, env_vars, add_quotes):
     '''Print the error command to stdout.
 
     May supply a string of list of strings.
@@ -69,7 +72,7 @@ class Cmd(object):
       cmd = ['Failed: '] + cmd
     else:
       cmd = 'Failed: ' + cmd
-    Cmd.__print(cmd, env_vars, bcolors.FAIL)
+    Cmd.__print(cmd, env_vars, bcolors.FAIL, add_quotes)
 
   @staticmethod
   def __can_output_color():
