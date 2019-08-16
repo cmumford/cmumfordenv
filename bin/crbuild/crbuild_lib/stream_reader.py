@@ -31,7 +31,7 @@ class StreamReader:
             binary_name_filter=asan_symbolize.fix_filename)
       while self._continue:
         line = in_stream.readline()
-        if line == None:
+        if not line:
           return
         line = line.rstrip()
         if not isinstance(line, str):
@@ -44,6 +44,9 @@ class StreamReader:
     self._thread.daemon = True
     self._thread.start()
 
+  def join(self):
+    self._thread.join()
+
   def stop(self):
     self._continue = False
-    self._thread.join()
+    self.join()

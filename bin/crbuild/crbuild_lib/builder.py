@@ -191,8 +191,8 @@ class Builder(object):
                                        self.options.env.src_root_dir,
                                        symbolize)
       p.wait()
-      stderr_symbolizer.stop()
-      stdout_symbolizer.stop()
+      stderr_symbolizer.join()
+      stdout_symbolizer.join()
       if p.returncode:
         raise subprocess.CalledProcessError(returncode=p.returncode, cmd=cmd)
 
