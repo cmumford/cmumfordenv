@@ -63,13 +63,17 @@ if __name__ == '__main__':
 
     runtime = time.time() - start
     if not errors:
-      print(str.format("All tasks completed successfully: {0}",
+      print()
+      print(str.format("All tasks completed successfully. Duration: {0}",
                        format_duration(runtime)))
       sys.exit(0)
 
     # Print errors and exit.
     for e in errors:
       Cmd.print_error(e.cmd, env_vars=None, add_quotes=False)
+
+    print()
+    print(str.format("Run duration: {0}", format_duration(runtime)))
 
     sys.exit(errors[0].returncode)
   except Exception as e:
