@@ -140,6 +140,12 @@ class BuildSettings(object):
       return True
     if self.enable_ipc_fuzzer != other.enable_ipc_fuzzer:
       return True
+    if self.system_webview_package_name != other.system_webview_package_name:
+      return True
+    if self.android_sdk_release != other.android_sdk_release:
+      return True
+    if self.use_signing_keys != other.use_signing_keys:
+      return True
     if hasattr(other, 'branch'):
       other_branch = other.branch
     else:

@@ -7,6 +7,7 @@ import platform
 import subprocess
 import sys
 
+from .adb import Adb
 from .build_settings import BuildSettings
 from .env import Env
 from .gclient import GClient
@@ -51,6 +52,7 @@ class Options(object):
     self.profile_file = '/tmp/cpuprofile'
     self.run_targets = True
     self.gtest = None
+    self.target_android_device = None
 
   # crbuild -d [<target1>..<targetn>] -- <run_arg1>, <run_argn>
   # argparse can't deal with multiple positional arguments. So before we parse
@@ -321,29 +323,68 @@ GN files."""
     self.gtest = Options.fixup_google_test_filter_args(namespace.gtest)
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
+      self.target_android_device = self.__get_default_device()
       # system_webview_package_name only works on N+.
       # Also, this may change args.gn every build, but that's OK.
-      self.buildopts.system_webview_package_name = self.__get_package_name()
+      self.buildopts.system_webview_package_name = \
+          self.__get_system_webview_package_name(self.target_android_device)
 
-  def __get_package_name(self):
+  def __get_default_device(self):
+    all_devices = Adb.devices()
+    if len(all_devices) == 1:
+      return list(all_devices.keys())[0]
+    for device, device_type in all_devices.items():
+      if self.buildopts.target_cpu in ('arm', 'arm64') and not device.startswith('emulator-'):
+        return device
+      elif self.buildopts.target_cpu in ('x86', 'x64') and device.startswith('emulator-'):
+        return device
+    return None
+
+  @staticmethod
+  def __get_allowed_android_packages(device=None):
+    # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#changing-package-name
+    code_letter = Adb.api_level_to_letter(Adb.api_level(device))
+    has_gms = Adb.has_gms(device)
+    if code_letter >= 'L' and code_letter <= 'M':
+      if has_gms:
+        return ['com.google.android.webview']
+      else:
+        return ['com.android.webview']
+    elif code_letter >= 'N' and code_letter <= 'P':
+      if has_gms:
+        # Should also test for TV/car devices.
+        return ['com.android.chrome',
+                'com.chrome.beta',
+                'com.chrome.dev',
+                'com.chrome.canary',
+                'com.google.android.apps.chrome',
+                'com.google.android.webview']
+      else:
+        return ['com.android.webview']
+
+  def __get_system_webview_package_name(self, device):
+    # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#my-package-isn_t-in-the-list
+    # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#setting-up-the-build
     assert self.buildopts.target_os == 'android'
-    # Chrome is: com.android.chrome.
-    # System WebView is: com.google.android.webview.
-    if ('system_webview_apk' in self.active_targets) or ('system_webview_uninstall' in self.active_targets):
-      # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#my-package-isn_t-in-the-list
-      return 'com.google.android.apps.chrome'
-    elif 'system_webview_google_apk' in self.active_targets:
-      # Wonder if I can get one that doesn't overlap with system_webview_apk?
-      return 'com.google.android.apps.chrome'
-    elif 'monochrome_public_apk' in self.active_targets:
-      # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#setting-up-the-build
-      return 'com.google.android.apps.chrome'
-    elif 'monochrome_apk' in self.active_targets:
-      # Wonder if I can get one that doesn't overlap with monochrome_public_apk?
-      return 'com.google.android.apps.chrome'
-    else:
-      # Building a non WebView target
-      return None
+
+    # Not used here, but at present handy to keep around.
+    target_default_packages_names = {
+      'monochrome_apk': 'com.google.android.apps.chrome',
+      'monochrome_public_apk': 'org.chromium.chrome',
+      'system_webview_apk': 'com.android.webview',
+      'system_webview_google_apk': 'com.google.android.webview',
+      'system_webview_shell_apk': 'org.chromium.webview_shell',
+      'system_webview_shell_layout_test_apk': 'org.chromium.webview_shell.test',
+      'system_webview_uninstall': 'com.android.webview',
+      'webview_instrumentation_apk': 'org.chromium.android_webview.shell',
+      'webview_instrumentation_test_apk': 'org.chromium.android_webview.test',
+    }
+
+    desired_package_name = 'com.chrome.canary'
+    allowed_package_names = self.__get_allowed_android_packages(device)
+    if desired_package_name in allowed_package_names:
+      return desired_package_name
+    return allowed_package_names[int(len(allowed_package_names) / 2)]
 
   def __is_goma_running(self):
     if not os.path.exists(self.buildopts.goma_dir):

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from .adb import Adb
 from .builder import Builder
 from .command import Cmd
 from .env import Env
