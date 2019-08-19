@@ -44,6 +44,15 @@ class Adb(object):
     return None
 
   @staticmethod
+  def cpu_abi(device = None):
+    cmd = [Adb.__path(), 'shell', 'getprop', 'ro.product.cpu.abi']
+    if device:
+      cmd = [cmd[0]] + ['-s', device] + cmd[1:]
+    for line in subprocess.check_output(cmd).splitlines():
+      return line.strip().decode('utf-8')
+    return None
+
+  @staticmethod
   def get_installed_packages(device = None):
     if device:
       cmd = str.format(
