@@ -11,16 +11,18 @@ def GetAbsPathRelativeToThisFilesDir(rel_path):
 
 sys.path.append(GetAbsPathRelativeToThisFilesDir('..'))
 
-from crbuild_lib import (env, models, options)
+from crbuild_lib import (adb, env, models, options)
 
 class TestOptions(unittest.TestCase):
 
   @staticmethod
   def __create_opts():
-    return options.Options(
-      env.Env(os.getcwd(),
-              GetAbsPathRelativeToThisFilesDir('gclient.txt')),
-      models.Configuration())
+    environ = env.Env(os.getcwd(),
+                      GetAbsPathRelativeToThisFilesDir('gclient.txt'))
+    environ.android_devices = {'phonyarm': adb.DeviceInfo('phonyarm', 28,
+                                                          'arm64-v8a',
+                                                          ['com.android.webview'])}
+    return options.Options(environ, models.Configuration())
 
   def test_loading_no_error(self):
     self.assertEqual(options.Options.fixup_google_test_filter_args(None),
@@ -42,7 +44,7 @@ class TestOptions(unittest.TestCase):
 
   def test_os(self):
     opts = TestOptions.__create_opts()
-    opts.parse(['--os=android'])
+    opts.parse(['--os=android', '--cpu=arm64'])
     self.assertEqual('android', opts.buildopts.target_os)
 
   def test_default_target_os(self):
@@ -56,7 +58,7 @@ class TestOptions(unittest.TestCase):
     tmp_file.flush()
     opts = options.Options(env.Env(os.getcwd(), tmp_file.name),
                            models.Configuration())
-    opts.parse(['all'])
+    opts.parse(['--cpu=arm64', 'all'])
     self.assertEqual('android', opts.buildopts.target_os)
 
   def test_invalid_os(self):

@@ -7,7 +7,7 @@ import platform
 import subprocess
 import sys
 
-from .adb import Adb
+from .adb import DeviceInfo
 from .build_settings import BuildSettings
 from .env import Env
 from .gclient import GClient
@@ -324,13 +324,13 @@ GN files."""
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
       self.target_android_device = self.__get_default_device()
-      abi = Adb.cpu_abi(self.target_android_device)
-      abi_items = abi.split('-')
+      device_info = self.env.android_devices[self.target_android_device]
+      abi_items = device_info.cpu_abi.split('-')
       if len(abi_items) == 2:
         # arm64-v8a
         device_cpu = abi_items[0]
       else:
-        device_cpu = abi
+        device_cpu = device_info.cpu_abi
       if self.buildopts.target_cpu != device_cpu:
         raise Exception(str.format(
             "target CPU (\"{0}\") doesn't match default device (\"{1}\")",
@@ -342,21 +342,21 @@ GN files."""
           self.__get_system_webview_package_name(self.target_android_device)
 
   def __get_default_device(self):
-    all_devices = Adb.devices()
-    if len(all_devices) == 1:
-      return list(all_devices.keys())[0]
-    for device, device_type in all_devices.items():
-      if self.buildopts.target_cpu in ('arm', 'arm64') and not device.startswith('emulator-'):
-        return device
-      elif self.buildopts.target_cpu in ('x86', 'x64') and device.startswith('emulator-'):
-        return device
+    device_info = self.env.android_devices
+    if len(device_info) == 1:
+      return list(device_info.keys())[0]
+    for device_name, _ in device_info.items():
+      if self.buildopts.target_cpu in ('arm', 'arm64') and not device_name.startswith('emulator-'):
+        return device_name
+      elif self.buildopts.target_cpu in ('x86', 'x64') and device_name.startswith('emulator-'):
+        return device_name
     return None
 
-  @staticmethod
-  def __get_allowed_android_packages(device=None):
+  def __get_allowed_android_packages(self, device):
     # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/build-instructions.md#changing-package-name
-    code_letter = Adb.api_level_to_letter(Adb.api_level(device))
-    has_gms = Adb.has_gms(device)
+    device_info = self.env.android_devices[device]
+    code_letter = device_info.release_letter()
+    has_gms = device_info.has_gms()
     if code_letter >= 'L' and code_letter <= 'M':
       if has_gms:
         return ['com.google.android.webview']

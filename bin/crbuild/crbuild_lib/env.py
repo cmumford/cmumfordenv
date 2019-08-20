@@ -3,6 +3,8 @@
 import multiprocessing
 import platform
 
+from .adb import Adb
+
 class Env(object):
   '''Attributes of the environment (host, location, etc.).'''
 
@@ -17,6 +19,19 @@ class Env(object):
     self.api_keys_path = api_keys_path
     self.num_cpus = multiprocessing.cpu_count()
     self.build_platform = Env.__get_build_platform()
+    # None means the info hasn't been retrieved (using Adb). This allows tests
+    # to set it, and if not set Adb will be used.
+    self.__devices = None
+
+  @property
+  def android_devices(self):
+    if self.__devices == None:
+      self.__devices = Adb.get_device_info()
+    return self.__devices
+
+  @android_devices.setter
+  def android_devices(self, info):
+    self.__devices = info
 
   @staticmethod
   def __get_build_platform():

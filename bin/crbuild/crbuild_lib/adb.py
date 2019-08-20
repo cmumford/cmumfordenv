@@ -2,8 +2,7 @@
 
 import subprocess
 
-class Adb(object):
-
+class DeviceInfo(object):
   releases = {
       29: ('Q', '10'),
       28: ('Pie', '9'),
@@ -20,6 +19,30 @@ class Adb(object):
       17: ('Jelly Bean', '4.2.X'),
       16: ('Jelly Bean', '4.1.X'),
   }
+
+  def __init__(self, name, api_level, cpu_abi, installed_packages):
+    self.name = name
+    self.api_level = api_level
+    self.cpu_abi = cpu_abi
+    self.installed_packages = installed_packages
+
+  def release_letter(self):
+    return DeviceInfo.releases[self.api_level][0][0]
+
+  def has_gms(self):
+    return 'com.google.android.gms' in self.installed_packages
+
+class Adb(object):
+
+  @staticmethod
+  def get_device_info():
+    device_info = {}
+    for device_name, _ in Adb.devices().items():
+      device_info[device_name] = DeviceInfo(device_name,
+                                            Adb.api_level(device_name),
+                                            Adb.cpu_abi(device_name),
+                                            Adb.get_installed_packages(device_name))
+    return device_info
 
   @staticmethod
   def __path():
@@ -69,10 +92,6 @@ class Adb(object):
   @staticmethod
   def has_gms(device = None):
     return 'com.google.android.gms' in Adb.get_installed_packages(device)
-
-  @staticmethod
-  def api_level_to_letter(api_level):
-    return Adb.releases[api_level][0][0]
 
   @staticmethod
   def devices():
