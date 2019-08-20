@@ -35,6 +35,7 @@ class TestVariableExpander(unittest.TestCase):
     self.assertEqual(exp.get_value('root_dir'), opts.env.src_root_dir)
     self.assertEqual(exp.get_value('layout_dir'), opts.layout_dir)
     self.assertEqual(exp.get_value('HOME'), os.path.expanduser('~'))
+    self.assertEqual(exp.get_value('android_device'), None)
 
   def test_build_dir(self):
     opts = self.__create_opts()
