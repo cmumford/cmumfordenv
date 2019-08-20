@@ -347,6 +347,12 @@ system_webview_google_apk:
           - cmd: ${Build_dir}/bin/system_webview_google_apk
             args: set-webview-provider
 
+system_webview_shell_apk:
+    configs:
+        default:
+          - cmd: ${Build_dir}/bin/system_webview_shell_apk
+            args: install
+
 system_webview_uninstall:
     title: Uninstall the system WebView package.
     targets:
