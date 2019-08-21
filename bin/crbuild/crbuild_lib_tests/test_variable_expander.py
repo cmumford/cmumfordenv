@@ -36,6 +36,7 @@ class TestVariableExpander(unittest.TestCase):
     self.assertEqual(exp.get_value('layout_dir'), opts.layout_dir)
     self.assertEqual(exp.get_value('HOME'), os.path.expanduser('~'))
     self.assertEqual(exp.get_value('android_device'), None)
+    self.assertEqual(exp.get_value('run_args'), None)
 
   def test_build_dir(self):
     opts = self.__create_opts()
@@ -140,6 +141,16 @@ class TestVariableExpander(unittest.TestCase):
     #self.assertEqual(exp.expand_variables(['${xvfb}']), None)
     self.assertListEqual(exp.expand_variables(['${xvfb}', 'one', 'two']),
                          ['one', 'two'])
+
+  def test_run_args(self):
+    opts = self.__create_opts('linux')
+    exp = variable_expander.VariableExpander(opts)
+    self.assertListEqual(exp.expand_variables(['${run_args}', 'one', 'two']),
+                         ['one', 'two'])
+
+    opts.run_args = ['--pre', 'foo']
+    self.assertListEqual(exp.expand_variables(['${run_args}', 'one', 'two']),
+                         ['--pre', 'foo', 'one', 'two'])
 
 if __name__ == '__main__':
     unittest.main()

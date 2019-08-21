@@ -64,6 +64,8 @@ class VariableExpander(object):
       return self.options.layout_dir
     if variable_name == 'HOME':
       return os.path.expanduser('~')
+    if variable_name == 'run_args':
+      return self.options.run_args
     if variable_name == 'xvfb':
       if self.options.env.build_platform == 'linux':
         return ['python', 'testing/xvfb.py']
@@ -89,7 +91,7 @@ class VariableExpander(object):
           # expand to "['python', 'testing/xvfb.py'] foo", nor is it correct
           # to expand ${xvfb} to "python testing/xvfb.py". This asserts that
           # the input is not a compound statement.
-          assert(value == '${xvfb}')
+          assert(re.match(r'^\$\{[^\}]+\}$', value))
           return val
         m = VariableExpander.var_re.search(value)
       return value

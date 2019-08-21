@@ -333,6 +333,7 @@ system_webview_shell_layout_test:
             args:
               - -d
               - ${android_device}
+              - ${run_args}
 
 system_webview_apk:
     configs:

@@ -167,8 +167,6 @@ class Builder(object):
   def __run(self, run_command):
     try:
       cmd = self.variable_expander.expand_variables(run_command.cmd_line())
-      if self.options.run_args:
-        cmd.extend(self.options.run_args)
       if self.options.print_cmds:
         add_quotes = not run_command.shell
         if run_command.env_var:
