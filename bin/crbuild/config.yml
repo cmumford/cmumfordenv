@@ -161,8 +161,7 @@ chrome_public_apk:
             args:
                 - build/android/adb_install_apk.py
                 - --apk
-                - ChromePublic.apk
-                - --${build_type}
+                - ${Build_dir}/apks/ChromePublic.apk
 
 env_chromium_unittests_apk:
     targets:
