@@ -59,14 +59,11 @@ class BuildSettings(object):
       self.android_sdk_release = 'p'
       self.use_signing_keys = True
       self.system_webview_package_name = 'com.google.android.webview'
-      if not self.target_cpu:
-        self.target_cpu = 'x86'
       self.use_rtti = None
       return
     self.android_sdk_release = None
     self.use_signing_keys = False
     self.system_webview_package_name = None
-    self.target_cpu = None
 
   @target_os.setter
   def target_os(self, target_os):

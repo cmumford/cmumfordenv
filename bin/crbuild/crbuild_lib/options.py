@@ -324,17 +324,22 @@ GN files."""
     self.active_targets = namespace.target
     if self.buildopts.target_os == 'android':
       self.target_android_device = self.__get_default_device()
+      if not self.buildopts.target_cpu:
+        if len(self.env.android_devices) == 0:
+          raise Exception('Must specify target cpu if no device attached.')
+        if len(self.env.android_devices) == 1:
+          self.buildopts.target_cpu = \
+              self.env.android_devices[self.target_android_device].cpu()
+        if len(self.env.android_devices) > 1:
+          raise Exception('Must specify target cpu if > 1 device attached.')
       device_info = self.env.android_devices[self.target_android_device]
-      abi_items = device_info.cpu_abi.split('-')
-      if len(abi_items) == 2:
-        # arm64-v8a
-        device_cpu = abi_items[0]
-      else:
-        device_cpu = device_info.cpu_abi
+      device_cpu = device_info.cpu()
       if self.buildopts.target_cpu != device_cpu:
         raise Exception(str.format(
             "target CPU (\"{0}\") doesn't match default device (\"{1}\")",
             self.buildopts.target_cpu, abi_items[0]))
+      elif not self.buildopts.target_cpu:
+        self.buildopts.target_cpu = 'x86'
 
       # system_webview_package_name only works on N+.
       # Also, this may change args.gn every build, but that's OK.

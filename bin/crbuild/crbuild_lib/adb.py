@@ -29,6 +29,12 @@ class DeviceInfo(object):
   def release_letter(self):
     return DeviceInfo.releases[self.api_level][0][0]
 
+  def cpu(self):
+    items = self.cpu_abi.split('-')
+    if len(items):
+      return items[0]
+    return self.cpu_abi
+
   def has_gms(self):
     return 'com.google.android.gms' in self.installed_packages
 

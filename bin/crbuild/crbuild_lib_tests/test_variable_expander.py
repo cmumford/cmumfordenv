@@ -73,9 +73,9 @@ class TestVariableExpander(unittest.TestCase):
     exp = variable_expander.VariableExpander(opts)
     opts.buildopts.target_os = 'android'
 
-    # Default CPU type should be x86.
+    # Default CPU type should be None so no cpu appended to dir.
     self.assertEqual(os.path.basename(exp.get_value('Build_dir')),
-                     'Debug-x86')
+                     'Debug')
 
     opts.buildopts.target_cpu = 'arm'
     self.assertEqual(os.path.basename(exp.get_value('Build_dir')),
@@ -95,9 +95,9 @@ class TestVariableExpander(unittest.TestCase):
     exp = variable_expander.VariableExpander(opts)
     opts.buildopts.target_os = 'android'
 
-    # Default CPU type should be x86.
+    # Default CPU type should be None.
     self.assertEqual(os.path.basename(exp.get_value('Build_dir')),
-                     'Debug-android-x86')
+                     'Debug-android')
 
     opts.buildopts.target_cpu = 'arm'
     self.assertEqual(os.path.basename(exp.get_value('Build_dir')),
