@@ -319,6 +319,17 @@ blink-layout:
                 - -t
                 - webkit
 
+webview_instrumentation_apk:
+    targets: ${self}
+    configs:
+        default:
+            cmd: ${Build_dir}/bin/webview_instrumentation_apk
+            args:
+              - install
+              - -d
+              - ${android_device}
+              - ${run_args}
+
 webview_instrumentation_test_apk:
     targets: ${self}
     configs:
