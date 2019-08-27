@@ -5,24 +5,28 @@ import sys
 import tempfile
 import unittest
 
-def GetAbsPathRelativeToThisFilesDir(rel_path):
+def GetAbsPathRelativeToThisFileDir(rel_path):
   return os.path.abspath(os.path.join(os.path.dirname(__file__),
                          rel_path))
 
-sys.path.append(GetAbsPathRelativeToThisFilesDir('..'))
+sys.path.append(GetAbsPathRelativeToThisFileDir('..'))
 
 from crbuild_lib import (adb, env, models, options)
 
 class TestOptions(unittest.TestCase):
 
   @staticmethod
+  def __create_env(gclient_path=GetAbsPathRelativeToThisFileDir('gclient.txt')):
+    environ = env.Env(os.getcwd(), gclient_path)
+    environ.android_devices = {
+        'phonyarm': adb.DeviceInfo('phonyarm', 28,
+                                   'arm64-v8a',
+                                   ['com.android.webview'])}
+    return environ
+
+  @staticmethod
   def __create_opts():
-    environ = env.Env(os.getcwd(),
-                      GetAbsPathRelativeToThisFilesDir('gclient.txt'))
-    environ.android_devices = {'phonyarm': adb.DeviceInfo('phonyarm', 28,
-                                                          'arm64-v8a',
-                                                          ['com.android.webview'])}
-    return options.Options(environ, models.Configuration())
+    return options.Options(TestOptions.__create_env(), models.Configuration())
 
   def test_loading_no_error(self):
     self.assertEqual(options.Options.fixup_google_test_filter_args(None),
@@ -56,7 +60,7 @@ class TestOptions(unittest.TestCase):
     tmp_file = tempfile.NamedTemporaryFile(mode='w')
     tmp_file.write('target_os = ["android", "chromeos", "linux"]')
     tmp_file.flush()
-    opts = options.Options(env.Env(os.getcwd(), tmp_file.name),
+    opts = options.Options(TestOptions.__create_env(tmp_file.name),
                            models.Configuration())
     opts.parse(['--cpu=arm64', 'all'])
     self.assertEqual('android', opts.buildopts.target_os)
