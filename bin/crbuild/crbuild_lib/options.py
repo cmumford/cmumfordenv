@@ -252,6 +252,9 @@ GN files."""
         raise InvalidOption(str.format('{0} must be one of {1}',
                                         target_os, self.gclient.target_os))
       self.buildopts.target_os = target_os
+    if self.buildopts.target_os == 'android':
+      # hard-code Android to false until crbug.com/996285 is fixed.
+      self.buildopts.is_component_build = False
     if namespace.cpu:
       self.buildopts.target_cpu = namespace.cpu[0]
       valid_cpus = ('x86', 'x64', 'arm', 'arm64', 'mipsel', 'mips64el')
