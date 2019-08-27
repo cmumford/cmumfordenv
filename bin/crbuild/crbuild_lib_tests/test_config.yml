@@ -311,6 +311,13 @@ monochrome_apk:
             args: install
           - cmd: ${Build_dir}/bin/monochrome_apk
             args: set-webview-provider
+          - cmd: adb
+            args:
+              - -s
+              - ${android_device}
+              - shell
+              - dumpsys
+              - webviewupdate
 
 system_webview_apk:
     configs:

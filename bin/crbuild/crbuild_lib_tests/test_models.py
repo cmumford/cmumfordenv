@@ -10,7 +10,7 @@ def GetAbsPathRelativeToThisFilesDir(rel_path):
 
 sys.path.append(GetAbsPathRelativeToThisFilesDir('..'))
 
-from crbuild_lib import (env, loader, models, options, variable_expander)
+from crbuild_lib import (adb, env, loader, models, options, variable_expander)
 
 class TestLoader(unittest.TestCase):
 
@@ -18,10 +18,16 @@ class TestLoader(unittest.TestCase):
   def __read_config():
     return loader.ConfigReader().read('test_config.yml')
 
-  def __create_options(self):
-    return options.Options(
-        env.Env(os.getcwd(), GetAbsPathRelativeToThisFilesDir('gclient.txt')),
-        models.Configuration())
+  def __create_options(self, target_os='linux'):
+    environ = env.Env(os.getcwd(),
+                      GetAbsPathRelativeToThisFilesDir('gclient.txt'))
+    environ.android_devices = {
+        'phonyarm': adb.DeviceInfo('phonyarm', 28,
+                                   'arm64-v8a',
+                                   ['com.android.webview'])}
+    opts = options.Options(environ, models.Configuration())
+    opts.buildopts.target_os = target_os
+    return opts
 
   def test_get_target_meta(self):
     '''Get a "meta" target - a name that exists only in the config file.'''
@@ -31,7 +37,6 @@ class TestLoader(unittest.TestCase):
 
   def test_get_target_meta_gtest(self):
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     opts.gtest = options.Options.fixup_google_test_filter_args('TestClass.Test')
     config = TestLoader.__read_config()
 
@@ -95,7 +100,6 @@ class TestLoader(unittest.TestCase):
   def test_get_targets_from_template(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     build_targets = config.get_build_targets('base_unittests', opts)
     expected_targets = set((
         'base_unittests',
@@ -116,7 +120,6 @@ class TestLoader(unittest.TestCase):
   def test_get_targets_several_levels(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     build_targets = config.get_build_targets('tests-all', opts)
     expected_targets = set((
       'base_unittests',
@@ -133,7 +136,6 @@ class TestLoader(unittest.TestCase):
 
   def test_get_run_command_with_config(self):
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
 
     # The default config
     config = TestLoader.__read_config()
@@ -162,7 +164,6 @@ class TestLoader(unittest.TestCase):
 
   def test_get_run_command_with_upstream_target(self):
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     config = TestLoader.__read_config()
 
     actual_cmd = [cmd.cmd_line() for cmd in
@@ -177,7 +178,6 @@ class TestLoader(unittest.TestCase):
 
   def test_single_target_with_multiple_run_commands(self):
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
 
     # The default config
     config = TestLoader.__read_config()
@@ -186,13 +186,13 @@ class TestLoader(unittest.TestCase):
     expected_cmds = [
         ['${Build_dir}/bin/monochrome_apk', 'install'],
         ['${Build_dir}/bin/monochrome_apk', 'set-webview-provider'],
+        ['adb', '-s', '${android_device}', 'shell', 'dumpsys', 'webviewupdate'],
     ]
     self.assertListEqual(expected_cmds, actual_cmds)
 
   def test_build_only(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     actual_cmds = [cmd.cmd_line() for cmd in
                    config.get_run_commands('system_webview_uninstall', opts)]
     expected_cmds = [
@@ -203,7 +203,6 @@ class TestLoader(unittest.TestCase):
   def test_run_only(self):
     config = TestLoader.__read_config()
     opts = self.__create_options()
-    opts.buildopts.target_os = 'linux'
     run_commands = config.get_run_commands('adb-list-packages', opts)
     self.assertEqual(1, len(run_commands))
     self.assertEqual(True, run_commands[0].shell)
@@ -220,7 +219,6 @@ class TestLoader(unittest.TestCase):
     opts = self.__create_options()
     opts.buildopts.is_asan = True
     opts.buildopts.is_debug = False
-    opts.buildopts.target_os = 'linux'
     run_commands = config.get_run_commands('devchrome', opts)
     self.assertEqual(1, len(run_commands))
     rc = run_commands[0]
