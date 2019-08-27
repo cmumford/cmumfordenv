@@ -430,6 +430,13 @@ monochrome_apk:
               - set-webview-provider
               - -d
               - ${android_device}
+          - cmd: adb
+            args:
+              - -s
+              - ${android_device}
+              - shell
+              - dumpsys
+              - webviewupdate
 
 webkit_unit_tests-idb:
     title: The IndexedDB tests from webkit_unit_tests
@@ -449,6 +456,18 @@ adb-list-packages:
     configs:
         default:
             shell_cmd: adb -s ${android_device} shell 'pm list packages -f' | sed -e 's/.*=//' | sort
+
+adb-list-webviews:
+    options: run_only
+    configs:
+        default:
+            cmd: adb
+            args:
+              - -s
+              - ${android_device}
+              - shell
+              - dumpsys
+              - webviewupdate
 
 tests-all:
     title: Run *all* tests
