@@ -1,6 +1,16 @@
 #!/usr/bin/env python3
 
+import json
 import subprocess
+
+def remove_nulls(d):
+  return {k: v for k, v in d.items() if v is not None}
+
+class ClassJSONEncoder(json.JSONEncoder):
+  def default(self, obj):
+    if isinstance(obj, DeviceInfo):
+      return remove_nulls(obj.__dict__)
+    return super(ClassJSONEncoder, self).default(obj)
 
 class DeviceInfo(object):
   releases = {
@@ -37,6 +47,9 @@ class DeviceInfo(object):
 
   def has_gms(self):
     return 'com.google.android.gms' in self.installed_packages
+
+  def __repr__(self):
+    return json.dumps(self.__dict__, cls=ClassJSONEncoder)
 
 class Adb(object):
 
