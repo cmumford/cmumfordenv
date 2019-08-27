@@ -157,7 +157,11 @@ class Target(object):
         assert(len(supplemental_run_commands) == 1)
         # Can add supplemental args, but not a command.
         assert(supplemental_run_commands[0].args)
-        assert(not supplemental_run_commands[0].commands)
+        if supplemental_run_commands[0].commands:
+          raise Exception(
+              str.format('{0} Has supplemental commands, which should be ' \
+                         'args-only without commands: {1}',
+                         self.name, supplemental_run_commands[0].commands))
         cmds = []
         for run_command in run_commands:
           cmd_copy = copy.copy(run_command)
