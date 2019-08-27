@@ -146,10 +146,17 @@ content_shell_apk:
         default:
             cmd: python
             args:
-                - build/android/adb_install_apk.py,
-                - --apk,
-                - ContentShell.apk,
-                - --${build_type}
+                - build/android/adb_install_apk.py
+                - --apk
+                - ${Build_dir}/apks/ContentShell.apk
+
+content_shell_test_apk:
+    targets:
+        - ${self}
+        - forwarder2
+    configs:
+        default:
+            cmd: ${Build_dir}/bin/run_content_shell_test_apk
 
 chrome_public_apk:
     targets:
@@ -157,11 +164,11 @@ chrome_public_apk:
         - forwarder2
     configs:
         default:
-            cmd: python
+            cmd: ${Build_dir}/bin/chrome_public_apk
             args:
-                - build/android/adb_install_apk.py
-                - --apk
-                - ${Build_dir}/apks/ChromePublic.apk
+              - install
+              - -d
+              - ${android_device}
 
 env_chromium_unittests_apk:
     targets:
@@ -312,11 +319,12 @@ blink-layout:
                 - -t
                 - webkit
 
-webview_instrumentation_test:
-    targets: webview_instrumentation_test_apk
+webview_instrumentation_test_apk:
+    targets: ${self}
     configs:
         default:
             cmd: ${Build_dir}/bin/run_webview_instrumentation_test_apk
+            args: ${run_args}
 
 webview_unittests:
     targets: android_webview_unittests
@@ -324,8 +332,17 @@ webview_unittests:
         default:
             cmd: ${Build_dir}/bin/run_android_webview_unittests
 
-system_webview_shell_layout_test:
-    targets: system_webview_shell_layout_test_apk
+system_webview_shell_apk:
+    configs:
+        default:
+          - cmd: ${Build_dir}/bin/system_webview_shell_apk
+            args:
+              - install
+              - -d
+              - ${android_device}
+
+system_webview_shell_layout_test_apk:
+    targets: ${self}
     configs:
         default:
             cmd: ${Build_dir}/bin/run_system_webview_shell_layout_test_apk
@@ -359,15 +376,6 @@ system_webview_google_apk:
           - cmd: ${Build_dir}/bin/system_webview_google_apk
             args:
               - set-webview-provider
-              - -d
-              - ${android_device}
-
-system_webview_shell_apk:
-    configs:
-        default:
-          - cmd: ${Build_dir}/bin/system_webview_shell_apk
-            args:
-              - install
               - -d
               - ${android_device}
 
@@ -420,9 +428,9 @@ webkit_unit_tests-idb:
 webview-tests-all:
     title: Build and run *all* WebView tests
     targets:
-      - webview_instrumentation_test
+      - webview_instrumentation_test_apk
       - webview_unittests
-      - system_webview_shell_layout_test
+      - system_webview_shell_layout_test_apk
 
 adb-list-packages:
     title: List installed packages on Android device.
