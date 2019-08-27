@@ -190,7 +190,7 @@ set wildmenu
 set wildmode=list:longest,full
 
 " For python syntax checking.
-autocmd BufRead *.py set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\" 
+autocmd BufRead *.py set makeprg=python\ -c\ \"import\ py_compile,sys;\ sys.stderr=sys.stdout;\ py_compile.compile(r'%')\"
 autocmd BufRead *.py set efm=%C\ %.%#,%A\ \ File\ \"%f\"\\,\ line\ %l%.%#,%Z%[%^\ ]%\\@=%m
 
 " Automatically indent the next line after these keywords
@@ -203,11 +203,12 @@ autocmd BufWritePre *.py :%s/\s\+$//e
 map <silent><A-Right> :tabnext<CR>
 map <silent><A-Left> :tabprevious<CR>
 
-
-if version >= 700
+" Only enabled with GUI because underlines are rendered as a reverse text
+" in a console.
+if version >= 700 && has("gui_running")
    set spell
    highlight clear SpellBad
-   highlight SpellBad term=standout ctermfg=3 term=underline cterm=underline
+   highlight SpellBad term=standout guibg=NONE guifg=NONE gui=underline ctermfg=3 ctermbg=NONE cterm=underline
    highlight clear SpellCap
    highlight SpellCap term=underline cterm=underline
    highlight clear SpellRare
