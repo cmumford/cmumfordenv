@@ -81,7 +81,7 @@ class Options(object):
     # but experimentation indicates otherwise.
     if val == None:
       return None
-    if val.strip() is '':
+    if val.strip() == '':
       return None
     ret = val
     if not ret.startswith(':'):
@@ -262,10 +262,10 @@ GN files."""
         raise InvalidOption(
             str.format('"{0}" is not a valid CPU. Must be one of {1}',
                        self.buildopts.target_cpu, valid_cpus))
-    if self.buildopts.target_os is 'linux':
+    if self.buildopts.target_os == 'linux':
       self.buildopts.gyp_defines.add('linux_use_debug_fission=0')
-    if ((self.buildopts.target_os is 'win' or
-         self.buildopts.target_os is 'linux') and
+    if ((self.buildopts.target_os == 'win' or
+         self.buildopts.target_os == 'linux') and
         self.buildopts.is_component_build):
       # Should read in chromium.gyp_env and append to those values
       self.buildopts.gyp_defines.add('component=shared_library')
@@ -274,7 +274,7 @@ GN files."""
       self.buildopts.is_component_build = False
     if self.buildopts.is_asan:
       self.buildopts.is_component_build = False
-      if self.buildopts.target_os is 'linux':
+      if self.buildopts.target_os == 'linux':
         if namespace.no_use_clang:
           print("ASan *is* clang to don't tell me not to use it.",
                 file=sys.stderr)
@@ -286,7 +286,7 @@ GN files."""
         self.buildopts.gyp_defines.add('release_extra_cflags="-g -O1 '
                                        '-fno-inline-functions -fno-inline"')
         self.buildopts.gyp_generator_flags.add("output_dir=%s" % self.out_dir)
-      elif self.buildopts.target_os is 'win':
+      elif self.buildopts.target_os == 'win':
         self.buildopts.gyp_defines.add('syzyasan=1')
         self.buildopts.gyp_defines.add('win_z7=1')
         self.buildopts.gyp_defines.add('chromium_win_pch=0')
@@ -298,11 +298,11 @@ GN files."""
         self.buildopts.gyp_defines.add('component=static_library')
         if 'disable_nacl=1' in self.buildopts.gyp_defines:
           self.buildopts.gyp_defines.remove('disable_nacl=1')
-      elif self.buildopts.target_os is 'android':
+      elif self.buildopts.target_os == 'android':
         self.buildopts.gyp_defines.add('asan=1')
         if self.buildopts.is_component_build:
           self.buildopts.gyp_defines.add('component=shared_library')
-      elif platform.system() is 'mac':
+      elif platform.system() == 'mac':
         self.buildopts.gyp_defines.add('asan=1')
         self.buildopts.gyp_defines.add('target_arch=x64')
         self.buildopts.gyp_defines.add('host_arch=x64')
