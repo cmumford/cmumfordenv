@@ -340,7 +340,7 @@ GN files."""
       if self.buildopts.target_cpu != device_cpu:
         raise Exception(str.format(
             "target CPU (\"{0}\") doesn't match default device (\"{1}\")",
-            self.buildopts.target_cpu, abi_items[0]))
+            self.buildopts.target_cpu, device_cpu))
       elif not self.buildopts.target_cpu:
         self.buildopts.target_cpu = 'x86'
 
