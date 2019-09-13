@@ -240,7 +240,11 @@ class Builder(object):
     # Now run all executables
     for target_name in self.options.active_targets:
       for run_command in self.config.get_run_commands(target_name, self.options):
-        exceptions.extend(self.__run(run_command))
+        e = self.__run(run_command)
+        exceptions.extend(e)
+        if e:
+          # Stop on first error.
+          break
       if self.options.profile:
         # TODO: Re-add support for profiling message.
         pass
