@@ -465,6 +465,21 @@ webview-info:
               - dumpsys
               - webviewupdate
 
+# https://chromium.googlesource.com/chromium/src/+/master/docs/android_studio.md
+# This doesn't work yet.
+generate-studio-project:
+    options: run_only
+    configs:
+        default:
+            cmd: build/android/gradle/generate_gradle.py
+            args:
+              - --output-directory
+              - ${Build_dir}
+              - --target
+              - //chrome/android:chrome_public_apk
+              - --target
+              - //android_webview/test:webview_instrumentation_apk
+
 tests-all:
     title: Run *all* tests
     targets:
