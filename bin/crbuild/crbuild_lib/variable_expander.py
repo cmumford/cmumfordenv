@@ -56,6 +56,8 @@ class VariableExpander(object):
       return self.options.out_dir
     if variable_name == 'Build_dir':
       return self.get_build_dir()
+    if variable_name == 'Build_name':
+      return self.__get_base_build_dir()
     if variable_name == 'root_dir':
       return self.options.env.src_root_dir
     if variable_name == 'android_device':

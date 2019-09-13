@@ -288,17 +288,15 @@ blink-layout:
     targets: blink_tests
     configs:
         default:
-            cmd:
-                - ${xvfb}
-                - python
+            cmd: third_party/blink/tools/run_web_tests.py
             args:
-                - third_party/blink/tools/run_web_tests.py
                 - --no-show-results
-                - --${build_type}
                 - --nocheck-sys-deps
+                - --target=${Build_name}
                 - --clobber-old-results
                 - --no-retry-failures
                 - --child-processes=${jobs}
+                - ${run_args}
         debug:
             cmd: ${debugger}
             args:

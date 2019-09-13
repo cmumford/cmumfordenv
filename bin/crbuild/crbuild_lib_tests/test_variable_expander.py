@@ -61,6 +61,18 @@ class TestVariableExpander(unittest.TestCase):
     self.assertEqual(os.path.basename(exp.get_value('Build_dir')),
                      'Official-Release-asan-x86')
 
+  def test_build_name(self):
+    opts = self.__create_opts()
+    exp = variable_expander.VariableExpander(opts)
+
+    # The build platform and target OS are the same so we don't expect
+    # to see the OS in the directory name.
+    opts.buildopts.target_os = 'linux'
+    self.assertEqual(exp.get_value('Build_name'), 'Debug')
+
+    opts.buildopts.target_cpu = 'x86'
+    self.assertEqual(exp.get_value('Build_name'), 'Debug-x86')
+
   def test_build_dir_android(self):
     # Android is a special case where we always want to see the CPU
     # type, but only the platform name when it's not the default.
