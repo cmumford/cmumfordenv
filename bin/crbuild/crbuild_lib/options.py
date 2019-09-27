@@ -365,7 +365,10 @@ GN files."""
     device_info = self.env.android_devices[device]
     code_letter = device_info.release_letter()
     has_gms = device_info.has_gms()
-    if code_letter >= 'L' and code_letter <= 'M':
+    if code_letter == 'K':
+      # Not sure this is correct.
+      return ['com.android.webview']
+    elif code_letter >= 'L' and code_letter <= 'M':
       if has_gms:
         return ['com.google.android.webview']
       else:
@@ -381,6 +384,10 @@ GN files."""
                 'com.google.android.webview']
       else:
         return ['com.android.webview']
+    elif code_letter >= 'Q':
+      # Not sure this is correct.
+      return ['com.android.webview']
+    raise Exception('Unsupported platform: %s' % code_letter)
 
   def __get_system_webview_package_name(self, device):
     # See https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/quick-start.md#my-package-isn_t-in-the-list
