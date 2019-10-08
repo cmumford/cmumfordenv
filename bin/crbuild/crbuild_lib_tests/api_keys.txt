@@ -1,5 +1,0 @@
-# This file inserted into args.gn
-# https://companydoc.corp.google.com/company/teams/chrome/simplified_approach_for_chrome_api_keys.md?cl=head
-google_api_key = "the_api_key"
-google_default_client_id = "the_client_id"
-google_default_client_secret = "the_client_secret"

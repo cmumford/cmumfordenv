@@ -42,8 +42,6 @@ Utilities
 <dl>
   <dt>vmod</dt>
   <dd>Open up (in <a href="http://www.vim.org/">vim</a>) all locally modified file(s) in a <a href="http://git-scm.com/">Git</a> project's branch. Can also open <b>all</b> files modified in the current branch.</dd>
-  <dt>crbuild</dt>
-  <dd>This is my <a href="http://www.chromium.org/Home">Chromium</a> build tool. It simplifies the building and running (if applicable) parts of Chromium with the correct command line arguments.</dd>
   <dt>git-rebaseall</dt>
   <dd>Rebase all local Git branches onto their parent.</dd>
 </dl>
