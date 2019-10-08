@@ -333,8 +333,7 @@ webview_instrumentation_test_apk:
             cmd: ${Build_dir}/bin/run_webview_instrumentation_test_apk
             args: ${run_args}
 
-webview_unittests:
-    targets: android_webview_unittests
+android_webview_unittests:
     configs:
         default:
             cmd: ${Build_dir}/bin/run_android_webview_unittests
@@ -441,9 +440,9 @@ webkit_unit_tests-idb:
 webview-tests-all:
     title: Build and run *all* WebView tests
     targets:
-      - webview_instrumentation_test_apk
-      - webview_unittests
+      - android_webview_unittests
       - system_webview_shell_layout_test_apk
+      - webview_instrumentation_test_apk
 
 list-packages:
     title: List installed packages on Android device.
@@ -464,6 +463,22 @@ webview-info:
               - shell
               - dumpsys
               - webviewupdate
+
+webview-all:
+    title: All WebView targets
+    targets:
+      - android_webview_unittests:
+            build_only
+      - system_webview_apk:
+            build_only
+      - system_webview_shell_apk:
+            build_only
+      - system_webview_shell_layout_test_apk:
+            build_only
+      - webview_instrumentation_apk:
+            build_only
+      - webview_instrumentation_test_apk:
+            build_only
 
 # https://chromium.googlesource.com/chromium/src/+/master/docs/android_studio.md
 # This doesn't work yet.
