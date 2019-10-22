@@ -512,7 +512,6 @@ tests-all:
       - env_chromium_unittests
       - extensions_unittests
       - interactive_ui_tests
-      - leveldb_service_unittests
       - net_unittests
       - services_unittests
       - storage_unittests
