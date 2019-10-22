@@ -201,7 +201,7 @@ ui_tests_:
                 - ${xvfb}
                 - ${Build_dir}/${executable_name}
             args:
-                - --test-launcher-jobs=${testjobs
+                - --test-launcher-jobs=${testjobs}
         debug:
             cmd:
                 - ${debugger}
