@@ -7,6 +7,9 @@ all:
 chrome_sandbox:
     title: Helper app for Chrome OS
 
+chromedriver:
+    title: The WPT test driver
+
 devchrome:
     title: Chromium browser with user-data-dir
     targets:
