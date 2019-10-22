@@ -144,11 +144,11 @@ content_shell_apk:
         - forwarder2
     configs:
         default:
-            cmd: python
+            cmd: ${Build_dir}/bin/content_shell_apk
             args:
-                - build/android/adb_install_apk.py
-                - --apk
-                - ${Build_dir}/apks/ContentShell.apk
+              - install
+              - -d
+              - ${android_device}
 
 content_shell_test_apk:
     targets:
