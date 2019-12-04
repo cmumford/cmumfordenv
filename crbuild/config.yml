@@ -221,10 +221,11 @@ ui_tests_:
 unit_tests_:
     executable_names:
         - base_unittests
+        - blink_common_unittests
         - blink_heap_unittests
         - blink_platform_unittests
+        - blink_unittests
         - cc_unittests
-        - chromeos_services_unittests
         - components_unittests
         - content_unittests
         - crypto_unittests
@@ -232,7 +233,7 @@ unit_tests_:
         - extensions_unittests
         - google_apis_unittests
         - headless_browsertests
-        - leveldb_service_unittests
+        - media_unittests
         - net_unittests
         - performance_browser_tests
         - services_unittests
@@ -505,7 +506,10 @@ tests-all:
     title: Run *all* tests
     targets:
       - base_unittests
+      - blink_common_unittests
+      - blink_heap_unittests
       - blink_platform_unittests
+      - blink_unittests
       - browser_tests
       - cc_unittests
       - components_unittests
@@ -514,9 +518,15 @@ tests-all:
       - crypto_unittests
       - env_chromium_unittests
       - extensions_unittests
+      - google_apis_unittests
+      - headless_browsertests
       - interactive_ui_tests
+      - media_unittests
       - net_unittests
+      - performance_browser_tests
       - services_unittests
+      - sql_unittests
       - storage_unittests
       - unit_tests
       - url_unittests
+      - webkit_unit_tests
