@@ -21,6 +21,7 @@ devchrome:
             cmd: ${Build_dir}/chrome
             args:
                 - --user-data-dir=${HOME}/.chrome_dev
+                - ${run_args}
         debug:
             cmd: ${debugger}
             args:
@@ -202,6 +203,7 @@ ui_tests_:
                 - ${Build_dir}/${executable_name}
             args:
                 - --test-launcher-jobs=${testjobs}
+                - ${run_args}
         debug:
             cmd:
                 - ${debugger}
@@ -251,6 +253,7 @@ unit_tests_:
             args:
                 - --brave-new-test-launcher
                 - --test-launcher-jobs=${testjobs}
+                - ${run_args}
         asan:
             cmd:
                 - ${Build_dir}/${executable_name}
