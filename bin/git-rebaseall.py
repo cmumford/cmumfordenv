@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import re
@@ -27,7 +27,8 @@ class Options(object):
     parser.add_argument('-s', '--skip', action='append',
                         help="Branch name to skip")
     args = parser.parse_args()
-    self.verbosity = args.verbose
+    if args.verbose:
+      self.verbosity = args.verbose
     if self.verbosity > 0:
       self.print_cmds = True
     if args.noop:
@@ -82,6 +83,7 @@ class Git(object):
     branches = {}
     cmd = ['git', '--no-pager', 'branch', '--list', '-v', '-v']
     for line in subprocess.check_output(cmd).splitlines():
+      line = line.decode('utf-8')
       if line.startswith('*'):
         line = line.lstrip('*')
       line = line.strip()
@@ -91,7 +93,7 @@ class Git(object):
         items = m.group(3).split(':')
         parentBranchName = items[0]
         if parentBranchName == branchName:
-          print >> sys.stderr, "Branch is recursive: %s" % branchName
+          print("Branch is recursive: %s" % branchName, file=sys.stderr)
           branches[branchName] = BranchInfo(branchName, None)
           continue
         if parentBranchName not in branches:
@@ -134,15 +136,15 @@ class Rebaser(object):
       cmd = ['git', 'branch', '--set-upstream-to=%s' % up, branch.name]
 
   def rebase(self, branches, branch):
-    #print "%s < %s" % (branch.name, branch.parent)
+    #print("%s < %s" % (branch.name, branch.parent))
     if not branch.parent:
       if branch.name not in self.rebase_warned_branches:
-        print >> sys.stderr, "%s has no parent to rebase to" % branch.name
+        print("%s has no parent to rebase to" % branch.name, file=sys.stderr)
         self.rebase_warned_branches.add(branch.name)
       return;
     if branch.parent not in branches:
       # No parent then nothing on which to rebase
-      print >> sys.stderr, "%s is not a known branch" % branch.parent
+      print("%s is not a known branch" % branch.parent, file=sys.stderr)
       return
     parent = branches[branch.parent]
     self.rebase(branches, parent)
@@ -151,27 +153,27 @@ class Rebaser(object):
     if branch.rebased:
       return
     if branch.name in self.options.skip_branches:
-      print 'Skipping branch "%s"' % branch.name
+      print('Skipping branch "%s"' % branch.name)
       return
     if not self.options.force and not Rebaser.isBranchOrParentBehind(branches, branch):
-      print "Skipping rebase: %s is not behind %s" % (branch.name, branch.parent)
+      print("Skipping rebase: %s is not behind %s" % (branch.name, branch.parent))
       return
     cmd = ['git', '--no-pager', 'checkout', branch.name]
     if self.options.print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     if not self.options.noop:
       subprocess.check_output(cmd)
     cmd = ['git', '--no-pager', 'rebase', parent.name]
-    print "Rebasing %s onto %s" % (branch.name, parent.name)
+    print("Rebasing %s onto %s" % (branch.name, parent.name))
     if self.options.print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     if not self.options.noop:
       try:
         subprocess.check_output(cmd)
       except subprocess.CalledProcessError as e:
-        print >> sys.stderr, "Error rebasing %s on %s" % (branch.name,
-                                                          parent.name)
-        print >> sys.stderr, "Probably a conflict? Resolve and rerun."
+        print("Error rebasing %s on %s" % (branch.name, parent.name),
+              file=sys.stderr)
+        print("Probably a conflict? Resolve and rerun.", file=sys.stderr)
         sys.exit(e.returncode)
     branch.rebased = True
 
@@ -179,7 +181,8 @@ class Rebaser(object):
     branches = self.git.getBranches()
     for skip in self.options.skip_branches:
       if skip not in branches.keys():
-        print >> sys.stderr, "Can't skip branch \"%s\" - not a branch name" % skip
+        print("Can't skip branch \"%s\" - not a branch name" % skip,
+              file=sys.stderr)
         sys.exit(2)
 
     for branch in branches:
