@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Generic Sensor</title>
+    <script>
+    function $(id) {
+      return document.getElementById(id);
+    }
+    function init() {
+      navigator.permissions.query({name:'gyroscope'}).then(function(result) {
+        if (result.state === 'granted') {
+          let gyroscope = new Gyroscope({frequency: 60});
+          let output = $('output');
+          let started = Date.now();
+          let nextUpdateTime = started + 1000.0;
+          let numFrames = 0;
+
+          gyroscope.addEventListener('reading', e => {
+            numFrames += 1;
+            let now = Date.now();
+            if (now >= nextUpdateTime) {
+              updateRate = numFrames / ((now - started) / 1000.0);
+              $('output').innerHTML = 'Rate: ' + Math.round(updateRate) + ' Hz';
+            }
+          });
+          gyroscope.start();
+        } else if (result.state === 'prompt') {
+          $('output').innerHTML = 'prompt';
+        }
+        $('output').innerHTML = 'Denied access to gyroscope';
+      });
+
+    }
+    </script>
+  </head>
+  <body onload="init()">
+    <p>Generic Sensor</p>
+    <p>Output: <span id="output">idle</span></p>
+  </body>
+</html>
