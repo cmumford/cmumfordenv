@@ -1,5 +1,7 @@
 # ~/.bashrc
 
+export HISTSIZE=5000000
+
 if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
     export NUMCPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 else
