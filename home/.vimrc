@@ -96,7 +96,6 @@ call vundle#begin()
 
 " let Vundle manage Vundle, required
 Plugin 'VundleVim/Vundle.vim'
-" https://github.com/chromium/vim-codesearch
 Plugin 'chromium/vim-codesearch'
 Plugin 'corntrace/bufexplorer'
 Plugin 'junegunn/fzf.vim'
@@ -108,6 +107,8 @@ Plugin 'info.vim'
 Plugin 'mileszs/ack.vim'
 Plugin 'screen.vim'
 Plugin 'scrooloose/nerdtree'
+Plugin 'Xuyuanp/nerdtree-git-plugin'
+Plugin 'tiagofumo/vim-nerdtree-syntax-highlight'
 Plugin 'scrooloose/syntastic'
 Plugin 'taglist.vim'
 Plugin 'tmhedberg/matchit'
