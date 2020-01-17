@@ -418,6 +418,20 @@ monochrome_public_apk:
               - -d
               - ${android_device}
 
+trichrome_chrome_bundle:
+    configs:
+        default:
+          - cmd: ${Build_dir}/bin/trichrome_chrome_bundle
+            args:
+              - install
+              - -d
+              - ${android_device}
+          - cmd: ${Build_dir}/bin/trichrome_chrome_bundle
+            args:
+              - set-webview-provider
+              - -d
+              - ${android_device}
+
 monochrome_apk:
     configs:
         default:
@@ -438,6 +452,27 @@ monochrome_apk:
               - shell
               - dumpsys
               - webviewupdate
+
+system_webview_google_stub_apk:
+    configs:
+        default:
+            shell_cmd: adb -s ${android_device} push ${Build_dir}/apks/SystemWebViewGoogleStub.apk /system/app/WebViewStub/WebViewStub.apk
+
+system_monochrome_google_apk:
+    targets:
+      - monochrome_apk:
+          build_only
+    configs:
+        default:
+            shell_cmd: adb -s ${android_device} push ${Build_dir}/apks/Monochrome.apk /system/app/Chrome/Chrome.apk
+
+system_monochrome_google_public_apk:
+    targets:
+      - monochrome_public_apk:
+          build_only
+    configs:
+        default:
+            shell_cmd: adb -s ${android_device} push ${Build_dir}/apks/MonochromePublic.apk /system/app/Chrome/Chrome.apk
 
 webkit_unit_tests-idb:
     title: The IndexedDB tests from webkit_unit_tests
