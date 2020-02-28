@@ -1,0 +1,68 @@
+#!/usr/bin/env python3
+
+# sudo apt-get install python3-pyperclip
+import errno
+import pyperclip
+import re
+import sys
+
+def shorten(url):
+  """Given a url convert to a shortened version (if possible).
+  >>> shorten('https://chromium-review.googlesource.com/c/chromium/src/+/1929264')
+  'https://crrev.com/c/1929264'
+  >>> shorten('http://chromium-review.googlesource.com/c/chromium/src/+/1929264')
+  'http://crrev.com/c/1929264'
+  >>> shorten('https://chromium-review.googlesource.com/c/chromium/deps/sqlite/+/2037631')
+  'https://crrev.com/c/2037631'
+  >>> shorten('https://chromium-review.googlesource.com/c/chromium/deps/sqlite/+/2037631/2/README.md')
+  'https://crrev.com/c/2037631/2/README.md'
+  >>> shorten('https://chromium-review.googlesource.com/2013741')
+  'https://crrev.com/c/2013741'
+  >>> shorten('http://www.google.com')
+  'http://www.google.com'
+  >>> shorten('https://bugs.chromium.org/p/chromium/issues/detail?id=992026')
+  'https://crbug.com/992026'
+  >>> shorten('http://bugs.chromium.org/p/chromium/issues/detail?id=992026')
+  'http://crbug.com/992026'
+  >>> shorten('https://bugs.chromium.org/p/chromium/issues/detail?id=1034022')
+  'https://crbug.com/1034022'
+  """
+  just_num_reg = re.compile(r'^(.+)chromium-review.googlesource.com/(\d+)$')
+  m = just_num_reg.match(url)
+  if m:
+    return '{}crrev.com/c/{}'.format(m.group(1), m.group(2))
+  commit_id_reg = re.compile(r'^(.+)chromium-review.googlesource.com/.+/\+/(\d+)(.*)$')
+  m = commit_id_reg.match(url)
+  if m:
+    return '{}crrev.com/c/{}{}'.format(m.group(1), m.group(2), m.group(3))
+  return url.replace('://bugs.chromium.org/p/chromium/issues/detail?id=', '://crbug.com/')
+
+def print_args(stream):
+  print('Usage: url-shorten <url>', file=stream)
+
+def read_from_args():
+  if len(sys.argv) > 2:
+    print_args(sys.stderr)
+    sys.exit(errno.EINVAL)
+
+  if len(sys.argv) == 1:
+    clipboard_text = pyperclip.paste()
+    if not clipboard_text:
+      print_args(sys.stderr)
+      sys.exit(errno.EINVAL)
+    pyperclip.copy(shorten(clipboard_text).strip())
+    sys.exit(0)
+
+  print(shorten(sys.argv[1]))
+
+def read_from_stdin():
+  for line in sys.stdin.readlines():
+    print(shorten(line).strip())
+
+if __name__ == '__main__':
+  import doctest
+  doctest.testmod()
+  if sys.stdin.isatty():
+    read_from_args()
+  else:
+    read_from_stdin()
