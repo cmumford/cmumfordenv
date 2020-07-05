@@ -26,6 +26,8 @@ def shorten(url):
   'http://crbug.com/992026'
   >>> shorten('https://bugs.chromium.org/p/chromium/issues/detail?id=1034022')
   'https://crbug.com/1034022'
+  >>> shorten('https://chromium-review.googlesource.com/c/chromium/src/+/2244415/9')
+  'https://crrev.com/c/2244415/9'
   """
   just_num_reg = re.compile(r'^(.+)chromium-review.googlesource.com/(\d+)$')
   m = just_num_reg.match(url)
@@ -36,6 +38,18 @@ def shorten(url):
   if m:
     return '{}crrev.com/c/{}{}'.format(m.group(1), m.group(2), m.group(3))
   return url.replace('://bugs.chromium.org/p/chromium/issues/detail?id=', '://crbug.com/')
+
+def shorten_multiline(input_text):
+  """Given a possibly multiline string, convert to a shortened version
+  (if possible).
+
+  >>> shorten_multiline('https://chromium-review.googlesource.com/c/chromium/src/+/1929264')
+  'https://crrev.com/c/1929264'
+  """
+  new_text = []
+  for line in input_text.split('\n'):
+    new_text.append(shorten(line.strip()))
+  return '\n'.join(new_text)
 
 def print_args(stream):
   print('Usage: url-shorten <url>', file=stream)
@@ -50,7 +64,7 @@ def read_from_args():
     if not clipboard_text:
       print_args(sys.stderr)
       sys.exit(errno.EINVAL)
-    pyperclip.copy(shorten(clipboard_text).strip())
+    pyperclip.copy(shorten_multiline(clipboard_text))
     sys.exit(0)
 
   print(shorten(sys.argv[1]))
