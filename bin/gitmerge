@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import errno
 import os
@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 if len(sys.argv) != 5:
-  print >> sys.stderr, "Incorrect arguments"
+  print("Incorrect arguments", file=sys.stderr);
   sys.exit(1)
 
 class Params:
@@ -15,6 +15,8 @@ class Params:
   LOCAL = 2
   REMOTE = 3
   MERGED = 4
+
+cmd=None
 
 # Open up Meld with three tabs to more easily see what they (the *other* branch)
 # did, what we (the local/current branch), and Git's merged version.
@@ -26,10 +28,21 @@ if sys.platform == 'win32':
     meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld',
                              'meld.exe')
     if not os.path.exists(meld_path):
-      print 'Cannot find meld.exe in %s' % \
-              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld')
+      print('Cannot find meld.exe in %s' % \
+              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld'),
+              file=sys.stderr)
       sys.exit(errno.ENOENT)
   cmd = [meld_path]
+if sys.platform == 'darwin':
+  meld_app = '/Applications/Meld.app/Contents/MacOS/Meld'
+  if os.path.exists(meld_app):
+    cmd = [meld_app]
+  if not cmd:
+    meld_app = '/usr/local/bin/meld'
+    if os.path.exists(meld_app):
+      cmd = [meld_app]
+  if not cmd:
+    cmd = ['meld']
 else:
   cmd = ['meld']
 
