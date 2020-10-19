@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 
@@ -85,7 +85,7 @@ class Go:
     BadLength: shortcut
     """
     comma_idx = line.find(',')
-    if comma_idx is -1:
+    if comma_idx == -1:
       return (None, None)
     shortcut = line[:comma_idx].strip()
     value = line[comma_idx+1:].strip()
@@ -125,8 +125,7 @@ class Go:
     # TODO: Don't hard-code the string length
     for key in sorted(self.shortcuts):
       value = self.shortcuts[key]
-      print(str.format("{0:8s} -> {1:s}", key, value),
-            file=sys.stderr)
+      print(f"{key.rjust(8)} -> {value}", file=sys.stderr)
       expanded = self.getval(key)
       userval = expanded.replace(os.path.expanduser('~'), '~', 1)
       if (isinstance(value, str) and userval != value) or isinstance(value, list):
