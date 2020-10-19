@@ -50,5 +50,5 @@ echo ""
   if [[ "${fetch_only}" == "0" ]]; then
   echo "Syncing all projects..."
   cd ${top_dir}
-  gclient sync --with_branch_heads
+  gclient sync --with_branch_heads --with_tags
 fi
