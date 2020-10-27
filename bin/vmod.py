@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import argparse
 import os
@@ -42,7 +42,7 @@ class Options(object):
     self.verbosity = args.verbose
     if args.commit:
       self.commit = args.commit
-    if self.verbosity > 0:
+    if self.verbosity and self.verbosity > 0:
       self.print_cmds = True
     if args.noop:
       self.noop = True
@@ -105,7 +105,7 @@ class Git:
     branches = {}
     cmd = [Git.Path(), '--no-pager', 'branch', '--list', '-v', '-v']
     if print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     for line in subprocess.check_output(cmd).splitlines():
       isCurrent = line.startswith('*')
       if isCurrent:
@@ -132,8 +132,9 @@ class Git:
     files = []
     p = re.compile(r'^[\sAM]+\s+(.*)$')
     if print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
+      line = line.decode('utf-8')
       m = p.match(line)
       if m:
         files.append(m.group(1))
@@ -146,7 +147,7 @@ class Git:
     files = []
     line_no = 0
     if print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       line_no += 1
       if line_no == 1:
@@ -162,7 +163,7 @@ class Git:
            branch.parent, branch.name]
     files = set()
     if print_cmds:
-      print ' '.join(cmd)
+      print(' '.join(cmd))
     commitCount = 0
     for line in subprocess.check_output(cmd, shell=Git.UseShell()).splitlines():
       line.strip()
@@ -212,20 +213,20 @@ class App:
   def ShowFiles(self, files):
     (files, filtered) = App.FilterExisting(files)
     if len(files) == 0:
-      print "No modified files to open"
+      print("No modified files to open")
       return
     if len(filtered):
       for f in filtered:
-        print "Doesn't exist: %s" % f
+        print("Doesn't exist: %s" % f)
       time.sleep(2);  # Give user a chance to read message.
     if len(files) > self.options.max_files_to_edit:
-      print "You have %d files, but will only edit %d of them" % \
-          (len(files), self.options.max_files_to_edit)
+      print("You have %d files, but will only edit %d of them" % \
+          (len(files), self.options.max_files_to_edit))
       files = files[:self.options.max_files_to_edit]
     cmd = [self.options.GetEditorPath()]
     cmd.extend(sorted(files, key=lambda fname: os.path.basename(fname.lower())))
     if self.options.print_cmds:
-      print '\n   '.join(cmd)
+      print('\n   '.join(cmd))
     if not self.options.noop:
       if self.options.gui_editor:
         subprocess.Popen(cmd)
@@ -247,20 +248,20 @@ class App:
 
     (files, filtered) = App.FilterExisting(files)
     if len(files) == 0:
-      print "No modified files to open"
+      print("No modified files to open")
       return
     if len(filtered):
       for f in filtered:
-        print "Doesn't exist: %s" % f
+        print("Doesn't exist: %s" % f)
       time.sleep(2);  # Give user a chance to read message.
     if len(files) > self.options.max_files_to_edit:
-      print "You have %d files, but will only edit %d of them" % \
-          (len(files), self.options.max_files_to_edit)
+      print("You have %d files, but will only edit %d of them" % \
+          (len(files), self.options.max_files_to_edit))
       files = files[:self.options.max_files_to_edit]
     cmd = [self.options.GetEditorPath()]
     cmd.extend(sorted(files, key=lambda fname: os.path.basename(fname.lower())))
     if self.options.print_cmds:
-      print '\n   '.join(cmd)
+      print('\n   '.join(cmd))
     if not self.options.noop:
       if self.options.gui_editor:
         subprocess.Popen(cmd)
