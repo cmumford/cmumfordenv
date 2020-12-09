@@ -192,8 +192,8 @@ env_chromium_unittests_apk:
 
 ui_tests_:
     executable_names:
-        - content_browsertests
         - browser_tests
+        - content_browsertests
         - interactive_ui_tests
     type: gtest
     configs:
@@ -229,27 +229,25 @@ unit_tests_:
         - components_unittests
         - content_unittests
         - crypto_unittests
+        - device_unittests
         - env_chromium_unittests
         - extensions_unittests
         - google_apis_unittests
         - headless_browsertests
         - media_unittests
         - net_unittests
-        - performance_browser_tests
         - services_unittests
         - sql_unittests
         - storage_unittests
         - unit_tests
         - url_unittests
-        - webkit_unit_tests
     type: gtest
     targets:
-        - xdisplaycheck:
-            condition: OS==linux
         - ${self}
     configs:
         default:
             cmd:
+                - ${xvfb}
                 - ${Build_dir}/${executable_name}
             args:
                 - --brave-new-test-launcher
