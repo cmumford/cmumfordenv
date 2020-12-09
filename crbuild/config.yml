@@ -477,7 +477,37 @@ system_monochrome_google_public_apk:
 webkit_unit_tests-idb:
     title: The IndexedDB tests from webkit_unit_tests
     targets: webkit_unit_tests
-    args: '--gtest_filter=:*IDB*:'
+    configs:
+        default:
+            args: '--gtest_filter=:*IDB*:'
+
+content_unittests-idb:
+    title: The IndexedDB tests from content_unittests
+    targets: content_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*IndexedDB*:*LevelDB*:*IDB*:'
+
+unit_tests-idb:
+    title: The IndexedDB tests from unit_tests
+    targets: unit_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*IndexedDB*:ExtensionServiceTest.Clear*Data:'
+
+content_browsertests-idb:
+    title: The IndexedDB tests from content_browsertests
+    targets: content_browsertests
+    configs:
+        default:
+            args: '--gtest_filter=:*IndexedDB:'
+
+browser_tests-idb:
+    title: The IndexedDB tests from browser_tests
+    targets: browser_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*IndexedDB*:BrowserActionApiTest.IncognitoBasic:BrowsingDataIndexedDBHelperTest:'
 
 webview-tests-all:
     title: Build and run *all* WebView tests
