@@ -289,14 +289,15 @@ clusterfuzz:
               - --out-dir=${out_dir}
               - /usr/local/google/home/cmumford/work/ssd/chrome/src/fuzz-force-closed-minimized.ipcdump
 
+# When developing also look into running:
+#   third_party/blink/tools/run_blink_wptserve.py
 blink-layout:
-    title: The Blink layout tests
+    title: The Blink layout tests (AKA webkit_layout_tests)
     targets: blink_tests
     configs:
         default:
             cmd: third_party/blink/tools/run_web_tests.py
             args:
-                - --no-show-results
                 - --nocheck-sys-deps
                 - --target=${Build_name}
                 - --clobber-old-results
