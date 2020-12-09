@@ -1,15 +1,15 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from multiprocessing.pool import ThreadPool
 from subprocess import Popen, PIPE, STDOUT
 import platform
 import sys
 import time
-import thread
+import threading
 import go
 import os
 
-stdout_lock=thread.allocate_lock()
+stdout_lock=threading.Lock()
 
 def FormatDur(seconds):
   if seconds < 60:
@@ -35,21 +35,21 @@ class Task(object):
     self.runtime = None
 
   def Print(self):
-    print 'Cmd: "%s"' % ' '.join(self.cmd)
-    print 'Ret: %d' % self.return_code
+    print('Cmd: "%s"' % ' '.join(self.cmd))
+    print('Ret: %d' % self.return_code)
     if self.stdout:
       for line in self.stdout.splitlines():
-        print "O>  %s" % line
+        print("O>  %s" % line)
     if self.stderr:
       for line in self.stderr.splitlines():
-        print "E>  %s" % line
-    print 'Dur: %s' % FormatDur(self.runtime)
+        print("E>  %s" % line)
+    print('Dur: %s' % FormatDur(self.runtime))
 
 def task_runner(task):
   start = time.time()
   try:
     stdout_lock.acquire()
-    print 'Running: "%s" in "%s"...' % (' '.join(task.cmd), task.cwd)
+    print('Running: "%s" in "%s"...' % (' '.join(task.cmd), task.cwd))
     stdout_lock.release()
     p = Popen(task.cmd, stdout=PIPE, stdin=PIPE, stderr=PIPE, cwd=task.cwd)
     if task.input:
@@ -61,7 +61,7 @@ def task_runner(task):
     task.stderr = str(e)
     task.return_code = e.errno
   except Exception as e:
-    print type(e)
+    print(type(e))
     task.stderr = str(e)
     task.return_code = -1
   task.runtime = time.time() - start
@@ -100,8 +100,8 @@ if __name__ == '__main__':
       failures.append(task)
     task.Print()
     total_runtimes += task.runtime
-    print
+    print()
 
-  print "%d failed out of %d" % (len(failures), len(tasks))
+  print("%d failed out of %d" % (len(failures), len(tasks)))
   avg_seconds = total_runtimes / len(tasks)
-  print "Average runtime: %s per table/date" % FormatDur(avg_seconds)
+  print("Average runtime: %s per table/date" % FormatDur(avg_seconds))
