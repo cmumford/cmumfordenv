@@ -81,6 +81,7 @@ content_shell:
             args:
                 - --crash-dumps-dir=${Build_dir}/content_shell_crashes
                 - --data-path=${HOME}/.content_shell_dev
+                - ${run_args}
         debug:
             cmd:
                 - ${debugger}
