@@ -180,7 +180,11 @@ au BufNewFile,BufRead Makefile.v8.inc set filetype=make
 
 " custom commands to easily navigate around the source code
 :function g:GotoDir(shortcut)
-  let dir = system("python ${HOME}/bin/go.py " . a:shortcut)
+  if has('win32') || has('win64')
+    let dir = system("python ${USERPROFILE}/cmumford/bin/go.py " . a:shortcut)
+  else
+    let dir = system("python ${HOME}/bin/go.py " . a:shortcut)
+  fi
   execute "cd " . expand(dir)
   pwd
 :endfunction
