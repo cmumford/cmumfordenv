@@ -1,54 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 
-OPTIND=1
+base_dir=$(dirname "$0")
 
-fetch_only=0
-force=0
-
-# Delete my gyp state file to force crbuild to regyp
-rm -f .GYP_STATE
-
-while getopts "fF" opt; do
-  case "$opt" in
-  f)  fetch_only=1
-      ;;
-  F)  force=1
-      ;;
-  esac
-done
-
-shift $((OPTIND-1))
-
-top_dir=`pwd`
-
-# Update depot tools
-gclient --version
-gclient --version
-
-echo ""
-echo "Updating/rebasing Chromium..."
-cd ${top_dir}
-if [[ "${fetch_only}" == "0" ]]; then
-  #git rebase-update
-  git fetch origin
-  git checkout -b master --track origin/master || true
-  git checkout master
-  git rebase origin/master
-  #git rebaseall
-fi
-
-echo ""
-echo "Updating/rebasing Leveldb"
-cd ${top_dir}/third_party/leveldatabase/src
-if [[ "${fetch_only}" == "0" ]]; then
-  #git rebase-update
-  git fetch origin
-  git rebaseall
-fi
-
-echo ""
-  if [[ "${fetch_only}" == "0" ]]; then
-  echo "Syncing all projects..."
-  cd ${top_dir}
-  gclient sync --with_branch_heads --with_tags
-fi
+PYTHONDONTWRITEBYTECODE=1 exec python3 "$base_dir/crsync.py" "$@"
