@@ -5,6 +5,7 @@ import platform
 import subprocess
 import sys
 
+
 # TODO: Investigate switching to https://pypi.org/project/clrprint/
 class bcolors:
     HEADER = '\033[95m'
@@ -32,6 +33,16 @@ class Cmd(object):
         if ' ' in item or '*' in item or (quote_flags and '--' in item):
             return '"%s"' % item
         return item
+
+    @staticmethod
+    def _ok_color():
+        if platform.system() == 'Windows':
+            return bcolors.HEADER
+        return bcolors.OKBLUE
+
+    @staticmethod
+    def _info_color():
+        return bcolors.OKGREEN
 
     @staticmethod
     def list_to_string(cmd, add_quotes):
@@ -63,14 +74,14 @@ class Cmd(object):
         '''Print the OK command to stdout.
 
         May supply a string of list of strings.'''
-        Cmd._print(cmd, env_vars, bcolors.OKBLUE, add_quotes)
+        Cmd._print(cmd, env_vars, Cmd._ok_color(), add_quotes)
 
     @staticmethod
     def print_info(cmd, env_vars=None, add_quotes=True):
         '''Print the OK command to stdout.
 
         May supply a string of list of strings.'''
-        Cmd._print(cmd, env_vars, bcolors.OKGREEN, add_quotes)
+        Cmd._print(cmd, env_vars, Cmd._info_color(), add_quotes)
 
     @staticmethod
     def print_error(cmd, env_vars=None, add_quotes=True):
@@ -88,10 +99,7 @@ class Cmd(object):
 
     @staticmethod
     def _can_output_color():
-        if platform.system() == 'Windows':
-            return False
-        else:
-            return sys.stdout.isatty()
+        return sys.stdout.isatty()
 
 
 def GetChromiumSrcDir():
@@ -111,10 +119,12 @@ def GitPath():
     return os.path.join(DepotToolsPath(), 'bootstrap-3.8.0.chromium.8_bin',
                         'git', 'bin', 'git')
 
+
 def GClientPath():
     if platform.system() == 'Windows':
         return os.path.join(DepotToolsPath(), 'gclient.bat')
     return os.path.join(DepotToolsPath(), 'gclient')
+
 
 def GitBranchExists(branch_name, src_dir):
     try:
