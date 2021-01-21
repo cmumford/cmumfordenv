@@ -48,7 +48,7 @@ $pf86 = ${env:ProgramFiles(x86)}
 # There's no env var to refer to Program Files
 $pf = "$env:HOMEDRIVE\Program Files"
 
-Invoke-CmdScript "$pf86\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvarsall.bat" x86
+Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 
 Set-PSDebug -strict
 
