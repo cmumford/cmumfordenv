@@ -94,17 +94,17 @@ function g ([string] $location) {
 
 $workspace = "D:\src\chromium\src";
 $go_locations.Clear()
-$go_locations.Add("home", "C:\Users\cmumford")
-$go_locations.Add("chris", "C:\Users\cmumford")
-$go_locations.Add("src", "C:\Users\cmumford\src")
-$go_locations.Add("c", "$workspace")
-$go_locations.Add("t", "$workspace\third_party")
-$go_locations.Add("b", "$workspace\third_party\WebKit")
-$go_locations.Add("l", "$workspace\third_party\leveldatabase")
-$go_locations.Add("snappy", "$workspace\third_party\snappy\src")
+$go_locations.Add("home", "${env:HOMEPATH}")
+$go_locations.Add("chris", "${env:HOMEPATH}")
+$go_locations.Add("src", "${env:HOMEPATH}\src")
+$go_locations.Add("key", "${env:HOMEPATH}\src\keyboard")
+$go_locations.Add("vis", "${env:HOMEPATH}\src\VisibleStatement")
+$go_locations.Add("esp", "${env:HOMEPATH}\esp\esp-idf")
 ########################################################
 
-[Environment]::SetEnvironmentVariable("gomadir", "C:\Users\cmumford\goma-win64")
+[Environment]::SetEnvironmentVariable("gomadir", "${env:HOMEPATH}\goma-win64")
+
+~\esp\esp-idf\export.ps1
 
 # For the Monokai color scheme
 # https://github.com/ntwb/posh-monokai
