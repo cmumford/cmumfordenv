@@ -290,9 +290,14 @@ clusterfuzz:
               - /usr/local/google/home/cmumford/work/ssd/chrome/src/fuzz-force-closed-minimized.ipcdump
 
 # When developing also look into running:
+#
 #   third_party/blink/tools/run_blink_wptserve.py
-blink-layout:
-    title: The Blink layout tests (AKA webkit_layout_tests)
+#
+# Directories are rooted under third_party/blink/web_tests/, so:
+#
+#   external/wpt/bluetooth
+wpt:
+    title: Web Platform Tests
     targets: blink_tests
     configs:
         default:
@@ -323,6 +328,15 @@ blink-layout:
                 - --build-dir=${Build_dir}
                 - -t
                 - webkit
+
+wpt-bluetooth:
+    title: Bluetooth Web Platform Tests
+    targets: wpt
+    configs:
+        default:
+            args:
+                - external/wpt/bluetooth
+                - wpt_internal/bluetooth
 
 webview_instrumentation_apk:
     configs:
