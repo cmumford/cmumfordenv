@@ -500,7 +500,7 @@ content_browsertests-idb:
     targets: content_browsertests
     configs:
         default:
-            args: '--gtest_filter=:*IndexedDB:'
+            args: '--gtest_filter=:*IndexedDB*:'
 
 browser_tests-idb:
     title: The IndexedDB tests from browser_tests
@@ -566,6 +566,15 @@ generate-studio-project:
               - //chrome/android:chrome_public_apk
               - --target
               - //android_webview/test:webview_instrumentation_apk
+
+tests-idb-all:
+    title: Run *all* IDB tests
+    targets:
+      #- webkit_unit_tests-idb
+      - content_unittests-idb
+      - unit_tests-idb
+      - content_browsertests-idb
+      - browser_tests-idb
 
 tests-all:
     title: Run *all* tests
