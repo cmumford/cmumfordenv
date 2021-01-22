@@ -48,7 +48,13 @@ $pf86 = ${env:ProgramFiles(x86)}
 # There's no env var to refer to Program Files
 $pf = "$env:HOMEDRIVE\Program Files"
 
-Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+if (Test-Path "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
+    Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+} elseif (Test-Path "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
+    Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" x64
+} else {
+    Write-Warning "Not loading Visual Studio vars."
+}
 
 Set-PSDebug -strict
 
