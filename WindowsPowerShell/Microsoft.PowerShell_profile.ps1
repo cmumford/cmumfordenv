@@ -110,7 +110,11 @@ $go_locations.Add("esp", "${env:HOMEPATH}\esp\esp-idf")
 
 [Environment]::SetEnvironmentVariable("gomadir", "${env:HOMEPATH}\goma-win64")
 
-~\esp\esp-idf\export.ps1
+if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
+    ~\esp\esp-idf\export.ps1
+} else {
+    Write-Warning "No ESP-IDF environment to export"
+}
 
 # For the Monokai color scheme
 # https://github.com/ntwb/posh-monokai
