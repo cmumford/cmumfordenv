@@ -42,6 +42,8 @@ class Go:
       if (Go.is_chrome_root_dir(some_chrome_dir)):
         return some_chrome_dir
       p = os.path.dirname(some_chrome_dir)
+      if p == some_chrome_dir:
+        return None
       if not p or p is some_chrome_dir:
         return None
       some_chrome_dir = p
