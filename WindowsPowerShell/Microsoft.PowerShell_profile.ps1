@@ -108,7 +108,8 @@ $go_locations.Add("vis", "${env:HOMEPATH}\src\VisibleStatement")
 $go_locations.Add("esp", "${env:HOMEPATH}\esp\esp-idf")
 ########################################################
 
-[Environment]::SetEnvironmentVariable("gomadir", "${env:HOMEPATH}\goma-win64")
+[Environment]::SetEnvironmentVariable("gomadir", "${env:HOMEPATH}\src\depot_tools")
+[Environment]::SetEnvironmentVariable("GOMA_DIR", "${env:HOMEPATH}\src\depot_tools")
 
 if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
     ~\esp\esp-idf\export.ps1
