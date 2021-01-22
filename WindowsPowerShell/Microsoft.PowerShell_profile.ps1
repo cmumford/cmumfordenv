@@ -90,26 +90,16 @@ function csgrep { compgrep '--include="*.cs"' $args }
 $GLOBAL:go_locations = @{};
 
 function g ([string] $location) {
-	if( $go_locations.ContainsKey($location) ) {
-		set-location $go_locations[$location];
-	} else {
-		write-output "The following locations are defined:";
-		write-output $go_locations;
-	}
+    $out = $OutputVariable = (python3 "${env:USERPROFILE}\cmumford\bin\go.py" $location) | Out-String
+    $items = ($out -split '\n')
+    if ($items.Length -ge 1) {
+        $d = $items[0].Trim()
+        set-location $d
+    }
 }
 
-$workspace = "D:\src\chromium\src";
-$go_locations.Clear()
-$go_locations.Add("home", "${env:HOMEPATH}")
-$go_locations.Add("chris", "${env:HOMEPATH}")
-$go_locations.Add("src", "${env:HOMEPATH}\src")
-$go_locations.Add("key", "${env:HOMEPATH}\src\keyboard")
-$go_locations.Add("vis", "${env:HOMEPATH}\src\VisibleStatement")
-$go_locations.Add("esp", "${env:HOMEPATH}\esp\esp-idf")
-########################################################
-
-[Environment]::SetEnvironmentVariable("gomadir", "${env:HOMEPATH}\src\depot_tools")
-[Environment]::SetEnvironmentVariable("GOMA_DIR", "${env:HOMEPATH}\src\depot_tools")
+[Environment]::SetEnvironmentVariable("gomadir", "${env:USERPROFILE}\src\depot_tools")
+[Environment]::SetEnvironmentVariable("GOMA_DIR", "${env:USERPROFILE}\src\depot_tools")
 
 if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
     ~\esp\esp-idf\export.ps1
