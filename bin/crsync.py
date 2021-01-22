@@ -4,6 +4,7 @@ import os
 import platform
 import subprocess
 import sys
+from go import Go
 
 
 # TODO: Investigate switching to https://pypi.org/project/clrprint/
@@ -103,10 +104,8 @@ class Cmd(object):
 
 
 def GetChromiumSrcDir():
-    # TODO: source ~/.goshortcuts to get this path.
-    if platform.system() == 'Windows':
-        return r'D:\chromium\src'
-    return os.path.expanduser('~/src/chromium/src')
+    g = Go(os.path.abspath(os.getcwd()))
+    return g.getval('c') # Return path to Chromium source dir.
 
 
 def DepotToolsPath():
