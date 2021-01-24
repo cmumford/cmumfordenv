@@ -45,8 +45,6 @@ function Invoke-CmdScript( [string] $script, [string] $parameters )
 }
 
 $pf86 = ${env:ProgramFiles(x86)}
-# There's no env var to refer to Program Files
-$pf = "$env:HOMEDRIVE\Program Files"
 
 if (Test-Path "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
     Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
