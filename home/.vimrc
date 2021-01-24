@@ -2,7 +2,16 @@ source $VIMRUNTIME/vimrc_example.vim
 source $VIMRUNTIME/mswin.vim
 behave mswin
 
-if has('win32') || has('win64')
+if !exists('g:os')
+    if has('win64') || has('win32') || has('win16')
+        let g:os = 'Windows'
+    else
+        let g:os = substitute(system('uname'), '\n', '', '')
+    endif
+endif
+let g:os = 'Windows'
+
+if g:os == 'Windows'
     set runtimepath=$USERPROFILE\.vim,$VIM/vimfiles,$VIMRUNTIME,$VIM/vimfiles/after,$USERPROFILE\.vim/after
 endif
 
@@ -51,16 +60,14 @@ set smartindent
 " Search for tags file recursively in parent directories
 set tags+=tags;/
 
-if has("win32") || has("win16")
+if g:os == 'Windows'
   set tags+=~/vimfiles/tags/python.ctags
-  set shell=cmd.exe
-  set rtp+=~/.vim/bundle/Vundle.vim
+  "set shell=cmd
 else
   set tags+=~/.vim/tags/python.ctags
   set shell=/bin/zsh
-  set rtp+=~/.vim/bundle/Vundle.vim
 endif
-
+set rtp+=~/.vim/bundle/Vundle.vim
 
 " See http://www.8t8.us/vim/vim.html
 set autochdir
@@ -180,7 +187,7 @@ au BufNewFile,BufRead Makefile.v8.inc set filetype=make
 
 " custom commands to easily navigate around the source code
 :function g:GotoDir(shortcut)
-  if has('win32') || has('win64')
+  if g:os == 'Windows'
     let dir = system("python ${USERPROFILE}/cmumford/bin/go.py " . a:shortcut)
   else
     let dir = system("python ${HOME}/bin/go.py " . a:shortcut)
@@ -237,7 +244,7 @@ if has("gui_macvim")
   if &background == "dark"
     set transparency=8
   endif
-elseif has("gui_win32") || has("gui_win16")
+elseif g:os == 'Windows'
   set guifont=Consolas:h11
 elseif has("gui_running")
   set guifont=Monospace\ 11
