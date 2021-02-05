@@ -19,7 +19,7 @@
   dd = diff --no-ext-diff
   wd = diff --no-ext-diff --word-diff
   vd = difftool --tool=vimdiff
-  mb = map-branches --description
+  mb = map-branches
   summary = log --max-count=1 --format='%s'
 [branch]
   autosetuprebase = always
