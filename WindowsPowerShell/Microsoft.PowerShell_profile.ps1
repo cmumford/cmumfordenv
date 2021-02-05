@@ -78,7 +78,7 @@ function windir   { Out-Clipboard $pwd }
 
 
 ########################################################
-# General software cevelopment stuff
+# General software development stuff
 function hgrep { compgrep '--include="*.h"' $args }
 function cgrep { compgrep '--include="*.cpp"' '--include="*.c"' $args }
 function chgrep { compgrep '--include="*.cpp"' '--include="*.c"' '--include="*.h"' $args }
@@ -87,11 +87,11 @@ function csgrep { compgrep '--include="*.cs"' $args }
 
 
 ########################################################
-# 'g' command and targets
+# 'g' command.
 $GLOBAL:go_locations = @{};
 
 function g ([string] $location) {
-    $out = $OutputVariable = (python3 "${env:USERPROFILE}\cmumford\bin\go.py" $location) | Out-String
+    $out = $OutputVariable = (python "${env:USERPROFILE}\cmumford\bin\go.py" $location) | Out-String
     $items = ($out -split '\n')
     if ($items.Length -ge 1) {
         $d = $items[0].Trim()
