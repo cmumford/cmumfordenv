@@ -99,9 +99,6 @@ function g ([string] $location) {
     }
 }
 
-[Environment]::SetEnvironmentVariable("gomadir", "${env:USERPROFILE}\src\depot_tools")
-[Environment]::SetEnvironmentVariable("GOMA_DIR", "${env:USERPROFILE}\src\depot_tools")
-
 function SetupESP() {
     if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
         ~\esp\esp-idf\export.ps1
