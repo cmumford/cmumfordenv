@@ -46,14 +46,17 @@ function Invoke-CmdScript( [string] $script, [string] $parameters )
 
 $pf86 = ${env:ProgramFiles(x86)}
 
-if (Test-Path "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
-    Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-} elseif (Test-Path "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
-    Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" x64
-} else {
-    Write-Warning "Not loading Visual Studio vars."
+function SetupVS() {
+    if (Test-Path "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
+        Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
+    } elseif (Test-Path "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
+        Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" x64
+    } else {
+        Write-Warning "Not loading Visual Studio vars."
+    }
 }
 
+SetupVS
 Set-PSDebug -strict
 
 ########################################################
@@ -99,10 +102,12 @@ function g ([string] $location) {
 [Environment]::SetEnvironmentVariable("gomadir", "${env:USERPROFILE}\src\depot_tools")
 [Environment]::SetEnvironmentVariable("GOMA_DIR", "${env:USERPROFILE}\src\depot_tools")
 
-if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
-    ~\esp\esp-idf\export.ps1
-} else {
-    Write-Warning "No ESP-IDF environment to export"
+function SetupESP() {
+    if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
+        ~\esp\esp-idf\export.ps1
+    } else {
+        Write-Warning "No ESP-IDF environment to export"
+    }
 }
 
 # For the Monokai color scheme
