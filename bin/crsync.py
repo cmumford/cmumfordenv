@@ -159,7 +159,7 @@ def UpdateChromium(src_dir):
 
 def GClientSync(src_dir):
     Cmd.print_info('Syncing all Chromium dependencies.')
-    RunCmd([GClientPath(), 'sync'], working_dir=src_dir)
+    RunCmd([GClientPath(), 'sync', '-D', '--with_branch_heads'], working_dir=src_dir)
 
 
 if __name__ == '__main__':
