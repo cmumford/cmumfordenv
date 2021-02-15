@@ -105,6 +105,7 @@ call vundle#begin()
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'chromium/vim-codesearch'
 Plugin 'corntrace/bufexplorer'
+Plugin 'editorconfig/editorconfig-vim'
 Plugin 'junegunn/fzf.vim'
 Plugin 'fatih/vim-go'
 Plugin 'fs111/pydoc.vim'
