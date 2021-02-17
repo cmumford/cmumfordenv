@@ -1,8 +1,8 @@
 * text=auto
 
 # Windows-only files
-*.bat text eol=lf
-*.ps1 text eol=lf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
 
 # All platforms
 *.c text eol=lf
