@@ -1,0 +1,24 @@
+* text=auto
+
+# Windows-only files
+*.bat text eol=lf
+*.ps1 text eol=lf
+
+# All platforms
+*.c text eol=lf
+*.cc text eol=lf
+*.css text eol=lf
+*.h text eol=lf
+*.html text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+LICENSE text eol=lf
+Makefile text eol=lf
+
+# Known binary file types.
+*.jpeg binary
+*.jpg binary
+*.png binary
+*.exe binary
