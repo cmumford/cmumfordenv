@@ -50,5 +50,3 @@ warningMessageColor:  yellow
 errorFileNameColor: reset
 errorNumberColor:   white
 errorMessageColor:  bold red
-
-
