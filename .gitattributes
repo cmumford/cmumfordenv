@@ -12,8 +12,7 @@
 *.html text eol=lf
 *.md text eol=lf
 *.txt text eol=lf
-.gitattributes text eol=lf
-.gitignore text eol=lf
+.* text eol=lf
 LICENSE text eol=lf
 Makefile text eol=lf
 
@@ -21,4 +20,5 @@ Makefile text eol=lf
 *.jpeg binary
 *.jpg binary
 *.png binary
+*.ico binary
 *.exe binary
