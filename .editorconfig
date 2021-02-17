@@ -7,8 +7,9 @@ insert_final_newline = true
 [*.{c,cc,cpp,h}]
 indent_style = space
 
-[*.py]
-indent_size = 4
+# Turn back on after making project files PEP8 compliant.
+#[*.py]
+#indent_size = 4
 
 [*.{ps1,bat}]
 end_of_line = crlf
@@ -16,4 +17,3 @@ end_of_line = crlf
 [Makefile]
 indent_style = tab
 indent_size = 8
-
