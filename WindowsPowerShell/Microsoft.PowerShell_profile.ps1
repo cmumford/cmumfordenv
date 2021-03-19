@@ -72,7 +72,6 @@ Set-alias make-tags "python $env:USERPROFILE\cmumford\bin\make-chrome-tags"
 
 function xp       { explorer "$pwd" }
 function ss       { . $profile }
-function cfind	  { C:\chris\cmumford\src\cfind\bin\Release\cfind.exe $args }
 function windir   { Out-Clipboard $pwd }
 ########################################################
 
