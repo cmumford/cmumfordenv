@@ -49,8 +49,8 @@ $pf86 = ${env:ProgramFiles(x86)}
 function SetupVS() {
     if (Test-Path "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
         Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvarsall.bat" x64
-    } elseif (Test-Path "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
-        Invoke-CmdScript "$pf86\Microsoft Visual Studio\2019\Professional\VC\Auxiliary\Build\vcvarsall.bat" x64
+    } elseif (Test-Path "$pf86\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvarsall.bat" -PathType Leaf) {
+        Invoke-CmdScript "$pf86\Microsoft Visual Studio\2017\Professional\VC\Auxiliary\Build\vcvarsall.bat" x64
     } else {
         Write-Warning "Not loading Visual Studio vars."
     }
