@@ -658,7 +658,7 @@ generate-studio-project:
               - --target
               - //android_webview/test:webview_instrumentation_apk
 
-tests-idb-all:
+tests-all-idb:
     title: Run *all* IDB tests
     targets:
       #- webkit_unit_tests-idb
