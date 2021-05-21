@@ -523,6 +523,67 @@ browser_tests-idb:
         default:
             args: '--gtest_filter=:*IndexedDB*:BrowserActionApiTest.IncognitoBasic:BrowsingDataIndexedDBHelperTest:'
 
+content_unittests-bluetooth:
+    title: The Bluetooth tests from content_unittests
+    targets: content_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+device_unittests-bluetooth:
+    title: The Bluetooth tests from device_unittests
+    targets: device_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+device_unittests-single:
+    title: The Bluetooth tests from device_unittests
+    targets: device_unittests
+    configs:
+        default:
+            args: --gtest_filter=All/BluetoothTestWinrtOnly.GetGattServices_FindNone/1
+
+unit_tests-bluetooth:
+    title: The Bluetooth tests from unit_tests
+    targets: unit_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+content_browsertests-bluetooth:
+    title: The Bluetooth tests from content_browsertests
+    targets: content_browsertests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+content_browsertests-single:
+    title: A single test from content_browsertests
+    targets: content_browsertests
+    configs:
+        default:
+            args:
+                -  --single-process
+                - '--gtest_filter=:WebBluetoothBrowserTest.ValueDuringNotification:'
+
+browser_tests-bluetooth:
+    title: The Bluetooth tests from browser_tests
+    targets: browser_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+browser_tests-single:
+    title: A single test from browser_tests
+    targets: browser_tests
+    configs:
+        default:
+            args:
+                - --single-process
+                - --test-launcher-jobs=4
+                - --gtest_filter=WebBluetoothBrowserTest.Experiment/0
+
 webview-tests-all:
     title: Build and run *all* WebView tests
     targets:
@@ -589,6 +650,15 @@ tests-idb-all:
       - unit_tests-idb
       - content_browsertests-idb
       - browser_tests-idb
+
+tests-all-bluetooth:
+    title: Run *all* Bluetooth tests
+    targets:
+      - browser_tests-bluetooth
+      - content_browsertests-bluetooth
+      - content_unittests-bluetooth
+      - device_unittests-bluetooth
+      - unit_tests-bluetooth
 
 tests-all:
     title: Run *all* tests
