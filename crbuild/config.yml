@@ -301,13 +301,11 @@ wpt:
     targets: blink_tests
     configs:
         default:
-            cmd: third_party/blink/tools/run_web_tests.py
+            cmd:
+                - C:/Users/cmumford/src/depot_tools/python.bat
             args:
-                - --nocheck-sys-deps
+                - third_party/blink/tools/run_web_tests.py
                 - --target=${Build_name}
-                - --clobber-old-results
-                - --no-retry-failures
-                - --child-processes=${jobs}
                 - ${run_args}
         debug:
             cmd: ${debugger}
@@ -335,8 +333,26 @@ wpt-bluetooth:
     configs:
         default:
             args:
+                - --nocheck-sys-deps
+                - --clobber-old-results
                 - external/wpt/bluetooth
                 - wpt_internal/bluetooth
+        debug:
+            cmd:
+                - ${Build_dir}/content_shell
+            args:
+                - --run-web-tests
+                - external/wpt/bluetooth/characteristic/readValue/read-succeeds.https.window.js
+
+wpt-single:
+    title: Single Web Platform Tests for debugging
+    targets: wpt
+    configs:
+        default:
+            args:
+                - --nocheck-sys-deps
+                - --clobber-old-results
+                - external/wpt/bluetooth/characteristic/readValue/
 
 webview_instrumentation_apk:
     configs:
