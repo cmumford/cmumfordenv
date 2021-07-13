@@ -251,7 +251,6 @@ unit_tests_:
                 - ${xvfb}
                 - ${Build_dir}/${executable_name}
             args:
-                - --brave-new-test-launcher
                 - --test-launcher-jobs=${testjobs}
                 - ${run_args}
         asan:

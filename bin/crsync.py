@@ -145,21 +145,26 @@ def RunCmd(cmd, working_dir):
 def UpdateChromium(src_dir):
     Cmd.print_info('Fetching source from Chromium origin.')
     RunCmd([GitPath(), 'fetch', 'origin'], working_dir=src_dir)
-    if not GitBranchExists('master', src_dir):
-        Cmd.print_info('Creating master branch.')
+    if not GitBranchExists('main', src_dir):
+        Cmd.print_info('Creating main branch.')
         RunCmd([
-            GitPath(), 'checkout', '-b', 'master', '--track', 'origin/master'
+            GitPath(), 'checkout', '-b', 'main', '--track', 'origin/main'
         ],
                working_dir=src_dir)
-    Cmd.print_info('Checking out master branch.')
-    RunCmd([GitPath(), 'checkout', 'master'], working_dir=src_dir)
-    Cmd.print_info('Rebasing master branch.')
-    RunCmd([GitPath(), 'rebase', 'origin/master'], working_dir=src_dir)
+    Cmd.print_info('Checking out main branch.')
+    RunCmd([GitPath(), 'checkout', 'main'], working_dir=src_dir)
+    Cmd.print_info('Rebasing main branch.')
+    RunCmd([GitPath(), 'rebase', 'origin/main'], working_dir=src_dir)
 
 
 def GClientSync(src_dir):
     Cmd.print_info('Syncing all Chromium dependencies.')
-    RunCmd([GClientPath(), 'sync', '-D', '--with_branch_heads'], working_dir=src_dir)
+    if platform.system() == 'Windows':
+        # Git on Windows is sloooow.
+        cmd = [GClientPath(), 'sync', '-D']
+    else:
+        cmd = [GClientPath(), 'sync', '-D', '--with_branch_heads']
+    RunCmd(cmd, working_dir=src_dir)
 
 
 if __name__ == '__main__':
