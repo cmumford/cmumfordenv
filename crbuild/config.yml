@@ -545,6 +545,16 @@ content_unittests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+content_unittests-single:
+    title: A single content_unittests
+    targets: content_unittests
+    configs:
+        default:
+            args:
+                - --test-launcher-jobs=1
+                - --single-process
+                - --gtest_filter=WebBluetoothServiceImplPairingManagerDelegateTest.GetCharacteristicDeviceID
+
 device_unittests-bluetooth:
     title: The Bluetooth tests from device_unittests
     targets: device_unittests
