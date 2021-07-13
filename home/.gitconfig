@@ -17,9 +17,10 @@
   l = log --graph --decorate --pretty=oneline --abbrev-commit
   ll = log --graph --decorate --pretty=medium --abbrev-commit
   dd = diff --no-ext-diff
-  wd = diff --no-ext-diff --word-diff
   vd = difftool --tool=vimdiff
   mb = map-branches
+  sno = show --name-only
+  mfo = diff --no-ext-diff origin/main --name-only
   summary = log --max-count=1 --format='%s'
 [branch]
   autosetuprebase = always
