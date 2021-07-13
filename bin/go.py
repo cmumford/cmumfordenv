@@ -127,7 +127,7 @@ class Go:
     # TODO: Don't hard-code the string length
     for key in sorted(self.shortcuts):
       value = self.shortcuts[key]
-      print(f"{key.rjust(8)} -> {value}", file=sys.stderr)
+      print("%s -> %s" % (key.rjust(8), value), file=sys.stderr)
       expanded = self.getval(key)
       userval = expanded.replace(os.path.expanduser('~'), '~', 1)
       if (isinstance(value, str) and userval != value) or isinstance(value, list):

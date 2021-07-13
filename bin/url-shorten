@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
+
 # sudo apt-get install python3-pyperclip
 import errno
 import pyperclip
