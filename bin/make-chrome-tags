@@ -7,7 +7,6 @@ import sys
 import time
 import threading
 import go
-import os
 
 stdout_lock=threading.Lock()
 
@@ -68,16 +67,15 @@ def task_runner(task):
   return task
 
 if __name__ == '__main__':
-  cwd = os.path.abspath(os.getcwd())
-  go = go.Go(cwd)
+  go = go.Go()
   pool_size = 4
   pool = ThreadPool(pool_size)
   tasks = []
   scan_dirs = {
-    'c': {'exclude':'*third_party/[a-z]*', 'include':'third_party/blink'},
-    'level': {'exclude':None, 'include':None}
+    'c': '*third_party/[a-z]*',
+    'level': None
   }
-  if platform.system() == 'Darwin':
+  if platform.system() == 'Darwin' or platform.system() == 'Windows':
     ctags = 'ctags'
   else:
     ctags = 'ctags-exuberant'
@@ -88,9 +86,8 @@ if __name__ == '__main__':
            '--recurse=yes',
            '--exclude=*.pyc',
            '--links=no']
-    item = scan_dirs[shortcut]
-    if item['exclude']:
-      cmd.append('--exclude=%s' % item['exclude'])
+    if scan_dirs[shortcut]:
+      cmd.append('--exclude=%s' % scan_dirs[shortcut])
     tasks.append(Task(cmd, go.getval(shortcut)))
   results = pool.map(task_runner, tasks)
   failures = []
