@@ -45,7 +45,7 @@ class Git:
 
   @staticmethod
   def CountCommits(branch):
-    cmd = ['git', 'rev-list', '--count', 'origin/master..%s' % branch]
+    cmd = ['git', 'rev-list', '--count', 'origin/main..%s' % branch]
     return int(subprocess.check_output(cmd))
 
   @staticmethod

@@ -203,7 +203,7 @@ ui_tests_:
                 - ${xvfb}
                 - ${Build_dir}/${executable_name}
             args:
-                - --test-launcher-jobs=${testjobs}
+                - --test-launcher-jobs=8
                 - ${run_args}
         debug:
             cmd:
@@ -553,7 +553,7 @@ content_unittests-single:
             args:
                 - --test-launcher-jobs=1
                 - --single-process
-                - --gtest_filter=WebBluetoothServiceImplPairingManagerDelegateTest.GetCharacteristicDeviceID
+                - --gtest_filter=WebBluetoothServiceImplTest.DoubleStartNotifySession
 
 device_unittests-bluetooth:
     title: The Bluetooth tests from device_unittests
@@ -567,7 +567,7 @@ device_unittests-single:
     targets: device_unittests
     configs:
         default:
-            args: --gtest_filter=All/BluetoothTestWinrtOnly.GetGattServices_FindNone/1
+            args: --gtest_filter=All/BluetoothRemoteGattCharacteristicTestWinrt.StartNotifySession/0
 
 unit_tests-bluetooth:
     title: The Bluetooth tests from unit_tests
@@ -606,8 +606,10 @@ browser_tests-single:
         default:
             args:
                 - --single-process
-                - --test-launcher-jobs=4
-                - --gtest_filter=WebBluetoothBrowserTest.Experiment/0
+                - --test-launcher-jobs=1
+              # - --gtest_filter=WebBluetoothBrowserTest.ValueChangeAtNotificationStart/0
+                - --gtest_filter=WebBluetoothTest.NotificationStartValueChangeRead
+              # - --gtest_filter=WebBluetoothTest.KillSwitchShouldBlock
 
 webview-tests-all:
     title: Build and run *all* WebView tests
@@ -652,7 +654,7 @@ webview-all:
       - webview_instrumentation_test_apk:
             build_only
 
-# https://chromium.googlesource.com/chromium/src/+/master/docs/android_studio.md
+# https://chromium.googlesource.com/chromium/src/+/main/docs/android_studio.md
 # This doesn't work yet.
 generate-studio-project:
     options: run_only

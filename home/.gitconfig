@@ -35,4 +35,9 @@
 [mergetool "mymeld"]
   cmd = $HOME/bin/gitmerge $BASE $LOCAL $REMOTE $MERGED
 [http]
-  cookiefile = /usr/local/google/home/cmumford/.gitcookies
+	cookiefile = C:\\Users\\cmumford\\.gitcookies
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
