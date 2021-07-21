@@ -27,7 +27,6 @@
 [push]
   default = tracking
 [core]
-  autocrlf = true
   filemode = false
   deltaBaseCacheLimit = 1G
 [rerere]
