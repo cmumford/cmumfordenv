@@ -56,7 +56,14 @@ function SetupVS() {
     }
 }
 
-SetupVS
+function SetupESP() {
+    if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
+        ~\esp\esp-idf\export.ps1
+    } else {
+        Write-Warning "No ESP-IDF environment to export"
+    }
+}
+
 Set-PSDebug -strict
 
 ########################################################
@@ -95,14 +102,6 @@ function g ([string] $location) {
     if ($items.Length -ge 1) {
         $d = $items[0].Trim()
         set-location $d
-    }
-}
-
-function SetupESP() {
-    if (Test-Path ~\esp\esp-idf\export.ps1 -PathType Leaf) {
-        ~\esp\esp-idf\export.ps1
-    } else {
-        Write-Warning "No ESP-IDF environment to export"
     }
 }
 
