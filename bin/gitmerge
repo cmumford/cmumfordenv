@@ -8,8 +8,8 @@ import subprocess
 import sys
 
 if len(sys.argv) != 5:
-  print("Incorrect arguments", file=sys.stderr);
-  sys.exit(1)
+  print("Incorrect arguments", file=sys.stderr)
+  sys.exit(errno.EINVAL)
 
 class Params:
   PROG = 0
@@ -18,39 +18,32 @@ class Params:
   REMOTE = 3
   MERGED = 4
 
-cmd=None
+def GetPossibleMeldPaths():
+  if sys.platform == 'darwin':
+    return [
+      '/usr/local/bin/meld',
+      '/Applications/Meld.app/Contents/MacOS/Meld'
+    ]
+  if sys.platform == 'win32':
+    return [
+      os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld', 'meld.exe'),
+      os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld.exe')
+    ]
+  return []
+
+def GetMeldPath():
+  for p in GetPossibleMeldPaths():
+    if os.path.exists(p):
+      return p
+  # Assume Meld is in the PATH.
+  return 'meld'
 
 # Open up Meld with three tabs to more easily see what they (the *other* branch)
 # did, what we (the local/current branch), and Git's merged version.
-if sys.platform == 'win32':
-  meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld',
-                           'meld.exe')
-  if not os.path.exists(meld_path):
-    # At some version of Meld it changed it's install location.
-    meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld',
-                             'meld.exe')
-    if not os.path.exists(meld_path):
-      print('Cannot find meld.exe in %s' % \
-              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld'),
-              file=sys.stderr)
-      sys.exit(errno.ENOENT)
-  cmd = [meld_path]
-elif sys.platform == 'darwin':
-  meld_app = '/Applications/Meld.app/Contents/MacOS/Meld'
-  if os.path.exists(meld_app):
-    cmd = [meld_app]
-  if not cmd:
-    meld_app = '/usr/local/bin/meld'
-    if os.path.exists(meld_app):
-      cmd = [meld_app]
-  if not cmd:
-    cmd = ['meld']
-else:
-  cmd = ['meld']
 
 # I want the 3-way tab to be the initial visible one. Seems random how Meld
 # decided which one to use.
-cmd.extend([sys.argv[Params.BASE], sys.argv[Params.LOCAL]])
+cmd = [GetMeldPath(), sys.argv[Params.BASE], sys.argv[Params.LOCAL]]
 cmd.extend(['--diff', sys.argv[Params.LOCAL], sys.argv[Params.MERGED], sys.argv[Params.REMOTE]])
 cmd.extend(['--diff', sys.argv[Params.BASE], sys.argv[Params.REMOTE]])
 
