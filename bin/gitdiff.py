@@ -16,25 +16,26 @@ class Params:
   LOCAL_HASH = 6
   LOCAL_MODE = 7
 
-if sys.platform == 'darwin':
-  # On OSX run FileMerge directly as it blocks and opendiff does not
-  cmd = ['/Developer/Applications/Utilities/FileMerge.app/Contents/MacOS/FileMerge',
-         '-left', sys.argv[Params.BASE_PATH], '-right', sys.argv[Params.LOCAL_PATH]]
-else:
-  # Use meld
+def GetPossibleMeldPaths():
+  if sys.platform == 'darwin':
+    return [
+      '/usr/local/bin/meld',
+      '/Applications/Meld.app/Contents/MacOS/Meld'
+    ]
   if sys.platform == 'win32':
-    meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld',
-                             'meld.exe')
-    if not os.path.exists(meld_path):
-      # At some version of Meld it changed it's install location.
-      meld_path = os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld',
-                               'meld.exe')
-      if not os.path.exists(meld_path):
-        print('Cannot find meld.exe in %s' % \
-              os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld'))
-        sys.exit(errno.ENOENT)
-  else:
-    meld_path = 'meld'
-  cmd = [meld_path, sys.argv[Params.BASE_PATH], sys.argv[Params.LOCAL_PATH]]
+    return [
+      os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld', 'meld.exe'),
+      os.path.join(os.environ['PROGRAMFILES(X86)'], 'Meld', 'meld.exe')
+    ]
+  return []
+
+def GetMeldPath():
+  for p in GetPossibleMeldPaths():
+    if os.path.exists(p):
+      return p
+  # Assume Meld is in the PATH.
+  return 'meld'
+
+cmd = [GetMeldPath(), sys.argv[Params.BASE_PATH], sys.argv[Params.LOCAL_PATH]]
 
 subprocess.check_call(cmd)
