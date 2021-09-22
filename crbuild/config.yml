@@ -545,6 +545,13 @@ content_unittests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+content_unittests-serial:
+    title: The Web Serial tests from content_unittests
+    targets: content_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
+
 content_unittests-single:
     title: A single content_unittests
     targets: content_unittests
@@ -562,6 +569,13 @@ device_unittests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+device_unittests-serial:
+    title: The Web Serial tests from device_unittests
+    targets: device_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
+
 device_unittests-single:
     title: The Bluetooth tests from device_unittests
     targets: device_unittests
@@ -576,12 +590,26 @@ unit_tests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+unit_tests-serial:
+    title: The Web Serial tests from unit_tests
+    targets: unit_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
+
 content_browsertests-bluetooth:
     title: The Bluetooth tests from content_browsertests
     targets: content_browsertests
     configs:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
+
+content_browsertests-serial:
+    title: The Web Serial tests from content_browsertests
+    targets: content_browsertests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
 
 content_browsertests-single:
     title: A single test from content_browsertests
@@ -599,6 +627,12 @@ browser_tests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+browser_tests-serial:
+    title: The Web Serial tests from browser_tests
+    targets: browser_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
 browser_tests-single:
     title: A single test from browser_tests
     targets: browser_tests
@@ -686,6 +720,15 @@ tests-all-bluetooth:
       - content_unittests-bluetooth
       - device_unittests-bluetooth
       - unit_tests-bluetooth
+
+tests-all-serial:
+    title: Run *all* Web Serial tests
+    targets:
+      - browser_tests-serial
+      - content_browsertests-serial
+      - content_unittests-serial
+      - device_unittests-serial
+      - unit_tests-serial
 
 tests-all:
     title: Run *all* tests
