@@ -590,9 +590,23 @@ unit_tests-bluetooth:
         default:
             args: '--gtest_filter=:*luetooth*:*BLE*:'
 
+services_unittests-bluetooth:
+    title: The Web Serial tests from services_unittests
+    targets: services_unittests
+    configs:
+        default:
+            args: '--gtest_filter=:*luetooth*:*BLE*:'
+
 unit_tests-serial:
     title: The Web Serial tests from unit_tests
     targets: unit_tests
+    configs:
+        default:
+            args: '--gtest_filter=:*Serial*:'
+
+services_unittests-serial:
+    title: The Web Serial tests from services_unittests
+    targets: services_unittests
     configs:
         default:
             args: '--gtest_filter=:*Serial*:'
@@ -703,7 +717,7 @@ generate-studio-project:
               - --target
               - //android_webview/test:webview_instrumentation_apk
 
-tests-all-idb:
+tests-idb:
     title: Run *all* IDB tests
     targets:
       #- webkit_unit_tests-idb
@@ -712,22 +726,24 @@ tests-all-idb:
       - content_browsertests-idb
       - browser_tests-idb
 
-tests-all-bluetooth:
+tests-bluetooth:
     title: Run *all* Bluetooth tests
     targets:
       - browser_tests-bluetooth
       - content_browsertests-bluetooth
       - content_unittests-bluetooth
       - device_unittests-bluetooth
+      - services_unittests-bluetooth
       - unit_tests-bluetooth
 
-tests-all-serial:
+tests-serial:
     title: Run *all* Web Serial tests
     targets:
       - browser_tests-serial
       - content_browsertests-serial
       - content_unittests-serial
       - device_unittests-serial
+      - services_unittests-serial
       - unit_tests-serial
 
 tests-all:
