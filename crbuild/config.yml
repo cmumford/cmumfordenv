@@ -242,6 +242,7 @@ unit_tests_:
         - storage_unittests
         - unit_tests
         - url_unittests
+        - wtf_unittests
     type: gtest
     targets:
         - ${self}
@@ -774,3 +775,4 @@ tests-all:
       - unit_tests
       - url_unittests
       - webkit_unit_tests
+      - wtf_unittests
