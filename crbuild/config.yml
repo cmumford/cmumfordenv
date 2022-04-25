@@ -633,7 +633,7 @@ content_browsertests-single:
     configs:
         default:
             args:
-                -  --single-process
+                - --single-process-tests
                 - '--gtest_filter=:WebBluetoothBrowserTest.ValueDuringNotification:'
 
 browser_tests-bluetooth:
