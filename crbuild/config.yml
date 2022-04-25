@@ -221,6 +221,7 @@ ui_tests_:
 
 unit_tests_:
     executable_names:
+        - accessibility_unittests
         - base_unittests
         - blink_common_unittests
         - blink_heap_unittests
