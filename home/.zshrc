@@ -46,7 +46,7 @@ HISTSIZE=1000
 SAVEHIST=1000
 HOSTNAME="`hostname`"
 PAGER='less'
-EDITOR='vim'
+EDITOR='nvim'
     autoload colors zsh/terminfo
     if [[ "$terminfo[colors]" -ge 8 ]]; then
    colors
@@ -65,7 +65,7 @@ LANG='en_US.UTF-8'
 LC_CTYPE=C
 
 if [ $SSH_TTY ]; then
-  MUTT_EDITOR=vim
+  MUTT_EDITOR=nvim
 else
   MUTT_EDITOR=emacsclient.emacs-snapshot
 fi
