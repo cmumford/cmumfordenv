@@ -40,7 +40,6 @@ The first time you run Vim you will need to install it's plugins. Start Vim and 
 Utilities
 -------------------------
 <dl>
-  <dt>vmod</dt>
   <dd>Open up (in <a href="http://www.vim.org/">vim</a>) all locally modified file(s) in a <a href="http://git-scm.com/">Git</a> project's branch. Can also open <b>all</b> files modified in the current branch.</dd>
   <dt>git-rebaseall</dt>
   <dd>Rebase all local Git branches onto their parent.</dd>
