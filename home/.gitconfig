@@ -29,7 +29,7 @@
 [core]
   filemode = false
   deltaBaseCacheLimit = 1G
-	editor = vim
+	editor = nvim
 [rerere]
   enabled = 1
 [mergetool "mymeld"]
