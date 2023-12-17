@@ -35,7 +35,9 @@ unsetopt menucomplete
 zmodload -a zsh/stat stat
 zmodload -a zsh/zpty zpty
 zmodload -a zsh/zprof zprof
-zmodload -ap zsh/mapfile mapfile
+# Commented out because this creates "Can't add module parameter 'mapfile': parameter already exists"
+# warning in subshells (tmux, vscode, etc.).
+#zmodload -ap zsh/mapfile mapfile
 
 
 PATH="/usr/local/bin:/usr/local/sbin/:/bin:/sbin:/usr/bin:/usr/sbin:$PATH"
