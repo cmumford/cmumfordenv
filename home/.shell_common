@@ -31,6 +31,7 @@ alias mac2unix="tr '\r' '\n'"
 alias logcat=$HOME/src/adb-logcat-color/adb-logcat-color.rb
 # Runs a web server rooted at PWD for test purposes. http://localhost:8000
 alias webserver='twistd --nodaemon web --port=tcp:8000 --add-header="Cache-Control: no-cache" --path=$PWD'
+alias meld=/Applications/Meld.app/Contents/MacOS/meld
 
 function jgrep()
 {
