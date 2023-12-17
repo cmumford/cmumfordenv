@@ -2,19 +2,22 @@
 
 export HISTSIZE=5000000
 
-if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
+# For $OSTYPE see:
+# https://www.gnu.org/software/bash/manual/html_node/Bash-Variables.html
+
+if [[ "$OSTYPE" == "linux-gnu"* ]]; then
     export NUMCPUS=`cat /proc/cpuinfo | grep processor | wc -l`
 else
-    export NUMCPUS=4
+    export NUMCPUS=8
 fi
 
-export PATH=$HOME/bin/crbuild:$HOME/bin:$PATH
-if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
+export PATH=$HOME/bin:$PATH
+if [[ "$OSTYPE" == "darwin"* ]]; then
     export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 fi
 
 if [ "$TERM" != "dumb" ]; then
-    if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
+    if [[ "$OSTYPE" == "darwin"* ]]; then
         alias xp='open .'
     fi
 fi

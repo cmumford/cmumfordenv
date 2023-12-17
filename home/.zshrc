@@ -76,19 +76,13 @@ unsetopt ALL_EXPORT
 
 alias slrn="slrn -n"
 alias man='LC_ALL=C LANG=C man'
-# enable color support of ls and also add handy aliases
 if [ "$TERM" != "dumb" ]; then
-    if [ "$TERM_PROGRAM" = "Apple_Terminal" ]; then
-        alias ls='ls -G'
-    else
-        eval "`dircolors -b`"
-        alias ls='ls --color=auto'
-    fi
+  # brew install exa
+  alias ls=exa
+  alias tree="exa --tree"
 fi
 alias offlineimap-tty='offlineimap -u TTY.TTYUI'
 alias hnb-partecs='hnb $HOME/partecs/partecs-hnb.xml'
-
-# alias	=clear
 
 autoload -U compinit
 compinit
