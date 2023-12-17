@@ -198,3 +198,7 @@ fpath=(~/cmumford/zsh_completion $fpath)
 autoload -Uz compinit
 compinit
 # End of lines added by compinstall
+
+# See https://ohmyposh.dev/docs/installation/prompt
+eval "$(oh-my-posh init zsh)"
+
