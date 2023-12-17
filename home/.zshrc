@@ -40,8 +40,7 @@ zmodload -a zsh/zprof zprof
 #zmodload -ap zsh/mapfile mapfile
 
 
-PATH="/usr/local/bin:/usr/local/sbin/:/bin:/sbin:/usr/bin:/usr/sbin:$PATH"
-TZ="America/Los_Angeles"
+TZ="America/New_York"
 HISTFILE=$HOME/.zhistory
 HISTSIZE=1000
 SAVEHIST=1000
