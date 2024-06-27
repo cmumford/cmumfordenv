@@ -22,7 +22,7 @@ def print_diff(base: bytes, other: bytes) -> None:
         with tempfile.NamedTemporaryFile() as other_file:
             other_file.write(other)
             other_file.flush()
-            cmd = ['diff', base_file.name, other_file.name]
+            cmd = ['diff', '--color=always', base_file.name, other_file.name]
             subprocess.run(cmd)
 
 
