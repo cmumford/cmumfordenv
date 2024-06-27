@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+this=$0
+# dirname needs UNIX EOL
+this=$(echo "$this" | sed -e 's|\\|/|g')
+base_dir=$(dirname "$this")
+
+PYTHONDONTWRITEBYTECODE=1 exec python3 "$base_dir/cmdiff.py" "$@"
