@@ -1,0 +1,102 @@
+#!/usr/bin/env python3
+
+import errno
+import sys
+import subprocess
+import re
+import os
+
+"""A Simple script to commit a Git submodule with an easy to read
+message that describes the submodule changes.
+"""
+
+
+class CommitRange:
+    """A Git commit range."""
+
+    def __init__(self):
+        self.old = ''
+        self.new = ''
+
+
+def get_short_git_commit_hash(commit_id: str) -> str:
+    """A dumb Git commit ID (hash) shortening function."""
+    return commit_id[:8]
+
+
+def get_diff(git_path_spec: str) -> list:
+    """Return a Git diff for the given Git pathspec."""
+    cmd = ['git', 'diff', '--color=never', '--no-ext-diff', git_path_spec]
+    out_lines = []
+    for line in subprocess.check_output(cmd).splitlines():
+        out_lines.append(line.decode())
+    return out_lines
+
+
+def get_submodule_commit_range(submodule_path: str) -> CommitRange:
+    """Return the commit range for the given submodule."""
+    reg = re.compile(r'^[\+\-]Subproject commit (.*)$')
+    range = CommitRange()
+    for line in get_diff(submodule_path):
+        m = reg.match(line)
+        if (m):
+            if line[0] == '+':
+                range.new = m.group(1)
+            elif line[0] == '-':
+                range.old = m.group(1)
+    if (not range.old or not range.new):
+        print(f'Cannot get git ranges for {submodule_path}', file=sys.stderr)
+        sys.exit(errno.ENODATA)
+    return range
+
+
+def get_submodule_commit_log(submodule_path: str, commit_range: CommitRange) -> list:
+    """Return a short commit log for the given submodule path and commit range."""
+    cmd = ['git', '-C', submodule_path, '--no-pager', 'log',
+           '--format=format:%s', f'{commit_range.old}..{commit_range.new}']
+    print(' '.join(cmd))
+    out_lines = []
+    for line in subprocess.check_output(cmd).splitlines():
+        out_lines.append(line.decode())
+    return out_lines
+
+
+def write_submodule_commit_message(submodule_path: str, out_file_path: str) -> None:
+    """Write a submodule commit message for the given submodule to the desired
+    file path."""
+    submodule_commit_range = get_submodule_commit_range(submodule_path)
+    with open(out_file_path, "wt") as out_file_stream:
+        print(f'Roll {submodule_path}', file=out_file_stream)
+        print('', file=out_file_stream)
+
+        old = get_short_git_commit_hash(submodule_commit_range.old)
+        new = get_short_git_commit_hash(submodule_commit_range.new)
+        print(f'Roll {submodule_path} from {old} to {new}:',
+              file=out_file_stream)
+
+        log = get_submodule_commit_log(submodule_path, submodule_commit_range)
+        for line in log:
+            print(f'* {line}', file=out_file_stream)
+        out_file_stream.flush()
+
+
+def update_submodule(submodule_path: str) -> None:
+    """Commit the submodule reference with a commit message that describes 
+    the referenced submodule changes."""
+    temp_message_file = '_tmp_commit_msg.txt'
+    write_submodule_commit_message(submodule_path, temp_message_file)
+    cmd = ['git', 'commit', submodule_path, '-F', temp_message_file]
+    subprocess.check_call(cmd)
+    os.remove(temp_message_file)
+
+
+def main(args: list) -> None:
+    if len(args) != 2:
+        print('Usage:\n\n  roll-submodule <module path>', file=sys.stderr)
+        sys.exit(errno.EINVAL)
+
+    update_submodule(args[1])
+
+
+if __name__ == '__main__':
+    main(sys.argv)
