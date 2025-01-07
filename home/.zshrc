@@ -78,9 +78,9 @@ unsetopt ALL_EXPORT
 alias slrn="slrn -n"
 alias man='LC_ALL=C LANG=C man'
 if [ "$TERM" != "dumb" ]; then
-  # brew install exa
-  alias ls=exa
-  alias tree="exa --tree"
+  # brew install eza
+  alias ls=eza
+  alias tree="eza --tree"
 fi
 alias offlineimap-tty='offlineimap -u TTY.TTYUI'
 alias hnb-partecs='hnb $HOME/partecs/partecs-hnb.xml'
