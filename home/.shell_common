@@ -15,6 +15,13 @@ export PATH=$HOME/bin:$PATH
 export PATH=$HOME/src/depot_tools:$PATH
 if [[ "$OSTYPE" == "darwin"* ]]; then
     export PATH=/opt/local/bin:/opt/local/sbin:$PATH
+
+    # For Homebrew clang over one from Apple.
+    export PATH=/opt/homebrew/opt/llvm/bin:$PATH
+
+    # Two exports advised when installing llvm via homebrew.
+    export LDFLAGS="-L/opt/homebrew/opt/llvm/lib"
+    export CPPFLAGS="-I/opt/homebrew/opt/llvm/include"
 fi
 
 if [ "$TERM" != "dumb" ]; then
