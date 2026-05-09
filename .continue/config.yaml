@@ -1,63 +1,60 @@
-name: Local Config
+name: Local Embedded Rust Config
 version: 1.0.0
 schema: v1
+
 models:
-  - name: Qwen 32B (Main)
+  # Main Chat & Refactoring Model
+  - name: Qwen 14B (Main)
     provider: ollama
-    model: qwen2.5-coder:32b
+    model: qwen2.5-coder:14b
+    roles: [chat, edit, apply]
     systemMessage: |
       You are an expert Rust systems programmer.
       You have deep knowledge of low-level Rust, unsafe code, embedded systems, 
       and libraries like bilge, embassy, and no_std environments.
       Always prioritize correctness, performance, and idiomatic Rust.
-      When suggesting code, explain the reasoning behind key decisions.
     temperature: 0.3
-    maxTokens: 4096
-    contextLength: 32768
+    contextLength: 16384
 
+  # Reasoning Model (Switch to this for complex borrow-checker battles)
   - name: DeepSeek 16B (Reasoning)
     provider: ollama
     model: deepseek-coder-v2:16b
+    roles: [chat]
     temperature: 0.4
-    maxTokens: 8192
+    contextLength: 16384
 
-tabAutocompleteModel:
-  title: Qwen 14B (Autocomplete)
-  provider: ollama
-  model: qwen2.5-coder:14b
-  temperature: 0.2
-  maxTokens: 1024
+  # Dedicated Autocomplete (Small & Fast)
+  - name: Qwen 1.5B (Autocomplete)
+    provider: ollama
+    model: qwen2.5-coder:1.5b
+    roles: [autocomplete]
+    temperature: 0.2
 
-embeddings:
-  provider: ollama
-  model: nomic-embed-text
-  # Alternative: bge-m3 (better quality, slightly slower)
+  # Local Embeddings for @codebase
+  - name: Nomic Embed
+    provider: ollama
+    model: nomic-embed-text
+    roles: [embed]
 
 rules:
   - name: Rust Best Practices
     rule: |
-      - Prefer safe Rust when possible
-      - Use `bilge` bitfields correctly (first field = most significant bits)
-      - Always consider `no_std` compatibility when relevant
-      - Explain unsafe blocks thoroughly
+      - Prefer safe Rust when possible.
+      - Use `bilge` bitfields correctly (first field = LSB/MSB awareness).
+      - Always consider `no_std` compatibility.
+      - Explain `unsafe` blocks thoroughly with // SAFETY: comments.
 
-slashCommands:
+# Note: Slash commands are now often handled via 'customCommands' 
+# or automated by the 'edit' role in 2026.
+customCommands:
   - name: explain
-    description: Explain this code in detail
+    description: Explain this code
     prompt: "Explain the following code in detail, including any potential issues:"
-
   - name: optimize
-    description: Optimize this Rust code for performance
-    prompt: "Optimize this Rust code for performance while maintaining safety:"
+    description: Optimize for embedded
+    prompt: "Optimize this Rust code for performance and binary size:"
 
-  - name: test
-    description: Generate tests for this code
-    prompt: "Write comprehensive tests for the following Rust code:"
-
+# Global settings (Applied if not overridden in models)
 temperature: 0.3
-maxTokens: 4096
-contextLength: 32768
-
-experimental:
-  enableTabAutocomplete: true
-  enableCodebaseIndexing: true
+contextLength: 16384
