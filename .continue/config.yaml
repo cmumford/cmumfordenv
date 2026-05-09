@@ -30,6 +30,7 @@ models:
     model: qwen2.5-coder:1.5b
     roles: [autocomplete]
     temperature: 0.2
+    apiBase: http://localhost:11434
 
   # Local Embeddings for @codebase
   - name: Nomic Embed
@@ -54,6 +55,14 @@ customCommands:
   - name: optimize
     description: Optimize for embedded
     prompt: "Optimize this Rust code for performance and binary size:"
+
+context:
+  - provider: currentFile  # This is the one for Alt + Enter / #2
+  - provider: file         # This enables @filename
+  - provider: codebase     # This enables @codebase search
+  - provider: problems     # This enables @problems (very useful for Rust errors)
+  - provider: terminal     # This enables @terminal
+  - provider: diff         # This enables @diff to see your current git changes
 
 # Global settings (Applied if not overridden in models)
 temperature: 0.3
