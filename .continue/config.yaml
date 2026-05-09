@@ -59,7 +59,7 @@ customCommands:
 context:
   - provider: currentFile  # This is the one for Alt + Enter / #2
   - provider: file         # This enables @filename
-  - provider: codebase     # This enables @codebase search
+  # - provider: codebase        # ← Removed (was causing huge indexing delay on MacBook Pro 32GB)
   - provider: problems     # This enables @problems (very useful for Rust errors)
   - provider: terminal     # This enables @terminal
   - provider: diff         # This enables @diff to see your current git changes
