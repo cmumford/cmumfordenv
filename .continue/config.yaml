@@ -1,0 +1,63 @@
+name: Local Config
+version: 1.0.0
+schema: v1
+models:
+  - name: Qwen 32B (Main)
+    provider: ollama
+    model: qwen2.5-coder:32b
+    systemMessage: |
+      You are an expert Rust systems programmer.
+      You have deep knowledge of low-level Rust, unsafe code, embedded systems, 
+      and libraries like bilge, embassy, and no_std environments.
+      Always prioritize correctness, performance, and idiomatic Rust.
+      When suggesting code, explain the reasoning behind key decisions.
+    temperature: 0.3
+    maxTokens: 4096
+    contextLength: 32768
+
+  - name: DeepSeek 16B (Reasoning)
+    provider: ollama
+    model: deepseek-coder-v2:16b
+    temperature: 0.4
+    maxTokens: 8192
+
+tabAutocompleteModel:
+  title: Qwen 14B (Autocomplete)
+  provider: ollama
+  model: qwen2.5-coder:14b
+  temperature: 0.2
+  maxTokens: 1024
+
+embeddings:
+  provider: ollama
+  model: nomic-embed-text
+  # Alternative: bge-m3 (better quality, slightly slower)
+
+rules:
+  - name: Rust Best Practices
+    rule: |
+      - Prefer safe Rust when possible
+      - Use `bilge` bitfields correctly (first field = most significant bits)
+      - Always consider `no_std` compatibility when relevant
+      - Explain unsafe blocks thoroughly
+
+slashCommands:
+  - name: explain
+    description: Explain this code in detail
+    prompt: "Explain the following code in detail, including any potential issues:"
+
+  - name: optimize
+    description: Optimize this Rust code for performance
+    prompt: "Optimize this Rust code for performance while maintaining safety:"
+
+  - name: test
+    description: Generate tests for this code
+    prompt: "Write comprehensive tests for the following Rust code:"
+
+temperature: 0.3
+maxTokens: 4096
+contextLength: 32768
+
+experimental:
+  enableTabAutocomplete: true
+  enableCodebaseIndexing: true
