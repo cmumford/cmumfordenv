@@ -1,6 +1,7 @@
 [user]
   email = cmumford@cmumford.com
   name = Chris Mumford
+  signingkey = ~/.ssh/id_ed25519.pub
 [color]
   diff = auto
   status = auto
@@ -41,3 +42,10 @@
 	smudge = git-lfs smudge -- %f
 	process = git-lfs filter-process
 	required = true
+[gpg]
+  format = ssh
+[commit]
+  gpgsign = true
+  verbose = true
+[gpg]
+  format = ssh
