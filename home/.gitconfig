@@ -14,6 +14,8 @@
   external = $HOME/bin/gitdiff.py
   renames = true
   renameLimit = 999999
+  algorithm = histogram
+  colorMoved = default
 [alias]
   dd = diff --no-ext-diff
   l = log --graph --decorate --pretty=oneline --abbrev-commit
@@ -31,8 +33,9 @@
   filemode = false
   deltaBaseCacheLimit = 1G
 	editor = nvim
+  pager = delta
 [rerere]
-  enabled = 1
+  enabled = true
 [mergetool "mymeld"]
   cmd = $HOME/bin/gitmerge $BASE $LOCAL $REMOTE $MERGED
 [http]
@@ -49,3 +52,5 @@
   verbose = true
 [gpg]
   format = ssh
+[interactive]
+  diffFilter = delta --color-only
